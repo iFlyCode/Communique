@@ -53,15 +53,15 @@ public class MorseLauncher {
 	public static void main(String[] args) {
 		// TODO Allow the input of direct files into the jar's CLI prompt to expedite things.
 
-		util.output("------------------------------------------------------------------------------\n"
+		System.out.println("------------------------------------------------------------------------------\n"
 				+ "Welcome to NS Morse — a cross-platform telegram script for NationStates\n"
 				+ "------------------------------------------------------------------------------\n");
 
 		try {
 			keys[0] = readProperties();
 
-			String cKeyConfirm = util.prompt("Is this your client key? [Yes] or [No]? " + keys[0], new String[] {
-					"yes", "no", "y", "n" });
+			String cKeyConfirm = util.prompt("Is this your client key? [Yes] or [No]? " + keys[0],
+					new String[] { "yes", "no", "y", "n" });
 
 			if (cKeyConfirm.startsWith("y")) {
 				keys[1] = util.prompt("Type in your secret key. NationStates needs to verify that it is you.");
@@ -103,8 +103,8 @@ public class MorseLauncher {
 
 			client.setRecipients(recipients);
 
-			String isRecruitment = util.prompt("Is this a recruitment telegram? [Yes] or [No]?", new String[] { "yes",
-					"no", "y", "n" });
+			String isRecruitment = util.prompt("Is this a recruitment telegram? [Yes] or [No]?",
+					new String[] { "yes", "no", "y", "n" });
 			if (isRecruitment.startsWith("y")) {
 				client.setRecruitment(true);
 			} else {
@@ -112,9 +112,10 @@ public class MorseLauncher {
 			}
 
 		} else {
-			String recipient_type = util.prompt(
-					"To whom do you want to send these telegrams? [Delegates], [New] players, or [Manual]?",
-					new String[] { "delegates", "new", "manual", "d", "n", "m" }).toLowerCase();
+			String recipient_type = util
+					.prompt("To whom do you want to send these telegrams? [Delegates], [New] players, or [Manual]?",
+							new String[] { "delegates", "new", "manual", "d", "n", "m" })
+					.toLowerCase();
 
 			// Expand the [d], [n], [m]
 			if (recipient_type.equals("d")) {
@@ -129,9 +130,11 @@ public class MorseLauncher {
 			try {
 				client.setRecipients(recipient_type);
 			} catch (JTelegramException e) {
-				util.log("Internal Error. The type of elements which go into the recipients array was not specified correctly.");
+				util.log(
+						"Internal Error. The type of elements which go into the recipients array was not specified correctly.");
 			} catch (IOException e) {
-				util.log("Internal Error. Something went wrong in fetching the recipients. Check your internet connection.");
+				util.log(
+						"Internal Error. Something went wrong in fetching the recipients. Check your internet connection.");
 			}
 		}
 
@@ -157,7 +160,8 @@ public class MorseLauncher {
 				util.log("Internal Error. Failed to write properties.");
 			}
 		} else {
-			util.output("Too bad. If you already have a file named 'config.properties', you don't even need to load up this prompt.");
+			System.out.println(
+					"Too bad. If you already have a file named 'config.properties', you don't even need to load up this prompt.");
 		}
 
 		return new_keys;

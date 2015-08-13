@@ -54,6 +54,7 @@ public class CommuniquéLogger implements JTelegramLogger {
 
 	private TextArea logPane;
 	private TextArea codePane;
+	private DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	public CommuniquéLogger(TextArea inputLog, TextArea inputCode) {
 		logPane = inputLog;
@@ -66,9 +67,7 @@ public class CommuniquéLogger implements JTelegramLogger {
 	 * @param input is the <code>String</code> to be input into <code>logPane</code>
 	 */
 	@Override public void log(String input) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		logPane.appendText("[" + dateFormat.format(date) + "] " + input + "\n");
+		logPane.appendText("[" + currentTime() + "] " + input + "\n");
 		logPane.positionCaret(logPane.getLength());
 	}
 
@@ -80,5 +79,10 @@ public class CommuniquéLogger implements JTelegramLogger {
 	 */
 	public void codePrintln(String input) {
 		codePane.appendText(input + "\n");
+	}
+
+	private String currentTime() {
+		Date date = new Date();
+		return dateFormat.format(date);
 	}
 }

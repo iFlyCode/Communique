@@ -83,6 +83,7 @@ public class CommuniquéParser {
 	 */
 	public static final int version = 3;
 	JTelegramLogger util;
+	private JTelegramFetcher fetcher = new JTelegramFetcher();
 
 	/**
 	 * Method constructs the object. A JTelegramLogger must be provided to effectively provide an outlet for
@@ -123,8 +124,6 @@ public class CommuniquéParser {
 	 * @return
 	 */
 	private String[] expandTag(String element) {
-		JTelegramFetcher fetcher = new JTelegramFetcher();
-
 		if (element.startsWith("region:")) {
 			try {
 				String[] regionContentsArr = fetcher.getRegion(element.replace("region:", ""));

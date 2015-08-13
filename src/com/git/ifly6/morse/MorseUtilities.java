@@ -41,44 +41,30 @@ public class MorseUtilities implements JTelegramLogger {
 	/**
 	 * Logs information directly to System.out. Prefaces everything with the date and time.
 	 *
-	 * @param output
-	 *            The string to be formatted and printed.
+	 * @param output The string to be formatted and printed.
 	 */
-	@Override
-	public void log(String output) {
+	@Override public void log(String output) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
 		System.out.println("[" + dateFormat.format(date) + "] " + output);
 	}
 
 	/**
-	 * Shorthand for System.out.println. Sometimes, I hate how verbose Java is.
-	 *
-	 * @param output
-	 *            The string to be printed.
-	 */
-	public void output(String output) {
-		System.out.println(output);
-	}
-
-	/**
 	 * Sends data and requests that you sanitise it to avoid stupid errors. All responses will be in lower case. This is
 	 * the only way the data can be effectively sanitised.
 	 *
-	 * @param prompt
-	 *            The question posed to the user.
-	 * @param conditions
-	 *            A list of valid responses.
+	 * @param prompt The question posed to the user.
+	 * @param conditions A list of valid responses.
 	 * @return
 	 */
 	public String prompt(String prompt, String[] conditions) {
-		String response;
+		String response = "";
+		boolean fine = false;
 
-		while (true) {
-			System.out.println(prompt);
+		while (!fine) {
+			System.out.print(prompt + "\t");
 			response = scan.nextLine().toLowerCase();
 
-			boolean fine = false;
 			for (String element : conditions) {
 				if (element.equals(response)) {
 					fine = true;
@@ -86,9 +72,7 @@ public class MorseUtilities implements JTelegramLogger {
 				}
 			}
 
-			if (fine) {
-				break;
-			} else {
+			if (!fine) {
 				System.out.println("Please provide an acceptable answer.");
 			}
 		}
@@ -100,13 +84,12 @@ public class MorseUtilities implements JTelegramLogger {
 	 * Shorthand for the scanner creation, the posing of the question, and the getting of the response. This version of
 	 * the prompt method will not return all responses in lower case.
 	 *
-	 * @param prompt
-	 *            The question posed to the user.
+	 * @param prompt The question posed to the user.
 	 * @return
 	 */
 	public String prompt(String prompt) {
 
-		this.output(prompt);
+		System.out.print(prompt + "\t");
 		String response = scan.nextLine();
 
 		return response;

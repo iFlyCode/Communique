@@ -34,28 +34,33 @@ public class MarconiLogger implements JTelegramLogger {
 
 	Scanner scan = new Scanner(System.in);
 
-	@Override
-	public void log(String output) {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		System.out.println("[" + dateFormat.format(date) + "] " + output);
+	/**
+	 * @param output is the <code>String</code> to be logged
+	 */
+	@Override public void log(String output) {
+		System.out.println("[" + currentTime() + "] " + output);
 	}
 
-	public void output(String output) {
-		System.out.println(output);
+	/**
+	 * @return the current date and time in the format YYYY/MM/DD HH:MM:SS
+	 */
+	private String currentTime() {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date date = new Date();
+		String finalDate = dateFormat.format(date);
+		return finalDate;
 	}
 
 	/**
 	 * Shorthand for the scanner creation, the posing of the question, and the getting of the response. This version of
 	 * the prompt method will not return all responses in lower case.
 	 *
-	 * @param prompt
-	 *            The question posed to the user.
+	 * @param prompt The question posed to the user.
 	 * @return
 	 */
 	public String prompt(String prompt) {
 
-		this.output(prompt);
+		System.out.print(prompt + "\t");
 		String response = scan.nextLine();
 
 		return response;
@@ -65,30 +70,24 @@ public class MarconiLogger implements JTelegramLogger {
 	 * Sends data and requests that you sanitise it to avoid stupid errors. All responses will be in lower case. This is
 	 * the only way the data can be effectively sanitised.
 	 *
-	 * @param prompt
-	 *            The question posed to the user.
-	 * @param conditions
-	 *            A list of valid responses.
+	 * @param prompt The question posed to the user.
+	 * @param conditions A list of valid responses.
 	 * @return
 	 */
 	public String prompt(String prompt, String[] conditions) {
-		String response;
+		String response = "";
+		boolean fine = false;
 
-		while (true) {
-			System.out.println(prompt);
-			response = scan.nextLine().toLowerCase();
+		while (!fine) {
+			response = this.prompt(prompt).toLowerCase();
 
-			boolean fine = false;
 			for (String element : conditions) {
 				if (element.equals(response)) {
 					fine = true;
-					break;
 				}
 			}
 
-			if (fine) {
-				break;
-			} else {
+			if (!fine) {
 				System.out.println("Please provide an acceptable answer.");
 			}
 		}
@@ -97,17 +96,11 @@ public class MarconiLogger implements JTelegramLogger {
 	}
 
 	/**
-	 * Prompts for a yes or no question.
-	 *
-	 * @param prompt
-	 *            The question posed to the user.
-	 * @param trueFalse
-	 *            The existence of this boolean leads to the setting of valid responses to ones appropriate for a yes or
-	 *            no answer.
+	 * @param prompt the question posed to the user.
+	 * @param trueFalse this boolean leads to the setting of valid responses to ones appropriate for a yes or no answer.
 	 * @return
 	 */
 	public String prompt(String prompt, boolean trueFalse) {
 		return prompt(prompt, new String[] { "yes", "no", "y", "n" });
 	}
-
 }

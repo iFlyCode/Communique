@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2015 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.communique;
 
 import java.awt.Desktop;
@@ -21,6 +44,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -29,8 +53,12 @@ import javafx.stage.FileChooser;
 
 public class CommuniquéController {
 
+	// TODO Live updating recipients list
+	// TODO Interface with NS Happenings
+
 	private int version = CommuniquéParser.version;
 
+	@FXML private MenuBar menuBar;
 	@FXML private TabPane tabPane;
 	@FXML private TextArea logPane;
 	@FXML private TextArea codePane;
@@ -40,16 +68,22 @@ public class CommuniquéController {
 	@FXML private TextField telegramField;
 	@FXML private CheckBox recruitmentCheckBox;
 	@FXML private CheckMenuItem disableSendingCheckBox;
+
 	private JavaTelegram client;
 	private CommuniquéLogger util;
+	private CommuniquéParser parser;
 
 	private Thread sendingThread = new Thread();
 
 	@FXML private void initialize() {
+
+		// If relevant, set to true.
+		menuBar.setUseSystemMenuBar(true);
+
 		logPane.setText("== Communiqué " + version + " ==\nEnter information or load file to proceed.\n");
-		codePane.setText("# == Communiqué Recipients Code ==\n"
-				+ "# Enter recipients, one for each line or use 'region:', 'WA:', etc tags.\n"
+		codePane.setText("# == Communiqué Recipients Code ==\n" + "# Enter recipients, one for each line or use 'region:', 'WA:', etc tags.\n"
 				+ "# Use '/' to say: 'not'. Ex: 'region:europe, /imperium anglorum'.\n");
+		recipientsPane.setText("# == Communiqué Recipients ==\n" + "# This tab shows all recipients after parsing of the Code tab.\n\n");
 
 		try {
 			clientField.setText(readProperties()); // Attempt to fetch client key.
@@ -59,6 +93,7 @@ public class CommuniquéController {
 
 		util = new CommuniquéLogger(logPane, codePane);
 		client = new JavaTelegram(util);
+		parser = new CommuniquéParser(util);
 	}
 
 	@FXML protected void about(ActionEvent event) {
@@ -66,9 +101,9 @@ public class CommuniquéController {
 
 		alert.setTitle("About");
 		alert.setHeaderText("Communique");
-		alert.setContentText("Version " + version + "\n\n"
-				+ "IC: Developed by His Grace, Cyril Parsons, the Duke of Geneva and the staff of the Democratic "
-				+ "Empire of Imperium Anglorum's Delegation to the World Assembly.\n\n" + "OOC: Created by ifly6.");
+		alert.setContentText(
+				"Version " + version + "\n\n" + "IC: Developed by His Grace, Cyril Parsons, the Duke of Geneva and the staff of the Democratic "
+						+ "Empire of Imperium Anglorum's Delegation to the World Assembly.\n\n" + "OOC: Created by ifly6.");
 
 		alert.showAndWait();
 	}
@@ -130,8 +165,7 @@ public class CommuniquéController {
 			// Verify that it is a valid NationStates URL
 			if (rawURL.contains("http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&")) {
 
-				rawURL = rawURL.replace(
-						"http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&", "");
+				rawURL = rawURL.replace("http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&", "");
 				rawURL = rawURL.replace("&to=NATION_NAME", "");
 
 				String[] tags = rawURL.split("&");
@@ -158,37 +192,32 @@ public class CommuniquéController {
 		fileChooser.setTitle("Open Resource File");
 		File file = fileChooser.showOpenDialog(null);
 
-		try {
-			if (file != null) {		// In case they pressed cancel.
+		if (file != null) {
+			try {
 				CommuniquéFileReader fileReader = new CommuniquéFileReader(file);
 
-				// Check file version.
-				if (fileReader.isCompatible()) {
-					// Set Keys
-					JTelegramKeys keys = fileReader.getKeys();
-					clientField.setText(keys.getClientKey());
-					secretField.setText(keys.getSecretKey());
-					telegramField.setText(keys.getTelegramId());
+				// Set Keys
+				JTelegramKeys keys = fileReader.getKeys();
+				clientField.setText(keys.getClientKey());
+				secretField.setText(keys.getSecretKey());
+				telegramField.setText(keys.getTelegramId());
 
-					// Set Recruitment Flag
-					recruitmentCheckBox.setSelected(fileReader.getRecruitmentFlag());
+				// Set Recruitment Flag
+				recruitmentCheckBox.setSelected(fileReader.getRecruitmentFlag());
 
-					// Set Recipients
-					String[] recipients = fileReader.getRecipients();
-					for (String element : recipients) {
-						util.codePrintln(element);
-					}
-
-				} else {
-					throw new JTelegramException();
+				// Set Recipients
+				String[] recipients = fileReader.getRecipients();
+				for (String element : recipients) {
+					util.codePrintln(element);
 				}
 
 				util.log("Configuration loaded.");
+
+			} catch (JTelegramException e) {
+				util.log("Version of the provided file is not compatible.");
+			} catch (FileNotFoundException e) {
+				util.log("Cannot find file provided.");
 			}
-		} catch (JTelegramException e2) {
-			util.log("Version of file provided mismatches with version here.");
-		} catch (FileNotFoundException e) {
-			util.log("Cannot find file provided.");
 		}
 	}
 
@@ -201,7 +230,6 @@ public class CommuniquéController {
 	}
 
 	@FXML protected String[] parse(ActionEvent event) {
-		CommuniquéParser parser = new CommuniquéParser(util);
 		String[] recipients = parser.recipientsParse(codePane.getText());	// Get recipients
 
 		// Estimate Time Needed
@@ -274,14 +302,12 @@ public class CommuniquéController {
 		if (!sendingThread.isAlive()) {
 			client.setKillThread(false);
 
-			// Create another thread so we do not freeze up the GUI
 			Runnable runner = new Runnable() {
 				@Override public void run() {
 					String[] recipients = parse(event);	// Get recipients
 					client.setRecipients(recipients);									// Set recipients
 
-					client.setKeys(
-							new JTelegramKeys(clientField.getText(), secretField.getText(), telegramField.getText()));
+					client.setKeys(new JTelegramKeys(clientField.getText(), secretField.getText(), telegramField.getText()));
 
 					// Set Recruitment Status
 					client.setRecruitment(recruitmentCheckBox.isSelected());
