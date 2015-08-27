@@ -41,6 +41,14 @@ public class MarconiLogger implements JTelegramLogger {
 		System.out.println("[" + currentTime() + "] " + output);
 	}
 
+	public void err(String output) {
+		log(output);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+		}
+	}
+
 	/**
 	 * @return the current date and time in the format YYYY/MM/DD HH:MM:SS
 	 */

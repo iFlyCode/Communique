@@ -148,7 +148,7 @@ public class CommuniquéController {
 			String[] list = input.split(",");
 
 			for (String element : list) {
-				util.codePrintln(element.toLowerCase().replace(" ", "_"));
+				util.codePrintln(element.toLowerCase().trim().replace(" ", "_"));
 			}
 		}
 	}
@@ -267,17 +267,16 @@ public class CommuniquéController {
 	@FXML protected void saveConfiguration(ActionEvent event) {
 		FileChooser fileChooser = new FileChooser();
 
-		fileChooser.setTitle("Open Resource File");
+		fileChooser.setTitle("Choose Resource Location");
 		File saveFile = fileChooser.showSaveDialog(null);
 
 		// Make sure it ends in .txt
-		if (!saveFile.toPath().endsWith(".txt")) {
+		if (!(saveFile.getName().endsWith(".txt"))) {
 			saveFile = new File(saveFile.toString() + ".txt");
 		}
 
 		if (saveFile != null) {	// In case they pressed cancel.
 			try {
-
 				CommuniquéFileWriter fileWriter = new CommuniquéFileWriter(saveFile);
 
 				updateCode();

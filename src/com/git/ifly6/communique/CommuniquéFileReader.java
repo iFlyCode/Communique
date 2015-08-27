@@ -65,20 +65,19 @@ public class CommuniquéFileReader {
 	 * @throws JTelegramException if the version is incorrect
 	 */
 	public CommuniquéFileReader(File file) throws FileNotFoundException, JTelegramException {
-		if (!isCompatible()) {
-			throw new JTelegramException();
 
-		} else {
+		FileReader configRead = new FileReader(file);
+		Scanner scan = new Scanner(configRead);
 
-			FileReader configRead = new FileReader(file);
-			Scanner scan = new Scanner(configRead);
+		while (scan.hasNextLine()) {
+			fileContents.add(scan.nextLine());
+		}
+		scan.close();
 
-			while (scan.hasNextLine()) {
-				fileContents.add(scan.nextLine());
-			}
-
-			scan.close();
+		if (isCompatible()) {
 			information = parseConfig();
+		} else {
+			throw new JTelegramException();
 		}
 	}
 

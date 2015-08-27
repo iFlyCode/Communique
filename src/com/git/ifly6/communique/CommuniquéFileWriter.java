@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
 
@@ -53,26 +54,13 @@ public class CommuniquéFileWriter {
 	static final int version = CommuniquéParser.getVersion();
 	PrintWriter writer;
 	JTelegramKeys keys = new JTelegramKeys();
-	String recipients = "";
+	String[] recipients = {};
 	boolean isRecruitment = true;
 
 	/**
-	 * Joins up a <code>String[]</code> into a <code>String</code> to make it compatible with the parsing system.
-	 *
-	 * @param codeContents a <code>String[]</code> containing all of the recipients on each index
-	 * @return a <code>String</code> containing all of the recipients delimited by <code>\n</code>
-	 */
-	public static String arrayToString(String[] codeContents) {
-		String recipients = "";
-		for (String element : codeContents) {
-			recipients = recipients + element + "\n";
-		}
-
-		return recipients;
-	}
-
-	/**
-	 * This is the basic constructor, which initialises an empty CommuniquéFileWriter.
+	 * This is the basic constructor, which initialises an empty CommuniquéFileWriter. After creating a
+	 * CommuniquéFileWriter in this fashion, provide the keys, the state of the recruitment flag, and a
+	 * <code>String[]</code> of recipients.
 	 *
 	 * @param file to which a Communiqué configuration file will be written
 	 * @throws FileNotFoundException if there is no file there or the file cannot be written to
@@ -92,27 +80,12 @@ public class CommuniquéFileWriter {
 	 * @throws FileNotFoundException if the FileWriter cannot write to the file
 	 * @throws UnsupportedEncodingException if the FileWriter cannot write in UTF-8
 	 */
-	public CommuniquéFileWriter(File file, JTelegramKeys providedKeys, boolean isRecruitment, String bodyString)
+	public CommuniquéFileWriter(File file, JTelegramKeys providedKeys, boolean isRecruitment, String[] bodyString)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		writer = new PrintWriter(file, "UTF-8");
 		this.setKeys(providedKeys);
 		this.setRecuitment(isRecruitment);
 		this.setBody(bodyString);
-	}
-
-	/**
-	 * This is a more advanced constructor which initialises the keys, recruitment flag, and recipients list directly.
-	 *
-	 * @param file to which a Communiqué configuration file will be written
-	 * @param providedKeys given for writing directly to configuration
-	 * @param isRecruitment flag which will be written to the configuration
-	 * @param bodyString the list of recipients in a <code>String[]</code>
-	 * @throws FileNotFoundException if the FileWriter cannot write to the file
-	 * @throws UnsupportedEncodingException if the FileWriter cannot write in UTF-8
-	 */
-	public CommuniquéFileWriter(File file, JTelegramKeys providedKeys, boolean isRecruitment, String[] bodyArray)
-			throws FileNotFoundException, UnsupportedEncodingException {
-		this(file, providedKeys, isRecruitment, arrayToString(bodyArray));
 	}
 
 	/**
@@ -151,19 +124,24 @@ public class CommuniquéFileWriter {
 	/**
 	 * Sets the contents of the recipients.
 	 *
-	 * @param codeContents a <code>String</code> containing all of the recipients delimited by <code>\n</code>
+	 * @param codeContents a <code>String[]</code> containing all of the recipients delimited by index.
 	 */
-	public void setBody(String codeContents) {
+	public void setBody(String[] codeContents) {
 		recipients = codeContents;
 	}
 
 	/**
 	 * Sets the contents of the recipients.
 	 *
-	 * @param codeContents a <code>String[]</code> containing all of the recipients delimited by <code>\n</code>
+	 * @param codeContents a <code>String</code> containing all of the recipients delimited by <code>\n</code>
 	 */
-	public void setBody(String[] codeContents) {
-		setBody(arrayToString(codeContents));
+	public void setBody(String codeContents) {
+		String[] contents = codeContents.split("\n");
+
+		// Filter out nulls
+		contents = Arrays.stream(contents).filter(s -> (s != null && s.length() > 0)).toArray(String[]::new);
+
+		setBody(contents);
 	}
 
 	/**
@@ -197,28 +175,26 @@ public class CommuniquéFileWriter {
 		writer.println("\n");
 
 		// Sort out the comments.
-		String rawInput = recipients;
-		String[] rawArr = rawInput.split("\n");
 		ArrayList<String> contentList = new ArrayList<String>(0);
-		for (String element : rawArr) {
+		for (String element : recipients) {
 			if (!element.startsWith("#") && !element.isEmpty()) {
 				contentList.add(element);
 			}
 		}
 
 		// Sort out the recipients from the sent and get rid of duplicates.
-		LinkedHashSet<String> recipList = new LinkedHashSet<String>(0);
+		LinkedHashSet<String> recpList = new LinkedHashSet<String>(0);
 		LinkedHashSet<String> nopeList = new LinkedHashSet<String>(0);
 		for (String element : contentList) {
 			if (element.startsWith("/")) {
 				nopeList.add(element);
 			} else {
-				recipList.add(element);
+				recpList.add(element);
 			}
 		}
 
 		// Print in the recipients
-		for (String element : recipList) {
+		for (String element : recpList) {
 			writer.println(element);
 		}
 
