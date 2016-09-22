@@ -1,14 +1,11 @@
 *.class
 *.DS_Store
 
-# Files created in processing #
-*.xml
-
 # Package Files #
 *.jar
 *.war
 *.ear
 
 *.properties
-NS*.txt
 /bin/
+/target/
