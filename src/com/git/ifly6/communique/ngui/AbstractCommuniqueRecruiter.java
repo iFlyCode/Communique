@@ -25,10 +25,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 import com.git.ifly6.nsapi.NSNation;
 
-/**
- * @author Kevin
- *
- */
+/** @author Kevin */
 public abstract class AbstractCommuniqueRecruiter {
 	
 	public static final JInfoFetcher fetcher = new JInfoFetcher();
@@ -66,12 +63,10 @@ public abstract class AbstractCommuniqueRecruiter {
 	
 	public abstract void send();
 	
-	/**
-	 * Returns a recipient based on the new recipients list from the NS API, filtered by whether it is proscribed. Note
+	/** Returns a recipient based on the new recipients list from the NS API, filtered by whether it is proscribed. Note
 	 * that any issues or problems are dealt with my defaulting to the newest nation, ignoring the proscription filter.
 	 *
-	 * @return a <code>String</code> with the recipient
-	 */
+	 * @return a <code>String</code> with the recipient */
 	public String getRecipient() {
 		
 		try {
@@ -79,7 +74,24 @@ public abstract class AbstractCommuniqueRecruiter {
 			recipients = fetcher.getNew();
 
 			for (String element : recipients) {
-				if (!sentList.contains(element) && !isProscribed(element, proscribedRegions)) { return element; }
+				
+				boolean match = true;
+				if (sentList.contains(element)) {
+					match = false;
+				}
+				if (isProscribed(element, proscribedRegions)) {
+					match = false;
+				}
+				try {
+					if (new NSNation(element).populateData().isRecruitable()) {
+						match = false;
+					}
+				} catch (IOException e) {
+					// do nothing and assume that the nation can be recruited if an exception is thrown
+				}
+				
+				// Return if match is still true
+				if (match) { return element; }
 			}
 
 			// If the filtering failed, then simply just return the newest nation.
@@ -94,14 +106,12 @@ public abstract class AbstractCommuniqueRecruiter {
 		}
 	}
 	
-	/**
-	 * Determines whether a nation is in a region excluded by the JList <code>excludeList</code>. This method acts with
+	/** Determines whether a nation is in a region excluded by the JList <code>excludeList</code>. This method acts with
 	 * two assumptions: (1) it is not all right to telegram to anyone who resides in a prescribed region and (2) if they
 	 * moved out of the region since founding, it is certainly all right to do so.
 	 *
 	 * @param nationName
-	 * @return <code>boolean</code> on whether it is proscribed
-	 */
+	 * @return <code>boolean</code> on whether it is proscribed */
 	public boolean isProscribed(String element, Set<String> proscribedRegions) {
 		
 		NSNation nation = new NSNation(element);
