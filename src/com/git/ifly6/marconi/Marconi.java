@@ -18,6 +18,7 @@ package com.git.ifly6.marconi;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -68,7 +69,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 				.println(
 						"This will take "
 								+ CommuniqueUtilities.time((int) Math
-										.round(expandedRecipients.size() * ((config.isRecruitment) ? 180.05 : 30.05)))
+										.round(expandedRecipients.size() * (config.isRecruitment ? 180.05 : 30.05)))
 								+ " to send " + expandedRecipients.size() + " telegrams.");
 		
 		if (!skipChecks) {
@@ -88,10 +89,8 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		client.connect();
 	}
 	
-	/**
-	 * Should the problem be prompted to manually check all flags, this method does so, retrieving the flags and asking
-	 * for the user to reconfirm them.
-	 */
+	/** Should the problem be prompted to manually check all flags, this method does so, retrieving the flags and asking
+	 * for the user to reconfirm them. */
 	public void manualFlagCheck() {
 		
 		if (!skipChecks) {
@@ -127,23 +126,25 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		}
 	}
 	
-	/**
-	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#exportState()
-	 */
+	/** Note that this will not return what is loaded. It will return a sentList whose duplicates have been removed and,
+	 * if any elements start with a negation <code>/</code>, it will remove it.
+	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#exportState() */
 	@Override public CConfig exportState() {
+		
+		// Remove duplicates from the sentList
+		config.sentList = Stream.of(config.sentList).distinct().map(s -> s.startsWith("/") ? s.substring(1) : s)
+				.toArray(String[]::new);
+		
 		return config;
+		
 	}
 	
-	/**
-	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#importState(com.git.ifly6.communique.io.CConfig)
-	 */
+	/** @see com.git.ifly6.communique.ngui.AbstractCommunique#importState(com.git.ifly6.communique.io.CConfig) */
 	@Override public void importState(CConfig config) {
 		this.config = config;
 	}
 	
-	/**
-	 * @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String)
-	 */
+	/** @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String) */
 	@Override public void log(String input) {
 		
 		// If we are recruiting, suppress the API Queries message
@@ -154,9 +155,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		System.out.println("[" + MarconiUtilities.currentTime() + "] " + input);
 	}
 	
-	/**
-	 * @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int)
-	 */
+	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
 	@Override public void sentTo(String recipient, int x, int length) {
 		config.sentList = ArrayUtils.add(config.sentList, recipient);
 	}
