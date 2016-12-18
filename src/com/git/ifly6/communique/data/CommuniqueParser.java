@@ -13,7 +13,7 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-package com.git.ifly6.communique;
+package com.git.ifly6.communique.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +27,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 
-/** This class is the central hub of the Communiqué system. It parses the <code>String</code> given to it with all the
- * recipients (and tags which stand in for multiple recipients) into a <code>String[]</code> which has every single
- * recipient, expanded, on each index. It also handles the removal of certain recipients from the list and filtering of
- * recipients as well.
+/** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
+ * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used
+ * except for declaring the parser version.
+ *
+ * <p>
+ * <strike>This class is the central hub of the Communiqué system. It parses the <code>String</code> given to it with
+ * all the recipients (and tags which stand in for multiple recipients) into a <code>String[]</code> which has every
+ * single recipient, expanded, on each index. It also handles the removal of certain recipients from the list and
+ * filtering of recipients as well.
  *
  * <h2>Tags</h2> There are a number of tags which stand for large defined lists of recipients.
  * <table>
@@ -76,22 +81,25 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
  * negation for that tag only.</td>
  * </tr>
  * </table>
+ * </strike>
+ * </p>
 */
 public class CommuniqueParser {
-	
+
 	/** This <code>int</code> determines what version of the parser is currently being used. The entire program is build
 	 * around this string for extended compatibility purposes. However, due to the separation between the parser itself
-	 * and the IO system, either of them can trigger a change in the version number. */
-	public static final int version = 6;
-	private static JInfoFetcher fetcher = JInfoFetcher.getInstance();
+	 * and the IO system, either of them can trigger a change in the version number. See {@link Communique7Parser} for
+	 * the version declaration. */
+	public static final int version = Communique7Parser.version;
+	private static JInfoFetcher fetcher = JInfoFetcher.instance();
 
 	/** Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
 	 * documentation on the grammar of the Communiqué syntax.
 	 *
 	 * @param input
 	 * @return */
-	private boolean isTag(String input) {
-		
+	private static boolean isTag(String input) {
+
 		if (input.startsWith("region:")) {
 			return true;
 
@@ -113,7 +121,7 @@ public class CommuniqueParser {
 	 * @param tag to be expanded
 	 * @return a <code>List&lt;String&gt;</code> of nations represented */
 	private List<String> expandTag(String tag) {
-		
+
 		if (tag.startsWith("region:")) {
 			List<String> regionContentsArr = fetcher.getRegion(tag.replace("region:", ""));
 			return regionContentsArr;
@@ -132,7 +140,7 @@ public class CommuniqueParser {
 		}
 
 		// If all else fails...
-		return new ArrayList<String>(0);
+		return new ArrayList<>(0);
 	}
 
 	/** Expands the <code>List&lt;String&gt;</code> into a list of nations based on the tags, operators, etc. If you
@@ -140,15 +148,15 @@ public class CommuniqueParser {
 	 * is provided as a list of tags, each on a list. This processes the operators.
 	 *
 	 * @param tagsList a <code>List&lt;String&gt;</code> of tags */
-	private Set<String> expandList(List<String> tagsList) {
-		List<String> expandedList = new ArrayList<String>();
+	private LinkedHashSet<String> expandList(List<String> tagsList) {
+		List<String> expandedList = new ArrayList<>();
 
 		for (int x = 0; x < tagsList.size(); x++) {
 			String element = tagsList.get(x).toLowerCase();
 
 			// Operator meaning 'region:europe->wa:nations' would be 'those in Europe in (who are) WA nations'
 			if (element.contains("->") || element.contains("--")) {
-				
+
 				String[] bothArr = new String[2];
 				if (element.contains("->")) {
 					bothArr = element.split("->");
@@ -173,11 +181,11 @@ public class CommuniqueParser {
 				Set<String> firsts = new HashSet<>(expandTag(bothArr[0]));
 				Set<String> seconds = new HashSet<>(expandTag(bothArr[1]));
 
-				List<String> both = new ArrayList<String>(0);
+				List<String> both = new ArrayList<>(0);
 
 				// This section is for the addition and subtraction operators
 				if (element.contains("->")) {
-					
+
 					// If it appears in both lists, add it. Use the new 'contains' algorithm instead of the old 'nested
 					// for loops' algorithm. This gives significant speed advantages.
 					for (String second : seconds) {
@@ -187,7 +195,7 @@ public class CommuniqueParser {
 					}
 
 				} else if (element.contains("--")) {
-					
+
 					// If an element in the first list is also contained in the second list, do not add it to the 'both'
 					// list. This basically removes it from the firsts list as output is concerned.
 					for (String first : firsts) {
@@ -209,9 +217,13 @@ public class CommuniqueParser {
 		}
 
 		// Remove duplicates & return
-		LinkedHashSet<String> tagsSet = new LinkedHashSet<String>();
+		LinkedHashSet<String> tagsSet = new LinkedHashSet<>();
 		tagsSet.addAll(expandedList);
 		return tagsSet;
+	}
+	
+	@Deprecated public String[] filterAndParse(List<String> input) {
+		return filterAndParse(input.stream().toArray(String[]::new));
 	}
 
 	/** This parses the entire contents of the recipients and allows us to actually make the tag system work through
@@ -227,21 +239,29 @@ public class CommuniqueParser {
 	 *
 	 * @param input an array of the recipients, each one on an individual index, which can include commented lines
 	 * @return a final array of the recipients, compatible with JavaTelegram */
-	public String[] filterAndParse(String[] input) {
-		
+	@Deprecated public String[] filterAndParse(String[] input) {
+
 		// Filter out comments and empty lines
-		input = Arrays.stream(input).filter(p -> !p.startsWith("#") && !StringUtils.isEmpty(p)).toArray(String[]::new);
+		// @formatter:off
+		input = Arrays.stream(input)
+				.filter(s -> !s.startsWith("#") && !StringUtils.isEmpty(s))
+				.toArray(String[]::new);
 
 		// Form a list of all the nation we want in this list.
-		List<String> recipients = Arrays.stream(input).filter(s -> !s.startsWith("/")).collect(Collectors.toList());
-		recipients.stream().forEach(s -> s.toLowerCase().replace(" ", "_").trim());
+		List<String> recipients = Arrays.stream(input)
+				.filter(s -> !s.startsWith("/"))
+				.map(s -> s.toLowerCase().trim().replace(" ", "_"))
+				.collect(Collectors.toList());
 
 		// Form a list of all nations we can't have in this list.
-		List<String> sentList = Arrays.stream(input).filter(s -> s.startsWith("/")).collect(Collectors.toList());
-		sentList.stream().forEach(s -> s.replaceFirst("/", "").toLowerCase().trim().replace(" ", "_"));
+		List<String> sentList = Arrays.stream(input)
+				.filter(s -> s.startsWith("/"))
+				.map(s -> s.replaceFirst("/", "").toLowerCase().trim().replace(" ", "_"))
+				.collect(Collectors.toList());
 
 		List<String> list = recipientsParse(recipients, sentList);
 		return list.toArray(new String[list.size()]);
+		// @formatter:on
 	}
 
 	/** This method parses the recipients based on the list of recipients and the list of nations to which a telegram
@@ -251,14 +271,14 @@ public class CommuniqueParser {
 	 * @param recipients
 	 * @param sentList
 	 * @return a <code>List</code> containing the recipients in <code>String</code> format. */
-	public List<String> recipientsParse(List<String> recipients, List<String> sentList) {
-		
+	@Deprecated public List<String> recipientsParse(List<String> recipients, List<String> sentList) {
+
 		// Expand the lists.
-		Set<String> recipientsExpanded = expandList(recipients);
-		Set<String> sentlistExpanded = expandList(sentList);
+		LinkedHashSet<String> recipientsExpanded = expandList(recipients);
+		LinkedHashSet<String> sentlistExpanded = expandList(sentList);
 
 		// Filter using new algorithm
-		List<String> finalRecipients = new ArrayList<String>();
+		List<String> finalRecipients = new ArrayList<>();
 		for (String element : recipientsExpanded) {
 			if (!sentlistExpanded.contains(element)) {
 				finalRecipients.add(element);
@@ -267,13 +287,5 @@ public class CommuniqueParser {
 
 		return finalRecipients;
 	}
-
-	/** Convenience method for <code>recipientsParse(String[] input)</code> if you don't feel like rewriting the code to
-	 * make it an actual <code>String</code>.
-	 *
-	 * @param input A <code>String</code>, with each line separated by new line.
-	 * @return */
-	@Deprecated public String[] recipientsParse(String input) {
-		return filterAndParse(input.split("\n"));
-	}
+	
 }

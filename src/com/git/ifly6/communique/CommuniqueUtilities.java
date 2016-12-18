@@ -17,50 +17,53 @@ package com.git.ifly6.communique;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * This class is nothing more than a container for utility methods used inside Communique programmes.
+/** This class is nothing more than a container for utility methods used inside Communique programmes.
  *
- * @author ifly6
- */
+ * @author ifly6 */
 public class CommuniqueUtilities {
-	
+
+	// Prevent initialisation
 	private CommuniqueUtilities() {
 	}
-	
-	/**
-	 * Randomises an array's sequence of contents.
-	 *
+
+	/** Randomises an array's sequence of contents.
 	 * @param inputArray which is to be shuffled
-	 * @return a copy of the inputArray which is shuffled randomly
-	 */
+	 * @return a copy of the inputArray which is shuffled randomly */
 	public static Object[] randomiseArray(Object[] inputArray) {
-		
 		Random rnd = ThreadLocalRandom.current();
 		for (int i = inputArray.length - 1; i > 0; i--) {
-			
 			int index = rnd.nextInt(i + 1);
-			
 			Object a = inputArray[index];
 			inputArray[index] = inputArray[i];
 			inputArray[i] = a;
 		}
-		
 		return inputArray;
 	}
-	
-	/**
-	 * This changes raw seconds directly into days, hours, minutes, and seconds. Very helpful for creating a system of
-	 * information which humans can use and are not just machine constructs.
-	 *
+
+	/** Randomises an array's sequence of contents with a given seed, which allows for a consistent randomisation order.
+	 * Obviously, this shouldn't be used for anything really all that important.
+	 * @param inputArray which is to be shuffled
+	 * @param seed which is used in the shuffling
+	 * @return a copy of the inputArray which is shuffled randomly */
+	public static Object[] randomiseArray(Object[] inputArray, long seed) {
+		Random rnd = new Random(seed);
+		for (int i = inputArray.length - 1; i > 0; i--) {
+			int index = rnd.nextInt(i + 1);
+			Object a = inputArray[index];
+			inputArray[index] = inputArray[i];
+			inputArray[i] = a;
+		}
+		return inputArray;
+	}
+
+	/** This changes raw seconds directly into days, hours, minutes, and seconds. Very helpful for creating a system of
+	 * information which humans can use.
 	 * @param seconds elapsed
-	 * @return a string in days, hours, minutes, and seconds
-	 */
+	 * @return a string in days, hours, minutes, and seconds */
 	public static String time(int seconds) {
 		int minutes = seconds / 60;
 		seconds -= minutes * 60;
@@ -70,55 +73,14 @@ public class CommuniqueUtilities {
 		hours -= days * 24;
 		return days + "d:" + hours + "h:" + minutes + "m:" + seconds + "s";
 	}
-	
-	/**
-	 * This filters out all new lines from an array.
-	 *
-	 * @param array which contains new lines
-	 * @return the array without new lines
-	 */
-	public static String[] filterNewLines(String[] array) {
-		return Arrays.stream(array).filter(s -> !s.equals("\n")).toArray(String[]::new);
-		// ArrayList<String> temp = new ArrayList<String>();
-		// for (String element : array) {
-		// if (!element.equals("\n")) {
-		// temp.add(element);
-		// }
-		// }
-		//
-		// return temp.toArray(new String[temp.size()]);
-	}
-	
+
 	public static String getCurrentDate() {
 		DateFormat dateDays = new SimpleDateFormat("yyyy-MM-dd");
 		return dateDays.format(new Date());
 	}
-	
+
 	public static String getCurrentDateAndTime() {
 		DateFormat dateWithTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		return dateWithTime.format(new Date());
-	}
-	
-	public static String joinListWith(List<String> input, char joinChar) {
-		return joinListWith(input, String.valueOf(joinChar));
-	}
-	
-	public static String joinListWith(List<String> input, CharSequence joinChar) {
-		
-		// If this is null
-		if (input == null) { return "null"; }
-		
-		// If there are no elements
-		// Based on the Arrays.toString in java.util.Arrays
-		int iMax = input.size() - 1;
-		if (iMax == -1) { return ""; }
-		
-		// If there are many elements
-		StringBuilder builder = new StringBuilder();
-		for (int x = 0;; x++) {
-			builder.append(input.get(x));
-			if (x == iMax) { return builder.toString(); }
-			builder.append(joinChar);
-		}
 	}
 }

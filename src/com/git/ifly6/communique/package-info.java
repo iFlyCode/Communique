@@ -28,3 +28,5 @@
  * </p>
  */
 package com.git.ifly6.communique;
+
+import com.git.ifly6.communique.data.CommuniqueParser;

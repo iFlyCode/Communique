@@ -14,12 +14,11 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package com.git.ifly6.communique.io;
 
-import com.git.ifly6.communique.CommuniqueParser;
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.data.CommuniqueParser;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 
-/**
- * <code>CConfig</code> creates a unified object for the storage and retrieval of the entire state of a Communiqué
+/** <code>CConfig</code> creates a unified object for the storage and retrieval of the entire state of a Communiqué
  * application.
  *
  * <p>
@@ -32,8 +31,7 @@ import com.git.ifly6.javatelegram.JTelegramKeys;
  * Also, the widespread use of reflection in dealing with a <code>Map{@code <String, String>}</code> will allow for
  * greater extensibility over time and significantly less human error in providing methods to access such data.
  * </p>
- *
- */
+*/
 public class CConfig implements java.io.Serializable {
 	
 	// For reflection in CLoader to work, these MUST be the only fields

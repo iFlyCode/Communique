@@ -28,22 +28,19 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.git.ifly6.communique.CommuniqueParser;
+import com.git.ifly6.communique.data.CommuniqueParser;
 
-/**
- * @author Kevin
- *
- */
+/** @author Kevin */
 public class MarconiLauncher {
-	
+
 	private static final Logger log = Logger.getLogger(Marconi.class.getName());
-	
+
 	// Deal with command line options
 	public static final Options COMMAND_LINE_OPTIONS;
-	
+
 	private static boolean skipChecks = false;
 	private static boolean recruiting = false;
-	
+
 	static {
 		Options options = new Options();
 		options.addOption("h", "help", false, "Displays this message");
@@ -51,36 +48,34 @@ public class MarconiLauncher {
 				"Skips all checks for confirmation such that the configuration immediately executes");
 		options.addOption("R", false, "Uses input data as configuration to call a recruiter that sends infinitely");
 		options.addOption("v", "version", false, "Prints version");
-		
+
 		COMMAND_LINE_OPTIONS = options;
 	}
-	
+
 	public static void main(String[] args) {
-		
+
 		if (args.length == 0) {
 			System.err.println("Runtime Error. Please provide a single valid Communiqué configuration file of version "
 					+ CommuniqueParser.version + ".");
 			System.exit(0);
 		}
-		
-		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-			@Override public void uncaughtException(Thread t, Throwable e) {
-				e.printStackTrace();
-				log.log(Level.SEVERE, "Exception in " + t + ": " + e.toString(), e);
-			}
+
+		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+			e.printStackTrace();
+			log.log(Level.SEVERE, "Exception in " + t + ": " + e.toString(), e);
 		});
-		
+
 		CommandLineParser cliParse = new DefaultParser();
-		
+
 		try {
-			
+
 			CommandLine commandLine = cliParse.parse(COMMAND_LINE_OPTIONS, args);
-			
+
 			// Deal with options
 			if (commandLine.hasOption("h")) {
-				
+
 				HelpFormatter formatter = new HelpFormatter();
-				
+
 				String fileName;
 				try {
 					fileName = new File(
@@ -90,7 +85,7 @@ public class MarconiLauncher {
 					// Catch any and all exceptions as default to standard naming format.
 					fileName = "Marconi_" + CommuniqueParser.version;
 				}
-				
+
 				String header = "Send telegrams on NationStates from the command line";
 				String footer = "Please report issues to the NationStates nation Imperium Anglorum via telegram or to "
 						+ "http://forum.nationstates.net/viewtopic.php?f=15&t=352065.";
@@ -109,36 +104,36 @@ public class MarconiLauncher {
 						+ "Please visit https://github.com/iFlyCode/Communique/releases.\n");
 				return;
 			}
-			
+
 			// Deal with the remaining arguments
 			String[] fileList = commandLine.getArgs();
 			if (fileList.length != 1) {
-				
+
 				System.err.println("Please provide only one file argument to the program.\n");
 				System.exit(0);
-				
+
 			} else {
-				
+
 				Path configPath = Paths.get(fileList[0]);
 				initSend(configPath);
-				
+
 			}
-			
+
 		} catch (ParseException e) {
 			System.err.println("Please refer to the help, accessible using '-h'\n");
 			e.printStackTrace();
-			
+
 		} catch (IOException e) {
 			System.err.println("Please provide a valid or existing file argument to the program.\n");
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void initSend(Path configPath) throws IOException {
-		
+
 		Marconi marconi = new Marconi(skipChecks, recruiting);
 		marconi.load(configPath);
-		
+
 		// Accept text commands to recruit...
 		String[] recipients = marconi.exportState().recipients;
 		for (String element : recipients) {
@@ -147,32 +142,30 @@ public class MarconiLauncher {
 				break;
 			}
 		}
-		
+
 		// Add shutdown hook
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override public void run() {
-				try {
-					System.err.println("Attempting to save to:" + configPath.toAbsolutePath().toString());
-					marconi.save(configPath);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				System.err.println("Attempting to save to:" + configPath.toAbsolutePath().toString());
+				marconi.save(configPath);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}));
-		
+
 		if (recruiting) {
-			
+
 			MarconiRecruiter recruiter = new MarconiRecruiter(marconi);
 			recruiter.setWithCConfig(marconi.exportState());
 			recruiter.send();
-			
+
 			// Indefinite ending point, so use ShutdownHook to save
-			
+
 		} else {
-			
+
 			marconi.send();
 			marconi.save(configPath);
-			
+
 		}
 	}
 }

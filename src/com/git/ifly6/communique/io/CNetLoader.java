@@ -20,6 +20,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
@@ -27,12 +29,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.git.ifly6.communique.CommuniqueUtilities;
-
-/**
- * @author Kevin
- *
- */
+/** Provides functionality to Communique to easily scrape pertinent information from the NationStates World Assembly
+ * pages in line with the script rules.
+ * @author ifly6 */
 public class CNetLoader {
 	
 	public static final String GA = "http://www.nationstates.net/page=UN_delegate_votes/council=1";
@@ -40,6 +39,10 @@ public class CNetLoader {
 	public static final String FOR = "Votes For:";
 	public static final String AGAINST = "Votes Against:";
 	
+	/** Provides pertinent rate-limiting for web-scraping in line with the NationStates scripting rules.
+	 * @param url at which to scrape HTML
+	 * @return list containing the HTML
+	 * @throws IOException if there is an error in finding the data */
 	private static synchronized List<String> callUrl(URL url) throws IOException {
 		
 		try {
@@ -55,18 +58,23 @@ public class CNetLoader {
 		return output;
 	}
 	
-	public static String[] importAtVoteDelegates(String chamber, String side) {
+	/** Attempts to scrape the list of delegates voting for or against some proposal.
+	 * @param chamber, either GA or SC
+	 * @param side, either FOR or AGAINST
+	 * @return */
+	public static List<String> importAtVoteDelegates(String chamber, String side) {
 		
 		try {
 			
-			Document doc = Jsoup.parse(CommuniqueUtilities.joinListWith(callUrl(new URL(chamber)), '\n'));
-			Elements elements = doc.select("div.widebox td.UN p");
+			Document doc = Jsoup.parse(callUrl(new URL(chamber)).stream().collect(Collectors.joining("\n")));
+			Elements elements = doc.select("div.content");
 			
 			Iterator<Element> eIter = elements.listIterator();
 			while (eIter.hasNext()) {
 				Element element = eIter.next();
 				
 				try {
+					
 					Element strong = element.select("strong").get(0);
 					String text = strong.text();
 					
@@ -75,12 +83,8 @@ public class CNetLoader {
 						String data = element.text().replace(side, "").replaceAll("\\(.+?\\)", "");
 						data = data.substring(data.indexOf(":") + 1, data.indexOf("and  individual WA member nations."));
 						
-						String[] delegates = data.split(",");
-						for (int i = 0; i < delegates.length; i++) {
-							delegates[i] = delegates[i].trim().toLowerCase().replace(" ", "_");
-						}
-						
-						return delegates;
+						return Stream.of(data.split(",")).map(s -> s.trim().toLowerCase().replace(" ", "_"))
+								.collect(Collectors.toList());
 						
 					}
 					

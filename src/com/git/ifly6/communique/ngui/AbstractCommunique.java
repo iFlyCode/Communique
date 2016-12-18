@@ -19,7 +19,11 @@ import java.nio.file.Path;
 
 import com.git.ifly6.communique.io.CConfig;
 import com.git.ifly6.communique.io.CLoader;
+import com.git.ifly6.marconi.Marconi;
 
+/** Provides the outline of the Communique and Marconi programs. Also provides the shared {@link CConfig} save and load
+ * functionality shared between {@link Communique} and {@link Marconi}.
+ * @author ifly6 */
 public abstract class AbstractCommunique {
 	
 	/** Returns a <code>CConfig</code> object which represents the state of the program as it is here.
