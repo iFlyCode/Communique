@@ -75,6 +75,12 @@ public class Communique7Parser {
 		return this;
 	}
 	
+	/** Returns all of the recipients in a <code>List</code> of <code>CommuniqueRecipient</code>.
+	 * @return a list of {@link CommuniqueRecipient} */
+	public List<CommuniqueRecipient> list() {
+		return recipients;
+	}
+	
 	/** Returns all of the recipients in the standard NationStates reference name form in a <code>List</code>.
 	 * @return a list of all recipients in standard reference name form */
 	public List<String> getRecipients() {

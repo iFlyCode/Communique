@@ -26,22 +26,24 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 
 import com.git.ifly6.communique.data.CommuniqueParser;
+import com.git.ifly6.communique.io.CLoader;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 
-/**
- * Convenience class for correctly writing Communiqué configuration files. It is directly based on
- * <code>PrintWriter</code>. It utilises the encoding <code>UTF-8</code>.
+/** This class has been deprecated. Please see {@link CLoader} for write functionality.
  *
  * <p>
- * Note that this class will not automatically load and process any documents you give it when it is created. If you
- * want that behaviour to change, extend the class and write a new constructor to directly call the <code>write()</code>
- * method.
+ * <strike>Convenience class for correctly writing Communiqué configuration files. It is directly based on
+ * <code>PrintWriter</code>. It utilises the encoding <code>UTF-8</code>.</strike>
+ *
+ * <strike> Note that this class will not automatically load and process any documents you give it when it is created.
+ * If you want that behaviour to change, extend the class and write a new constructor to directly call the
+ * <code>write()</code> method.</strike>
  * </p>
  *
  * @see CommuniqueFileWriter
  * @see CommuniqueParser
- */
+ * @see CLoader */
 @Deprecated public class CommuniqueFileWriter {
 	
 	// Requirements to Write
@@ -58,16 +60,14 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	private String[] originalHeader = {};
 	private String[] originalFooter = {};
 	
-	/**
-	 * This is the basic constructor, which initialises an empty CommuniquéFileWriter. After creating a
+	/** This is the basic constructor, which initialises an empty CommuniquéFileWriter. After creating a
 	 * CommuniquéFileWriter in this fashion, provide the keys, the state of the recruitment flag, and a
 	 * <code>String[]</code> of recipients.
 	 *
 	 * @param file to which a Communiqué configuration file will be written
 	 * @throws FileNotFoundException if there is no file there or the file cannot be written to
 	 * @throws UnsupportedEncodingException if your computer does not support UTF-8 as a valid encoding
-	 * @throws JTelegramException
-	 */
+	 * @throws JTelegramException */
 	public CommuniqueFileWriter(File file) throws FileNotFoundException, UnsupportedEncodingException, JTelegramException {
 		
 		// Get file before destroying it
@@ -81,16 +81,14 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 		writer = new PrintWriter(file, "UTF-8");
 	}
 	
-	/**
-	 * This is a more advanced constructor which initialises the keys, recruitment flag, and recipients list directly.
+	/** This is a more advanced constructor which initialises the keys, recruitment flag, and recipients list directly.
 	 *
 	 * @param file to which a Communiqué configuration file will be written
 	 * @param providedKeys given for writing directly to configuration
 	 * @param isRecruitment flag which will be written to the configuration
 	 * @param bodyString the list of recipients in a <code>String</code> delimited by <code>\n</code>
 	 * @throws FileNotFoundException if the FileWriter cannot write to the file
-	 * @throws UnsupportedEncodingException if the FileWriter cannot write in UTF-8
-	 */
+	 * @throws UnsupportedEncodingException if the FileWriter cannot write in UTF-8 */
 	public CommuniqueFileWriter(File file, JTelegramKeys providedKeys, boolean isRecruitment, String[] bodyString)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		writer = new PrintWriter(file, "UTF-8");
@@ -99,82 +97,66 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 		this.setBody(bodyString);
 	}
 	
-	/**
-	 * Sets the keys inside a <code>JTelegramKeys</code> object which will then be written to disc.
+	/** Sets the keys inside a <code>JTelegramKeys</code> object which will then be written to disc.
 	 *
 	 * @param clientKey is the client key used when sending telegrams
 	 * @param secretKey is the secret key used when sending telegrams
-	 * @param telegramId is the key of the telegram sent to recipients
-	 */
+	 * @param telegramId is the key of the telegram sent to recipients */
 	public void setKeys(String clientKey, String secretKey, String telegramId) {
 		keys.setClientKey(clientKey);
 		keys.setSecretKey(secretKey);
 		keys.setTelegramId(telegramId);
 	}
 	
-	/**
-	 * This is an old method to set the keys inside the new <code>JTelegramKeys</code> object which will then be written
-	 * to disc. It was written to keep compatibility with API version 1.
+	/** This is an old method to set the keys inside the new <code>JTelegramKeys</code> object which will then be
+	 * written to disc. It was written to keep compatibility with API version 1.
 	 *
 	 * @param inputKeys a String array containing the keys in this order:
-	 *            <code>{ clientKey, secretKey, telegramId }</code>
-	 */
+	 *            <code>{ clientKey, secretKey, telegramId }</code> */
 	@Deprecated public void setKeys(String[] inputKeys) {
 		keys.setKeys(inputKeys);
 	}
 	
-	/**
-	 * Sets the keys inside a <code>JTelegramKeys</code> object which will then be written to disc.
+	/** Sets the keys inside a <code>JTelegramKeys</code> object which will then be written to disc.
 	 *
-	 * @param inputKeys is a <code>JTelegramKeys</code> object
-	 */
+	 * @param inputKeys is a <code>JTelegramKeys</code> object */
 	public void setKeys(JTelegramKeys inputKeys) {
 		keys = inputKeys;
 	}
 	
-	/**
-	 * Sets the contents of the recipients.
+	/** Sets the contents of the recipients.
 	 *
-	 * @param codeContents a <code>String[]</code> containing all of the recipients delimited by index.
-	 */
+	 * @param codeContents a <code>String[]</code> containing all of the recipients delimited by index. */
 	public void setBody(String[] codeContents) {
 		recipients = codeContents;
 	}
 	
-	/**
-	 * Sets the contents of the recipients.
+	/** Sets the contents of the recipients.
 	 *
-	 * @param codeContents a <code>String</code> containing all of the recipients delimited by <code>\n</code>
-	 */
+	 * @param codeContents a <code>String</code> containing all of the recipients delimited by <code>\n</code> */
 	public void setBody(String codeContents) {
 		String[] contents = codeContents.split("\n");
 		setBody(contents);
 	}
 	
-	/**
-	 * Sets the <code>isRecruitment</code> flag inside the object. This determines what delay timer the program is to
+	/** Sets the <code>isRecruitment</code> flag inside the object. This determines what delay timer the program is to
 	 * use.
 	 *
-	 * @param recuitment is the flag sent to the writer
-	 */
+	 * @param recuitment is the flag sent to the writer */
 	public void setRecuitment(boolean recuitment) {
 		isRecruitment = recuitment;
 	}
 	
-	/**
-	 * Sets the <code>randomSort</code> flag inside the object. This determines whether the program is to sort the list
+	/** Sets the <code>randomSort</code> flag inside the object. This determines whether the program is to sort the list
 	 * of recipients randomly.
 	 *
-	 * @param random is the flag sent to the writer
-	 */
+	 * @param random is the flag sent to the writer */
 	public void setRandom(boolean random) {
 		randomSort = random;
 	}
 	
-	/**
-	 * Instructs the instance of the <code>CommuniquéFileWriter</code> to write the given information to file. The
-	 * instance automatically closes the created <code>PrintWriter</code>.
-	 */
+	/** Instructs the instance of the <code>CommuniquéFileWriter</code> to write the given information to file. The
+	 * instance automatically closes the created <code>PrintWriter</code>. */
 	public void write() {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
@@ -200,7 +182,7 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 		writer.println("# Recipients");
 		
 		// Ignore commented and empty lines.
-		ArrayList<String> contentList = new ArrayList<String>(0);
+		ArrayList<String> contentList = new ArrayList<>(0);
 		for (String element : recipients) {
 			if (!element.startsWith("#") && !element.isEmpty() && !element.contains("=")) {
 				contentList.add(element);
@@ -208,8 +190,8 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 		}
 		
 		// Sort out recipients from the sent and get rid of duplicates.
-		LinkedHashSet<String> recpList = new LinkedHashSet<String>(0);
-		LinkedHashSet<String> nopeList = new LinkedHashSet<String>(0);
+		LinkedHashSet<String> recpList = new LinkedHashSet<>(0);
+		LinkedHashSet<String> nopeList = new LinkedHashSet<>(0);
 		for (String element : contentList) {
 			if (element.startsWith("/")) {
 				nopeList.add(element);

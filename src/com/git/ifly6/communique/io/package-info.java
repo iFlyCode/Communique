@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 ifly6
+/* Copyright (c) 2016 ifly6
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -13,18 +13,17 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-/** Classes which used to be the centre of the Communique system. Much of the classes, due to the need for
- * maintainability, have now be shuffled into new packages as they have been rewritten. For example, the
- * {@link com.git.ifly6.communique.data.CommuniqueParser CommuniqueParser} was moved into the
- * {@link com.git.ifly6.communique.data communique.data} package while all the classes having anything to do with the
- * user interface were moved into the {@link com.git.ifly6.communique.ngui communique.ngui} package (even if those
- * classes were the Marconi classes).
+/** Classes in this package manage the loading of information for Communique. This falls into two general categories,
+ * loading information from disc and from the Internet. Most of the classes have to do with loading information from
+ * disc, the most important of which is the {@link com.git.ifly6.communique.io.CLoader CLoader} class, which should be
+ * the only way to load or save Communique files, kept in the form defined by {@link com.git.ifly6.communique.io.CConfig
+ * CConfig}. Some of the other classes provide functionality to scrape data from Internet pages.
  *
  * <p>
- * The only classes here are a {@link com.git.ifly6.communique.CommuniqueUtilities CommuniqueUtilities}, a utility class
- * and the legacy {@link com.git.ifly6.communique.CommuniqueFileReader CommuniqueFileReader} and
- * {@link com.git.ifly6.communique.CommuniqueFileWriter CommuniqueFileWriter} classes, used by the
- * {@link com.git.ifly6.communique.io communique.io} package to read legacy files.
+ * Note that the majority of data retrieval is done via the API, which is accessed throgh the
+ * {@link com.git.ifly6.javatelegram.util.JInfoFetcher JInfoFetcher} class and the classes contained in
+ * {@link com.git.ifly6.nsapi nsapi} package.
  * </p>
-*/
-package com.git.ifly6.communique;
+ *
+ * @see com.git.ifly6.nsapi */
+package com.git.ifly6.communique.io;

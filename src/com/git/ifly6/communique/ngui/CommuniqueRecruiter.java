@@ -67,7 +67,9 @@ import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
-/** @author ifly6 */
+/** Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
+ * interface. The class is designed around the manipulation of {@link CConfig} objects which are then returned to
+ * {@link Communique} for possible saving. */
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 
 	private static final Logger log = Logger.getLogger(CommuniqueRecruiter.class.getName());
@@ -435,7 +437,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		List<String> recipients = new ArrayList<>(0);
 		recipients.add("flag:recruit");
 		for (String element : listProscribedRegions()) {
-			recipients.add("flag:recruit -- region:" + element);
+			recipients.add("-region:" + element);
 		}
 		
 		config.recipients = recipients.toArray(new String[recipients.size()]);
@@ -490,8 +492,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		// Update list
 		excludeList.clearSelection();
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
-		List<String> mapRecipients = recipients.stream().filter(s -> s.startsWith("flag:recruit -- region:"))
-				.map(x -> x.replace("flag:recruit -- region:", "")).collect(Collectors.toList());
+		List<String> mapRecipients = recipients.stream().filter(s -> s.startsWith("-region:"))
+				.map(x -> x.replaceFirst("-region:", "")).collect(Collectors.toList());
 		for (String element : mapRecipients) {
 			boolean found = false;
 			for (int i = 0; i < model.getSize(); i++) {

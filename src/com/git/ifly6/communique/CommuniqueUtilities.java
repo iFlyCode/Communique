@@ -21,9 +21,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** This class is nothing more than a container for utility methods used inside Communique programmes.
- *
- * @author ifly6 */
+/** This class is a collection of utility methods used inside Communique programs. */
 public class CommuniqueUtilities {
 
 	// Prevent initialisation

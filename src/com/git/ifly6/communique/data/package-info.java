@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 ifly6
+/* Copyright (c) 2016 ifly6
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -13,18 +13,9 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-/** Classes which used to be the centre of the Communique system. Much of the classes, due to the need for
- * maintainability, have now be shuffled into new packages as they have been rewritten. For example, the
- * {@link com.git.ifly6.communique.data.CommuniqueParser CommuniqueParser} was moved into the
- * {@link com.git.ifly6.communique.data communique.data} package while all the classes having anything to do with the
- * user interface were moved into the {@link com.git.ifly6.communique.ngui communique.ngui} package (even if those
- * classes were the Marconi classes).
- *
- * <p>
- * The only classes here are a {@link com.git.ifly6.communique.CommuniqueUtilities CommuniqueUtilities}, a utility class
- * and the legacy {@link com.git.ifly6.communique.CommuniqueFileReader CommuniqueFileReader} and
- * {@link com.git.ifly6.communique.CommuniqueFileWriter CommuniqueFileWriter} classes, used by the
- * {@link com.git.ifly6.communique.io communique.io} package to read legacy files.
- * </p>
-*/
-package com.git.ifly6.communique;
+/** This package manages parsing for the Communique system. Each recipient is contained in a
+ * {@link com.git.ifly6.communique.data.CommuniqueRecipient CommuniqueRecipient} object, which can then be applied via
+ * the {@link com.git.ifly6.communique.data.Communique7Parser parser} to determine whatever recipients are meant. This
+ * package also contains a number of <code>enum</code>s which are used to make those filters and recipients work.
+ * @see com.git.ifly6.nsapi */
+package com.git.ifly6.communique.data;
