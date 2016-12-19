@@ -25,16 +25,16 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
  * <code>CommuniqueRecipient</code>.
  * @author ifly6 */
 public enum RecipientType {
-
-	// private JInfoFetcher fetcher = JInfoFetcher.getInstance();
 	
+	// private JInfoFetcher fetcher = JInfoFetcher.getInstance();
+
 	/** Declares the recipient is a nation and requires no further processing in decomposition. */
 	NATION {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 			return Stream.of(cr).collect(Collectors.toList());
 		}
 	},
-	
+
 	/** Declares the recipient is a region, allowing for decomposition into a list of {@link CommuniqueRecipient}
 	 * nations in the region. */
 	REGION {
@@ -42,7 +42,7 @@ public enum RecipientType {
 			return createRecipients(JInfoFetcher.instance().getRegion(cr.getName()), cr);
 		}
 	},
-	
+
 	/** Declares the recipient is one of various tags, which can be used to get the members of the World Assembly,
 	 * delegates thereof, or new nations. */
 	TAG {
@@ -54,7 +54,7 @@ public enum RecipientType {
 			return Stream.of(cr).collect(Collectors.toList());
 		}
 	},
-
+	
 	/** Declares that the recipient is an internal Commmunique flag, and therefore, should not return any real
 	 * recipients. */
 	FLAG {
@@ -62,20 +62,20 @@ public enum RecipientType {
 			return new ArrayList<>();
 		}
 	};
-	
+
 	/** Allows for the recipient type to be compatible with the NationStates telegram system by providing the same tag
 	 * nomenclature. */
 	@Override public String toString() {
 		return super.toString().toLowerCase();
 	}
-	
+
 	/** Decomposes a tag into a list of <code>CommuniqueRecipient</code> which can then be more easily used.
 	 * @param communiqueRecipient to be decomposed
 	 * @return a list of <code>CommuniqueRecipient</code> */
 	public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 		return NATION.decompose(cr);
 	}
-	
+
 	/** Translates a nation reference names into a valid <code>CommuniqueRecipient</code>s.
 	 * @param s, containing a nation reference name
 	 * @param cr from which to extract type data
@@ -84,7 +84,7 @@ public enum RecipientType {
 	private static CommuniqueRecipient createRecipient(String s, CommuniqueRecipient cr) {
 		return new CommuniqueRecipient(cr.getFilterType(), NATION, s);
 	}
-	
+
 	/** Translates a list of nation reference names into a list of valid <code>CommuniqueRecipient</code>s.
 	 * @param list of nation reference names
 	 * @param cr from which to extract type data
