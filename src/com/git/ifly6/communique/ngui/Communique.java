@@ -1,17 +1,4 @@
-/* Copyright (c) 2016 ifly6
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
 import java.awt.BorderLayout;
@@ -25,6 +12,7 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -111,10 +99,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	
 	public static Path appSupport;
 	
-	private static final String codeHeader = "# == Communiqué Recipients Code ==\n"
-			+ "# Enter recipients, one for each line or use 'region:', 'WA:',\n"
-			+ "# etc tags. Use '/' to say: 'not'. Ex: 'region:europe',\n"
-			+ "# '/imperium anglorum'. Use 'flag:recruit' to open the \n" + "# recruiter. \n\n";
+	private static final String codeHeader =
+			"# == Communiqué Recipients Code ==\n" + "# Enter recipients, one for each line or use 'region:', 'WA:',\n"
+					+ "# etc tags. Use '/' to say: 'not'. Ex: 'region:europe',\n"
+					+ "# '/imperium anglorum'. Use 'flag:recruit' to open the \n" + "# recruiter. \n\n";
 	
 	private CommuniqueRecruiter recruiter;
 	
@@ -181,22 +169,26 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		initialise();
 		
 		// Check for update, if so, tell the user and prompt
-		CommuniqueUpdater updater = new CommuniqueUpdater();
+		CommuniqueUpdater updater = CommuniqueUpdater.getInstance();
 		boolean hasNew = updater.hasNewUpdate();
 		if (hasNew) {
-			int option = JOptionPane.showConfirmDialog(frame,
-					"There is a new version of Communique.\nOpen the Communique downloads page?", "Communique Update",
-					JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null);
-			if (option == JOptionPane.YES_OPTION) {
-				try {
-					Desktop.getDesktop().browse(new URI(CommuniqueUpdater.LATEST_RELEASE));
-				} catch (IOException | URISyntaxException e) {
-					e.printStackTrace();
-				}
-			}
+			showUpdate();
 		}
 		log.info("hasNewUpdate = " + hasNew);
 		
+	}
+	
+	private void showUpdate() throws HeadlessException {
+		int option = JOptionPane.showConfirmDialog(frame,
+				"There is a new version of Communique.\nOpen the Communique downloads page?", "Communique Update",
+				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+		if (option == JOptionPane.YES_OPTION) {
+			try {
+				Desktop.getDesktop().browse(new URI(CommuniqueUpdater.LATEST_RELEASE));
+			} catch (IOException | URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/** Initialise the contents of the frame. */
@@ -406,8 +398,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		JMenuItem mntmImportKeysFrom = new JMenuItem("Import Keys from Telegram URL");
 		mntmImportKeysFrom.addActionListener(e -> {
 			
-			String rawURL = JOptionPane
-					.showInputDialog("Paste in keys from the URL provided by receipt by the Telegrams API");
+			String rawURL =
+					JOptionPane.showInputDialog("Paste in keys from the URL provided by receipt by the Telegrams API");
 			
 			// Verify that it is a valid NationStates URL
 			String rawUrlStart = "http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
@@ -578,6 +570,18 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		});
 		mnHelp.add(mntmForumThread);
 		
+		JMenuItem mntmUpdate = new JMenuItem("Check for Update");
+		mntmUpdate.addActionListener((ae) -> {
+			CommuniqueUpdater updater = CommuniqueUpdater.getInstance();
+			if (updater.forceHasNewUpdate()) {
+				showUpdate();
+			} else {
+				JOptionPane.showMessageDialog(frame, "No new updates.", "Communique Updates", JOptionPane.PLAIN_MESSAGE,
+						null);
+			}
+		});
+		mnHelp.add(mntmUpdate);
+		
 		mnHelp.addSeparator();
 		
 		JMenuItem mntmLicence = new JMenuItem("Licence");
@@ -718,8 +722,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	
 	private String[][] filterSents(String[] input) {
 		List<String> inputList = Arrays.asList(input);
-		List<String> recipients = inputList.stream().filter(x -> !StringUtils.isEmpty(x) && !x.startsWith("#"))
-				.collect(Collectors.toList());
+		List<String> recipients =
+				inputList.stream().filter(x -> !StringUtils.isEmpty(x) && !x.startsWith("#")).collect(Collectors.toList());
 		return new String[][] { recipients.toArray(new String[recipients.size()]), new String[] {} };
 	}
 	
@@ -769,7 +773,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	}
 	
 	/** Shows and initialises the Communique Recruiter.
-	 *
 	 * @since 6
 	 * @see com.git.ifly6.communique.ngui.CommuniqueRecruiter */
 	private void showRecruiter() {
@@ -782,7 +785,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	}
 	
 	/** Returns a <code>KeyStroke</code> which is automatically adapted for
-	 *
 	 * @param keyEvent
 	 * @param shiftMask
 	 * @return */
@@ -841,8 +843,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				return null;
 				
 			} else {
-				savePath = Paths.get(fDialog.getDirectory() == null ? "" : fDialog.getDirectory())
-						.resolve(fDialog.getFile());
+				savePath =
+						Paths.get(fDialog.getDirectory() == null ? "" : fDialog.getDirectory()).resolve(fDialog.getFile());
 			}
 			
 		}

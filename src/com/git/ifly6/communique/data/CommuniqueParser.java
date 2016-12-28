@@ -1,18 +1,4 @@
-/* Copyright (c) 2015 ifly6
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
-
+/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
 import java.util.ArrayList;
@@ -85,35 +71,35 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
  * </p>
 */
 @Deprecated public class CommuniqueParser {
-
+	
 	/** This <code>int</code> determines what version of the parser is currently being used. The entire program is build
 	 * around this string for extended compatibility purposes. However, due to the separation between the parser itself
 	 * and the IO system, either of them can trigger a change in the version number. See {@link Communique7Parser} for
 	 * the version declaration. */
 	public static final int version = Communique7Parser.version;
 	private static JInfoFetcher fetcher = JInfoFetcher.instance();
-
+	
 	/** Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
 	 * documentation on the grammar of the Communiqué syntax.
 	 *
 	 * @param input
 	 * @return */
 	private static boolean isTag(String input) {
-
+		
 		if (input.startsWith("region:")) {
 			return true;
-
+			
 		} else if (input.equalsIgnoreCase("wa:delegates")) {
 			return true;
-
+			
 		} else if (input.equalsIgnoreCase("wa:nations") || input.equalsIgnoreCase("wa:members")) {
 			return true;
-
+			
 		} else if (input.equalsIgnoreCase("world:new")) { return true; }
-
+		
 		return false;
 	}
-
+	
 	/** Expands a single Communique tag into a list of nations represented by that tag. For example, something like
 	 * <code>region:Europe</code> would result in a <code>List&lt;String&gt;</code> of all nations in Europe. Other
 	 * elements, like <code>wa:delegates</code> would yield all the delegates in the World Assembly.
@@ -121,28 +107,28 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	 * @param tag to be expanded
 	 * @return a <code>List&lt;String&gt;</code> of nations represented */
 	private List<String> expandTag(String tag) {
-
+		
 		if (tag.startsWith("region:")) {
 			List<String> regionContentsArr = fetcher.getRegion(tag.replace("region:", ""));
 			return regionContentsArr;
-
+			
 		} else if (tag.startsWith("wa:delegate")) {
 			List<String> delegatesArr = fetcher.getDelegates();
 			return delegatesArr;
-
+			
 		} else if (tag.equals("wa:nations") || tag.equals("wa:members")) {
 			List<String> waNationsArr = fetcher.getWAMembers();
 			return waNationsArr;
-
+			
 		} else if (tag.equals("world:new")) {
 			List<String> newNationsArr = fetcher.getNew();
 			return newNationsArr;
 		}
-
+		
 		// If all else fails...
 		return new ArrayList<>(0);
 	}
-
+	
 	/** Expands the <code>List&lt;String&gt;</code> into a list of nations based on the tags, operators, etc. If you
 	 * give it something like <code>region:europe</code>, then you'll get back the entire list of nations in Europe. It
 	 * is provided as a list of tags, each on a list. This processes the operators.
@@ -150,21 +136,21 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	 * @param tagsList a <code>List&lt;String&gt;</code> of tags */
 	private LinkedHashSet<String> expandList(List<String> tagsList) {
 		List<String> expandedList = new ArrayList<>();
-
+		
 		for (int x = 0; x < tagsList.size(); x++) {
 			String element = tagsList.get(x).toLowerCase();
-
+			
 			// Operator meaning 'region:europe->wa:nations' would be 'those in Europe in (who are) WA nations'
 			if (element.contains("->") || element.contains("--")) {
-
+				
 				String[] bothArr = new String[2];
 				if (element.contains("->")) {
 					bothArr = element.split("->");
-
+					
 				} else if (element.contains("--")) {
 					bothArr = element.split("--");
 				}
-
+				
 				// Remove leading and trailing underscores.
 				for (int i = 0; i < bothArr.length; i++) {
 					bothArr[i] = bothArr[i].trim();
@@ -175,17 +161,17 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 						bothArr[i] = bothArr[i].substring(0, bothArr[i].length() - 1);
 					}
 				}
-
+				
 				// Split into the two lists
 				// firsts and seconds refer to the elements on either side of the '->' or '--' operator
 				Set<String> firsts = new HashSet<>(expandTag(bothArr[0]));
 				Set<String> seconds = new HashSet<>(expandTag(bothArr[1]));
-
+				
 				List<String> both = new ArrayList<>(0);
-
+				
 				// This section is for the addition and subtraction operators
 				if (element.contains("->")) {
-
+					
 					// If it appears in both lists, add it. Use the new 'contains' algorithm instead of the old 'nested
 					// for loops' algorithm. This gives significant speed advantages.
 					for (String second : seconds) {
@@ -193,9 +179,9 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 							both.add(second);
 						}
 					}
-
+					
 				} else if (element.contains("--")) {
-
+					
 					// If an element in the first list is also contained in the second list, do not add it to the 'both'
 					// list. This basically removes it from the firsts list as output is concerned.
 					for (String first : firsts) {
@@ -203,19 +189,19 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 							both.add(first);
 						}
 					}
-
+					
 				}
-
+				
 				expandedList.addAll(both);
-
+				
 			} else if (isTag(element)) {
 				expandedList.addAll(expandTag(element));
-
+				
 			} else {
 				expandedList.add(element);
 			}
 		}
-
+		
 		// Remove duplicates & return
 		LinkedHashSet<String> tagsSet = new LinkedHashSet<>();
 		tagsSet.addAll(expandedList);
@@ -225,7 +211,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	@Deprecated public String[] filterAndParse(List<String> input) {
 		return filterAndParse(input.stream().toArray(String[]::new));
 	}
-
+	
 	/** This parses the entire contents of the recipients and allows us to actually make the tag system work through
 	 * interfacing with the expansion system above. Note that this method automatically handles the removal of commented
 	 * lines with <code>#</code> as the comment. This method calls all other methods to process all of the recipients.
@@ -240,7 +226,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	 * @param input an array of the recipients, each one on an individual index, which can include commented lines
 	 * @return a final array of the recipients, compatible with JavaTelegram */
 	@Deprecated public String[] filterAndParse(String[] input) {
-
+		
 		// Filter out comments and empty lines
 		// @formatter:off
 		input = Arrays.stream(input)
@@ -263,7 +249,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 		return list.toArray(new String[list.size()]);
 		// @formatter:on
 	}
-
+	
 	/** This method parses the recipients based on the list of recipients and the list of nations to which a telegram
 	 * has already been sent. Recipients and sent-s are in tag-form when provided, they are automatically expanded. This
 	 * method requires that they are separated individually into two lists.
@@ -272,11 +258,11 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	 * @param sentList
 	 * @return a <code>List</code> containing the recipients in <code>String</code> format. */
 	@Deprecated public List<String> recipientsParse(List<String> recipients, List<String> sentList) {
-
+		
 		// Expand the lists.
 		LinkedHashSet<String> recipientsExpanded = expandList(recipients);
 		LinkedHashSet<String> sentlistExpanded = expandList(sentList);
-
+		
 		// Filter using new algorithm
 		List<String> finalRecipients = new ArrayList<>();
 		for (String element : recipientsExpanded) {
@@ -284,7 +270,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 				finalRecipients.add(element);
 			}
 		}
-
+		
 		return finalRecipients;
 	}
 	

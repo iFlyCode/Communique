@@ -1,17 +1,4 @@
-/* Copyright (c) 2016 ifly6
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
@@ -33,26 +20,26 @@ import com.git.ifly6.javatelegram.JTelegramKeys;
  * </p>
 */
 public class CConfig implements java.io.Serializable {
-
+	
 	// For reflection in CLoader to work, these MUST be the only fields
 	// For backwards compatibility, these names cannot be changed
-
+	
 	private static final long serialVersionUID = Communique7Parser.version;
-
+	
 	public final String header = "Communiqué Configuration File. Do not edit by hand. Produced at: "
 			+ CommuniqueUtilities.getCurrentDateAndTime() + ". Produced by version " + Communique7Parser.version;
-
+	
 	public int version;
-
+	
 	public boolean isRecruitment;
 	public boolean isRandomised;
 	public boolean isDelegatePrioritised;
-
+	
 	public JTelegramKeys keys;
-
+	
 	public String[] recipients;
 	public String[] sentList;
-
+	
 	public int defaultVersion() {
 		this.version = Communique7Parser.version;
 		return Communique7Parser.version;

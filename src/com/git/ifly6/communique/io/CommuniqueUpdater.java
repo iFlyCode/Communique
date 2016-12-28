@@ -1,17 +1,4 @@
-/* Copyright (c) 2016 ifly6
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
 import java.io.IOException;
@@ -36,24 +23,31 @@ import com.git.ifly6.nsapi.NSConnection;
 /** @author ifly6 */
 public class CommuniqueUpdater {
 	
+	private static CommuniqueUpdater instance;
+	
 	/** String for a pointing to the latest release of Communique. */
 	public static final String LATEST_RELEASE = "https://github.com/iFlyCode/Communique/releases/latest";
 	
 	/** Path pointing to the application support folder, resolving a file called 'update-check-time'. */
 	private static Path updatePath;
 	
-	public CommuniqueUpdater() {
+	private CommuniqueUpdater() {
 		updatePath = Communique.appSupport.resolve("update-check-time");
 	}
 	
-	public boolean hasNewUpdate() {
-		
-		// Check for recent update check
-		if (isRecentlyChecked()) { return false; }
-		saveChecked();
+	/** @return */
+	public static CommuniqueUpdater getInstance() {
+		if (instance == null) {
+			instance = new CommuniqueUpdater();
+		}
+		return instance;
+	}
+	
+	public boolean forceHasNewUpdate() {
 		
 		try {
 			
+			saveChecked();
 			NSConnection connection = new NSConnection(LATEST_RELEASE);
 			String html = connection.getResponse();
 			
@@ -72,7 +66,12 @@ public class CommuniqueUpdater {
 		}
 		
 		return false;
-		
+	}
+	
+	public boolean hasNewUpdate() {
+		// Check for recent update check
+		if (isRecentlyChecked()) { return false; }
+		return forceHasNewUpdate();
 	}
 	
 	/** Determines whether Communique has recently checked for an update. If it has checked within the last week, it

@@ -1,17 +1,4 @@
-/* Copyright (c) 2016 ifly6
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
 import java.util.List;
@@ -22,7 +9,7 @@ import java.util.List;
  * Assembly delegates. The name specifies exactly what is being queried for.
  * @author ifly6 */
 public class CommuniqueRecipient {
-
+	
 	private RecipientType recipientType;
 	private String name;
 	private FilterType filterType;
@@ -33,13 +20,13 @@ public class CommuniqueRecipient {
 		this.recipientType = recipientType;
 		this.name = name.trim().toLowerCase().replace(" ", "_");	// convert to reference name
 	}
-
+	
 	/** Returns the name, which, for all elements, will be the reference name format.
 	 * @return the specific thing which is being requested */
 	public String getName() {
 		return name;
 	}
-
+	
 	/** Returns the type of the filter or token, defined in {@link com.git.ifly6.communique.data.FilterType FilterType}.
 	 * @return the type of filter or token */
 	public FilterType getFilterType() {
@@ -51,14 +38,14 @@ public class CommuniqueRecipient {
 	public RecipientType getRecipientType() {
 		return recipientType;
 	}
-
+	
 	/** Returns a string representation of the recipient, in the same form which is used by the NationStates telegram
 	 * system to specify large numbers of nations. For example, <code>tag:wa</code> or
 	 * <code>nation:imperium_anglorum</code>. */
 	@Override public String toString() {
 		return getFilterType().toString() + getRecipientType().toString() + ":" + this.getName();
 	}
-
+	
 	/** Decomposes a tag to its constituent nations. All decompositions are done in
 	 * {@link com.git.ifly6.communique.data.RecipientType RecipientType} class.
 	 * @return a list of <code>CommuniqueRecipient</code>s */
@@ -79,7 +66,7 @@ public class CommuniqueRecipient {
 	public static CommuniqueRecipient parseRecipient(String s) {
 		
 		s = s.trim();
-
+		
 		FilterType fType = FilterType.NORMAL;
 		for (FilterType type : FilterType.values()) {
 			if (s.startsWith(type.toString())) {
