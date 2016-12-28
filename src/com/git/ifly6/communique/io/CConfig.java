@@ -15,7 +15,7 @@
 package com.git.ifly6.communique.io;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
-import com.git.ifly6.communique.data.CommuniqueParser;
+import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 
 /** <code>CConfig</code> creates a unified object for the storage and retrieval of the entire state of a Communiqué
@@ -33,28 +33,28 @@ import com.git.ifly6.javatelegram.JTelegramKeys;
  * </p>
 */
 public class CConfig implements java.io.Serializable {
-	
+
 	// For reflection in CLoader to work, these MUST be the only fields
 	// For backwards compatibility, these names cannot be changed
-	
-	private static final long serialVersionUID = CommuniqueParser.version;
-	
+
+	private static final long serialVersionUID = Communique7Parser.version;
+
 	public final String header = "Communiqué Configuration File. Do not edit by hand. Produced at: "
-			+ CommuniqueUtilities.getCurrentDateAndTime() + ". Produced by version " + CommuniqueParser.version;
-	
+			+ CommuniqueUtilities.getCurrentDateAndTime() + ". Produced by version " + Communique7Parser.version;
+
 	public int version;
-	
+
 	public boolean isRecruitment;
 	public boolean isRandomised;
 	public boolean isDelegatePrioritised;
-	
+
 	public JTelegramKeys keys;
-	
+
 	public String[] recipients;
 	public String[] sentList;
-	
+
 	public int defaultVersion() {
-		this.version = CommuniqueParser.version;
-		return CommuniqueParser.version;
+		this.version = Communique7Parser.version;
+		return Communique7Parser.version;
 	}
 }

@@ -7,7 +7,7 @@
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="/Users/ifly6/Desktop/Communique"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/Marconi_6.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.jarfile}/Marconi_7.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="com.git.ifly6.marconi.MarconiLauncher"/>
                 <attribute name="Class-Path" value="."/>

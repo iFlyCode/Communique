@@ -31,63 +31,63 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import com.git.ifly6.communique.data.CommuniqueParser;
+import com.git.ifly6.communique.data.Communique7Parser;
 
 /** When constructed, <code>CTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text
  * in that area and a close button. */
 public class CTextDialog extends JDialog {
-
+	
 	private static final Logger log = Logger.getLogger(CTextDialog.class.getName());
-
-	private static final long serialVersionUID = CommuniqueParser.version;
-
+	
+	private static final long serialVersionUID = Communique7Parser.version;
+	
 	public CTextDialog(JFrame parent, String title, String message) {
-
+		
 		super(parent, title);
-
+		
 		Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
-
+		
 		int width = 300;
 		int height = 350;
 		this.setSize(width, height);
 		this.setLocation(Math.round(sSize.width / 2 - width / 2), Math.round(sSize.height / 2 - height / 2));
-
+		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(5, 5));
 		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
+		
 		this.setContentPane(panel);
-
+		
 		// TextArea
 		JTextArea textArea = new JTextArea(message);
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		textArea.setEditable(false);
 		textArea.setWrapStyleWord(true);
 		textArea.setLineWrap(true);
-
+		
 		panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
-
+		
 		// Button Panel
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(1, 4));
 		panel.add(buttonPanel, BorderLayout.SOUTH);
-
+		
 		for (int x = 0; x < 3; x++) {
 			buttonPanel.add(new JLabel());
 		}
-
+		
 		// Button
 		JButton closeButton = new JButton("Ok");
 		this.getRootPane().setDefaultButton(closeButton);
 		closeButton.addActionListener(e -> {
-
+			
 			log.finer("Closed CTextDialog");
-
+			
 			setVisible(false);
 			dispose();
 		});
 		buttonPanel.add(closeButton);
-
+		
 		// Make pressing the enter key the same as hitting the button.
 		// @formatter:off
 		this.addKeyListener(new KeyListener() {
@@ -100,9 +100,9 @@ public class CTextDialog extends JDialog {
 			}
 		});
 		// @formatter:on
-
+		
 		this.setVisible(true);
 		log.finer("Showing CTextDialog with: " + message);
-
+		
 	}
 }

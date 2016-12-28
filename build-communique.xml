@@ -7,7 +7,7 @@
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="/Users/ifly6/Desktop/Communique"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/Communique_6.jar" filesetmanifest="mergewithoutmain" duplicate="preserve">
+        <jar destfile="${dir.jarfile}/Communique_7.jar" filesetmanifest="mergewithoutmain" duplicate="preserve">
             <manifest>
                 <attribute name="Main-Class" value="com.git.ifly6.communique.ngui.Communique"/>
                 <attribute name="Class-Path" value="."/>

@@ -28,8 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 
 /** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
- * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used
- * except for declaring the parser version.
+ * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used,
+ * as translation methods have been built into the new {@link Communique7Parser}.
  *
  * <p>
  * <strike>This class is the central hub of the Communiqué system. It parses the <code>String</code> given to it with
@@ -84,7 +84,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
  * </strike>
  * </p>
 */
-public class CommuniqueParser {
+@Deprecated public class CommuniqueParser {
 
 	/** This <code>int</code> determines what version of the parser is currently being used. The entire program is build
 	 * around this string for extended compatibility purposes. However, due to the separation between the parser itself
