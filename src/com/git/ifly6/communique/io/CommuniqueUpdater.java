@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,7 +76,8 @@ public class CommuniqueUpdater {
 	}
 	
 	/** Determines whether Communique has recently checked for an update. If it has checked within the last week, it
-	 * will skip checks. @return <code>boolean</code> about whether a check has been conducted within the last week */
+	 * will skip checking again.
+	 * @return <code>boolean</code> about whether a check has been conducted within the last week */
 	private boolean isRecentlyChecked() {
 		
 		String dateTimeFormat = CommuniqueUtilities.getCurrentDateAndTimeFormat();
@@ -90,13 +90,8 @@ public class CommuniqueUpdater {
 			return false;
 		}
 		
-		Calendar now = Calendar.getInstance();
-		Calendar checkDate = Calendar.getInstance();
-		checkDate.setTime(date);	// set check date
-		
-		if (now.get(Calendar.DAY_OF_YEAR) - checkDate.get(Calendar.DAY_OF_YEAR) > 7) {	// > 7 days
-			if (now.get(Calendar.YEAR) >= checkDate.get(Calendar.YEAR)) { return true; } // year match
-		}
+		Date now = new Date();	// 86400000 milliseconds in a day
+		if (now.getTime() - date.getTime() < 86400000 * 7) { return true; }
 		
 		return false;
 	}
