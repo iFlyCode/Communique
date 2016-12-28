@@ -24,12 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.git.ifly6.communique.ngui.Communique;
 
-/**
- * <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the process
- * of reading and writing to that data. It uses the <code>{@link CReader}</code> and <code>{@link CWriter}</code>
- * classes to access that data. They are based on reading and writing via use of Google's Gson library, which then allow
- * for reading, writing, and manipulation of a {@link com.git.ifly6.communique.io.CConfig CConfig} object.
- */
+/** <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the
+ * process of reading and writing to that data. It uses the <code>{@link CReader}</code> and
+ * <code>{@link CWriter}</code> classes to access that data. They are based on reading and writing via use of Google's
+ * Gson library, which then allow for reading, writing, and manipulation of a {@link com.git.ifly6.communique.io.CConfig
+ * CConfig} object. */
 public class CLoader {
 	
 	Path path;
@@ -38,45 +37,37 @@ public class CLoader {
 	@SuppressWarnings(value = { "unused" }) private CLoader() {
 	}
 	
-	/**
-	 * Creates the <code>CLoader</code> and sets the path at which the program will do its file operations. The
+	/** Creates the <code>CLoader</code> and sets the path at which the program will do its file operations. The
 	 * Communique program attempts to default this to the relevant application support folder, resolved to the
 	 * Communique folder, by specifying such in the program's myriad file dialog prompts.
 	 *
-	 * @param path
-	 */
+	 * @param path */
 	public CLoader(Path path) {
 		this.path = path;
 	}
 	
-	/**
-	 * Saves a configuration file based on the provided <code>CCoNfig</code>.
+	/** Saves a configuration file based on the provided <code>CCoNfig</code>.
 	 *
 	 * @param config
-	 * @throws IOException
-	 */
+	 * @throws IOException */
 	public void save(CConfig config) throws IOException {
 		CWriter writer = new CWriter(path, config);
 		writer.write();
 	}
 	
-	/**
-	 * Loads a configuration file to a new CConfig.
+	/** Loads a configuration file to a new CConfig.
 	 *
 	 * @return a <code>CConfig</code> based on the loaded data from disc
-	 * @throws IOException
-	 */
+	 * @throws IOException */
 	public CConfig load() throws IOException {
 		CReader reader = new CReader(path);
 		return reader.read();
 	}
 	
-	/**
-	 * Writes the standard configuration file for the currently used client key. Properties writing here has been
+	/** Writes the standard configuration file for the currently used client key. Properties writing here has been
 	 * localised for this setup using this method.
 	 *
-	 * @throws IOException
-	 */
+	 * @throws IOException */
 	public static void writeProperties(String clientKey) {
 		
 		try {
@@ -92,13 +83,11 @@ public class CLoader {
 		}
 	}
 	
-	/**
-	 * Reads the standard configuration file for the last used client key. The method returns the client key from the
+	/** Reads the standard configuration file for the last used client key. The method returns the client key from the
 	 * configuration file.
 	 *
 	 * @return the client key from file
-	 * @throws IOException if there was a problem in reading or finding the configuration file
-	 */
+	 * @throws IOException if there was a problem in reading or finding the configuration file */
 	public static String readProperties() {
 		
 		Properties prop = new Properties();
@@ -112,6 +101,6 @@ public class CLoader {
 		}
 		
 		String clientKey = prop.getProperty("clientKey");
-		return (StringUtils.isEmpty(clientKey)) ? "Client Key" : clientKey;
+		return StringUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
 	}
 }

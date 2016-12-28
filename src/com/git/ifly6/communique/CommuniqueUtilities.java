@@ -23,11 +23,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /** This class is a collection of utility methods used inside Communique programs. */
 public class CommuniqueUtilities {
-
+	
 	// Prevent initialisation
 	private CommuniqueUtilities() {
 	}
-
+	
 	/** Randomises an array's sequence of contents.
 	 * @param inputArray which is to be shuffled
 	 * @return a copy of the inputArray which is shuffled randomly */
@@ -41,7 +41,7 @@ public class CommuniqueUtilities {
 		}
 		return inputArray;
 	}
-
+	
 	/** Randomises an array's sequence of contents with a given seed, which allows for a consistent randomisation order.
 	 * Obviously, this shouldn't be used for anything really all that important.
 	 * @param inputArray which is to be shuffled
@@ -57,7 +57,7 @@ public class CommuniqueUtilities {
 		}
 		return inputArray;
 	}
-
+	
 	/** This changes raw seconds directly into days, hours, minutes, and seconds. Very helpful for creating a system of
 	 * information which humans can use.
 	 * @param seconds elapsed
@@ -71,14 +71,18 @@ public class CommuniqueUtilities {
 		hours -= days * 24;
 		return days + "d:" + hours + "h:" + minutes + "m:" + seconds + "s";
 	}
-
+	
 	public static String getCurrentDate() {
 		DateFormat dateDays = new SimpleDateFormat("yyyy-MM-dd");
 		return dateDays.format(new Date());
 	}
-
+	
 	public static String getCurrentDateAndTime() {
-		DateFormat dateWithTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		DateFormat dateWithTime = new SimpleDateFormat(getCurrentDateAndTimeFormat());
 		return dateWithTime.format(new Date());
+	}
+	
+	public static String getCurrentDateAndTimeFormat() {
+		return "yyyy-MM-dd HH:mm:ss.SSS";
 	}
 }

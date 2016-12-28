@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
  * </p>
  * @author ifly6 */
 public class Communique7Parser {
-
+	
 	/** Declares the version of the parser, which is based on two values: (1) the syntax of the Communique recipients
 	 * language and (2) the file syntax in which that information is held. */
 	public static final int version = 7;
@@ -56,7 +56,7 @@ public class Communique7Parser {
 		 * with. */
 		return this;
 	}
-
+	
 	/** Applies the tokens to the recipients list with a specified list of tokens. All of these should be parse-able
 	 * <code>CommuniqueRecipient</code>s.
 	 * @param list of parse-able <code>CommuniqueRecipient</code>s
@@ -66,7 +66,7 @@ public class Communique7Parser {
 				.map(CommuniqueRecipient::parseRecipient).forEach(this::apply);
 		return this;
 	}
-
+	
 	/** Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
 	 * @param tokens to apply
 	 * @return this parser for further analysis if necessary */
@@ -86,7 +86,7 @@ public class Communique7Parser {
 	public List<String> getRecipients() {
 		return recipients.stream().map(CommuniqueRecipient::getName).collect(Collectors.toList());
 	}
-
+	
 	/** Translates a number of old tokens into the new Communique 7 tokens.
 	 * @param oldTokens to translate
 	 * @return a list of tokens which means the same thing in the new system */
@@ -116,7 +116,7 @@ public class Communique7Parser {
 		}
 		return tokens;
 	}
-
+	
 	/** Translates a single token from the old system to the new Communique 7 system. This method should not change any
 	 * Communique 7 tokens and only translate applicable Communique 6 tokens.
 	 * @param oldToken in a <code>String</code> form, like "wa:delegates"
@@ -127,12 +127,12 @@ public class Communique7Parser {
 		if (oldToken.startsWith("/")) { return "-" + translateToken(oldToken.replaceFirst("/", "").trim()); }
 		if (oldToken.startsWith("-- ")) { return "-" + translateToken(oldToken.replaceFirst("--", "").trim()); }
 		if (oldToken.startsWith("-> ")) { return "+" + translateToken(oldToken.replaceFirst("->", "").trim()); }
-
+		
 		// translate tags which can be decomposed
 		if (oldToken.equalsIgnoreCase("wa:delegates")) { return "tag:delegates"; }
 		if (oldToken.equalsIgnoreCase("wa:members") || oldToken.equalsIgnoreCase("wa:nations")) { return "tag:wa"; }
 		if (oldToken.startsWith("world:new")) { return "tag:new"; }
-
+		
 		// somewhat-direct recipient tags, like region and nation
 		if (oldToken.startsWith("region:")) { return oldToken; }
 		return "nation:" + oldToken;

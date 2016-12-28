@@ -51,7 +51,7 @@ import com.google.gson.Gson;
 			
 			Gson gson = new Gson();
 			CConfig config = gson.fromJson(Files.newBufferedReader(path), CConfig.class);
-
+			
 			// if necessary, translate tokens
 			if (config.version < 7) {
 				config.recipients = Communique7Parser.translateTokens(Arrays.asList(config.recipients)).stream()
@@ -59,7 +59,7 @@ import com.google.gson.Gson;
 				config.sentList = Communique7Parser.translateTokens(Arrays.asList(config.sentList)).stream()
 						.toArray(String[]::new);
 			}
-
+			
 			return config;
 			
 		} catch (RuntimeException e) {
