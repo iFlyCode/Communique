@@ -3,6 +3,8 @@ package com.git.ifly6.communique.data;
 
 import java.util.List;
 
+import com.git.ifly6.communique.CommuniqueUtilities;
+
 /** An object in which to store information about a recipient. It is based on three characteristics, a
  * <code>FilterType</code>, a <code>RecipientType</code>, and the name. The filter type can be used to exclude, include,
  * or simply add. The recipient type can be used to specify multiple recipients, like in a region or in the set of World
@@ -23,7 +25,7 @@ public class CommuniqueRecipient {
 	public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
 		this.filterType = filterType;
 		this.recipientType = recipientType;
-		this.name = name.trim().toLowerCase().replace(" ", "_");	// convert to reference name
+		this.name = CommuniqueUtilities.ref(name);	// convert to reference name
 	}
 	
 	/** Returns the name, which, for all elements, will be the reference name format.

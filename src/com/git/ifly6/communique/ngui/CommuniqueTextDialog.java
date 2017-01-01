@@ -32,12 +32,12 @@ public class CommuniqueTextDialog extends JDialog {
 		
 		super(parent, title);
 		
-		Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
-		
 		int width = 400;
 		int height = 450;
 		this.setSize(width, height);
 		this.setMinimumSize(new Dimension(300, 350));
+		
+		Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(Math.round(sSize.width / 2 - width / 2), Math.round(sSize.height / 2 - height / 2));
 		
 		JPanel panel = new JPanel();

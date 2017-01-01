@@ -47,6 +47,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
+import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -485,16 +486,16 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		// Update list
 		excludeList.clearSelection();
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
-		List<String> mapRecipients = recipients.stream()
+		List<String> excludeRegions = recipients.stream()
 				.filter(s -> s.startsWith("-region:"))
-				.map(x -> x.replaceFirst("-region:", ""))
+				.map(s -> s.replaceFirst("-region:", ""))
 				.collect(Collectors.toList());
-		for (String element : mapRecipients) {
+		for (String element : excludeRegions) {
 			boolean found = false;
 			for (int i = 0; i < model.getSize(); i++) {
 				// search in the list, if it is already there, select it
-				if (model.getElementAt(i).toString().toLowerCase().replace(" ", "_")
-						.equalsIgnoreCase(element.toLowerCase().replace(" ", "_"))) {
+				String modelName = CommuniqueUtilities.ref(model.getElementAt(i).toString());
+				if (modelName.equals(CommuniqueUtilities.ref(element))) {
 					excludeList.addSelectionInterval(i, i);
 					found = true;
 					break;
@@ -513,7 +514,6 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	@Override public void send() {
 		
 		Runnable runner = () -> {
-			
 			boolean isSending = true;
 			try {
 				while (isSending) {

@@ -17,6 +17,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
+
 /** Provides functionality to Communique to easily scrape pertinent information from the NationStates World Assembly
  * pages in line with the script rules.
  * @author ifly6 */
@@ -73,8 +76,8 @@ public class CommuniqueConnector {
 						data = data.substring(data.indexOf(":") + 1, data.indexOf("and  individual WA member nations."));
 						
 						return Stream.of(data.split(","))
-								.map(s -> s.trim().toLowerCase().replace(" ", "_"))
-								.map(s -> "nation:" + s)
+								.map(s -> CommuniqueRecipients.createNation(s))
+								.map(CommuniqueRecipient::toString)
 								.collect(Collectors.toList());
 						
 					}
