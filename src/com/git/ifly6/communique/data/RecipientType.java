@@ -77,6 +77,8 @@ public enum RecipientType {
 	 * @param cr from which to extract type data
 	 * @return list of CommuniqueRecipients */
 	private static List<CommuniqueRecipient> createRecipients(List<String> list, CommuniqueRecipient cr) {
-		return list.stream().map(s -> createRecipient(s, cr)).collect(Collectors.toList());
+		return list.stream()
+				.map(s -> createRecipient(s, cr))
+				.collect(Collectors.toList());
 	}
 }

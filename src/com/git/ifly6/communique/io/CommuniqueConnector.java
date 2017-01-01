@@ -1,16 +1,17 @@
 /* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,7 +20,7 @@ import org.jsoup.select.Elements;
 /** Provides functionality to Communique to easily scrape pertinent information from the NationStates World Assembly
  * pages in line with the script rules.
  * @author ifly6 */
-public class CNetLoader {
+public class CommuniqueConnector {
 	
 	public static final String GA = "http://www.nationstates.net/page=UN_delegate_votes/council=1";
 	public static final String SC = "http://www.nationstates.net/page=UN_delegate_votes/council=2";
@@ -30,7 +31,7 @@ public class CNetLoader {
 	 * @param url at which to scrape HTML
 	 * @return list containing the HTML
 	 * @throws IOException if there is an error in finding the data */
-	private static synchronized List<String> callUrl(URL url) throws IOException {
+	public static synchronized List<String> callUrl(URL url) throws IOException {
 		
 		try {
 			Thread.sleep(610);
@@ -40,7 +41,8 @@ public class CNetLoader {
 		
 		URLConnection connection = url.openConnection();
 		connection.setRequestProperty("User-Agent", "Communique, maintained by Imperium Anglorum, ifly6@me.com");
-		List<String> output = IOUtils.readLines(new InputStreamReader(connection.getInputStream()));
+		InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+		List<String> output = new BufferedReader(isr).lines().collect(Collectors.toList());
 		
 		return output;
 	}
@@ -48,7 +50,7 @@ public class CNetLoader {
 	/** Attempts to scrape the list of delegates voting for or against some proposal.
 	 * @param chamber, either GA or SC
 	 * @param side, either FOR or AGAINST
-	 * @return */
+	 * @return list of applicable delegate reference names; if failure, empty list. */
 	public static List<String> importAtVoteDelegates(String chamber, String side) {
 		
 		try {
@@ -70,7 +72,9 @@ public class CNetLoader {
 						String data = element.text().replace(side, "").replaceAll("\\(.+?\\)", "");
 						data = data.substring(data.indexOf(":") + 1, data.indexOf("and  individual WA member nations."));
 						
-						return Stream.of(data.split(",")).map(s -> s.trim().toLowerCase().replace(" ", "_"))
+						return Stream.of(data.split(","))
+								.map(s -> s.trim().toLowerCase().replace(" ", "_"))
+								.map(s -> "nation:" + s)
 								.collect(Collectors.toList());
 						
 					}
@@ -78,13 +82,14 @@ public class CNetLoader {
 				} catch (IndexOutOfBoundsException e) {
 					continue;
 				}
+				
 			}
 			
 		} catch (IOException e) {
 			// Do nothing and return null.
 		}
 		
-		return null;
+		return new ArrayList<>(0);
 	}
 	
 }

@@ -10,7 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.io.CConfig;
+import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
@@ -18,7 +18,7 @@ import com.git.ifly6.javatelegram.JavaTelegram;
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	
 	private JavaTelegram client = new JavaTelegram(this);
-	private CConfig config;
+	private CommuniqueConfig config;
 	
 	private boolean skipChecks = false;
 	private boolean recruiting = false;
@@ -113,7 +113,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	/** Note that this will not return what is loaded. It will return a sentList whose duplicates have been removed and,
 	 * if any elements start with a negation <code>/</code>, it will remove it.
 	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#exportState() */
-	@Override public CConfig exportState() {
+	@Override public CommuniqueConfig exportState() {
 		
 		// Remove duplicates from the sentList
 		config.sentList = Stream.of(config.sentList).distinct().map(s -> s.startsWith("-") ? s.substring(1) : s)
@@ -123,8 +123,8 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		
 	}
 	
-	/** @see com.git.ifly6.communique.ngui.AbstractCommunique#importState(com.git.ifly6.communique.io.CConfig) */
-	@Override public void importState(CConfig config) {
+	/** @see com.git.ifly6.communique.ngui.AbstractCommunique#importState(com.git.ifly6.communique.io.CommuniqueConfig) */
+	@Override public void importState(CommuniqueConfig config) {
 		this.config = config;
 	}
 	

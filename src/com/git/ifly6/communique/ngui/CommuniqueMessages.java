@@ -16,6 +16,11 @@ package com.git.ifly6.communique.ngui;
 
 public class CommuniqueMessages {
 	
+	public static final String TITLE = "Communiqué";
+	public static final String ERROR = "Communiqué Error";
+	public static final String UPDATER = "Communiqué Updater";
+	public static final String RECRUITER = "Communiqué Recruiter";
+	
 	// Prevent initialisation
 	private CommuniqueMessages() {
 	}

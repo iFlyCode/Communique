@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.git.ifly6.communique.io.CConfig;
+import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 import com.git.ifly6.marconi.MarconiRecruiter;
@@ -29,7 +29,7 @@ public abstract class AbstractCommuniqueRecruiter {
 	protected LinkedHashSet<String> sentList;
 	protected Set<String> proscribedRegions;
 	
-	public void setWithCConfig(CConfig config) {
+	public void setWithCConfig(CommuniqueConfig config) {
 		
 		setClientKey(config.keys.getClientKey());
 		setSecretKey(config.keys.getSecretKey());
@@ -94,7 +94,6 @@ public abstract class AbstractCommuniqueRecruiter {
 	/** Determines whether a nation is in a region excluded by the JList <code>excludeList</code>. This method acts with
 	 * two assumptions: (1) it is not all right to telegram to anyone who resides in a prescribed region and (2) if they
 	 * moved out of the region since founding, it is certainly all right to do so.
-	 *
 	 * @param nationName
 	 * @return <code>boolean</code> on whether it is proscribed */
 	public boolean isProscribed(NSNation nation) {

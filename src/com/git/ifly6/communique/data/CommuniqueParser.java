@@ -16,13 +16,11 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 /** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
  * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used,
  * as translation methods have been built into the new {@link Communique7Parser}.
- *
  * <p>
  * <strike>This class is the central hub of the Communiqué system. It parses the <code>String</code> given to it with
  * all the recipients (and tags which stand in for multiple recipients) into a <code>String[]</code> which has every
  * single recipient, expanded, on each index. It also handles the removal of certain recipients from the list and
  * filtering of recipients as well.
- *
  * <h2>Tags</h2> There are a number of tags which stand for large defined lists of recipients.
  * <table>
  * <tr>
@@ -44,7 +42,6 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
  * <td>this tag inserts 50 new nations into the recipients list.</td>
  * </tr>
  * </table>
- *
  * <h2>Grammar</h2> There are a few logical operators for this program to help you refine your list more efficiently.
  * <table>
  * <tr>
@@ -81,7 +78,6 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	
 	/** Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
 	 * documentation on the grammar of the Communiqué syntax.
-	 *
 	 * @param input
 	 * @return */
 	private static boolean isTag(String input) {
@@ -103,7 +99,6 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	/** Expands a single Communique tag into a list of nations represented by that tag. For example, something like
 	 * <code>region:Europe</code> would result in a <code>List&lt;String&gt;</code> of all nations in Europe. Other
 	 * elements, like <code>wa:delegates</code> would yield all the delegates in the World Assembly.
-	 *
 	 * @param tag to be expanded
 	 * @return a <code>List&lt;String&gt;</code> of nations represented */
 	private List<String> expandTag(String tag) {
@@ -132,7 +127,6 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	/** Expands the <code>List&lt;String&gt;</code> into a list of nations based on the tags, operators, etc. If you
 	 * give it something like <code>region:europe</code>, then you'll get back the entire list of nations in Europe. It
 	 * is provided as a list of tags, each on a list. This processes the operators.
-	 *
 	 * @param tagsList a <code>List&lt;String&gt;</code> of tags */
 	private LinkedHashSet<String> expandList(List<String> tagsList) {
 		List<String> expandedList = new ArrayList<>();
@@ -215,45 +209,40 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 	/** This parses the entire contents of the recipients and allows us to actually make the tag system work through
 	 * interfacing with the expansion system above. Note that this method automatically handles the removal of commented
 	 * lines with <code>#</code> as the comment. This method calls all other methods to process all of the recipients.
-	 *
 	 * <p>
 	 * This is the old version. It is based solely on the provided <code>String[]</code>. The newer method to do this is
 	 * by provision of two <code>List&lt;String&gt;</code>, one of the recipients and one of the sentList. That method
 	 * is the proper way to call the parsing method. However, this is kept for legacy purposes and the fact that it
 	 * automatically processes this data.
 	 * </p>
-	 *
 	 * @param input an array of the recipients, each one on an individual index, which can include commented lines
 	 * @return a final array of the recipients, compatible with JavaTelegram */
 	@Deprecated public String[] filterAndParse(String[] input) {
 		
 		// Filter out comments and empty lines
-		// @formatter:off
 		input = Arrays.stream(input)
 				.filter(s -> !s.startsWith("#") && !StringUtils.isEmpty(s))
 				.toArray(String[]::new);
-
+		
 		// Form a list of all the nation we want in this list.
 		List<String> recipients = Arrays.stream(input)
 				.filter(s -> !s.startsWith("/"))
 				.map(s -> s.toLowerCase().trim().replace(" ", "_"))
 				.collect(Collectors.toList());
-
+		
 		// Form a list of all nations we can't have in this list.
 		List<String> sentList = Arrays.stream(input)
 				.filter(s -> s.startsWith("/"))
 				.map(s -> s.replaceFirst("/", "").toLowerCase().trim().replace(" ", "_"))
 				.collect(Collectors.toList());
-
+		
 		List<String> list = recipientsParse(recipients, sentList);
 		return list.toArray(new String[list.size()]);
-		// @formatter:on
 	}
 	
 	/** This method parses the recipients based on the list of recipients and the list of nations to which a telegram
 	 * has already been sent. Recipients and sent-s are in tag-form when provided, they are automatically expanded. This
 	 * method requires that they are separated individually into two lists.
-	 *
 	 * @param recipients
 	 * @param sentList
 	 * @return a <code>List</code> containing the recipients in <code>String</code> format. */

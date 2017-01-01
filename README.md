@@ -3,9 +3,7 @@
 ## Summary ##
 Communiqué is a free, open-source, and platform-independent client for NationStates's Telegram API. It was originally inspired by Auralia's work on the matter and thus, recognised the limitations of writing on a Windows-only platform when most headless servers are Linux boxes. It is directly based on top of [JavaTelegram](https://github.com/iFlyCode/NationStates-JavaTelegram) a iFlyCode Java library designed to interface with NationStates itself.
 
-Since the general gist of this program is the same goal as Auralia's AutoTelegram, it will naturally be following many of the same protocols and functions. Currently, we are on version `5`.
-
-Note that it is *your* responsibility to know how the telegram API works. Use of this program is agreement that you understand those limitations and requirements. It also agrees that you cannot claim losses, damages, or other negative effects from the author if action is taken against your NationStates account.
+It is *your* responsibility to know how the telegram API works. Use of this program is agreement that you understand those limitations and requirements. It also agrees that you cannot claim losses, damages, or other negative effects from the author if action is taken against your NationStates account.
 
 ## Documentation ##
 
@@ -25,7 +23,7 @@ Note that it is *your* responsibility to know how the telegram API works. Use of
 4. Go to the recipients tab and add in your nations. There are a number of tags supported in the program as well as a NOT tag.
   - Nations must be declared in the following syntax `nation:[name]`. They can be separated by commas or new lines.
   - Regions must be declared with the following syntax `region:[name]` and can also be separated by commas or new lines.
-  - There are three tags supported in Communique, `tag:wa`, `tag:delegates`, and `tag:new`. The first is the list of all World Assembly members. The second is the list of all World Assembly delegates. The third is a list of new nations.
+  - There are three tags supported in Communiqué, `tag:wa`, `tag:delegates`, and `tag:new`. The first is the list of all World Assembly members. The second is the list of all World Assembly delegates. The third is a list of new nations.
   - There are two filters which can be applied by prefixing `+` or `-`. `+` is an intersection operator, which requires that all preceding recipients also meet the criteria put with `+`. `-` is an exclusion operator, which requires that all preceding recipients be removed if they match criteria.
   	- For example, `region:Europe +tag:WA` would find all members of Europe, and then return the list of nations which are also WA members.
   	- `region:Europe -tag:WA` does the opposite, where it finds all member of Europe and then removes all WA members.
@@ -61,7 +59,9 @@ While there will be a version number, currently, there is no such number, since,
   - Version 5 also transitions to a new UI and back to Swing instead of JavaFX. It also works to eliminate the use of multiple tabs and put all relevant information at your fingertips.
   - Note that version 5 was never released to the public and exists as a development bridge to version 6.
 
-6. Version 6 introduces a new window to the program, called the Communique Recruiter for recruiting nations. It also has a built-in filter to check nations and make sure that you can exclude certain feeders. This is accessible using commands `flag:recruit` and `flag:recruit -- region:x` or using the set-up wizard.
+6. Version 6 introduces a new window to the program, called the Communiqué Recruiter for recruiting nations. It also has a built-in filter to check nations and make sure that you can exclude certain feeders. This is accessible using commands `flag:recruit` and `flag:recruit -- region:x` or using the set-up wizard.
   - There have also been significant changes to the program's interface, being entirely rebuilt in Swing, with accelerators and other improvements — like on the fly alerts that inform the user immediately instead of waiting.
   - A logging system has also been built to export relevant logs to a text area and print them to file.
   - Finished a small web-scraper that parses out the delegates supporting and opposing some motion in the World Assembly.
+
+7. Version 7 rehashes the entire Communiqué syntax structure to operate in line with the NationStates telegram API system. Thus, a query in the NationStates API like `region:Europe, tag:WA` will function exactly the same in Communiqué. This version also switches to HTTPS per the recent NationStates update and implements a new update-checker (it will check, at most, once a week).

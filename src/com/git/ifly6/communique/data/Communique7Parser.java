@@ -49,8 +49,11 @@ public class Communique7Parser {
 	 * @param list of parse-able <code>CommuniqueRecipient</code>s
 	 * @return this object for further applications, if necessary */
 	public Communique7Parser apply(List<String> list) {
-		list.stream().filter(s -> !s.startsWith("#")).filter(s -> !StringUtils.isEmpty(s))
-				.map(CommuniqueRecipient::parseRecipient).forEach(this::apply);
+		list.stream()
+				.filter(s -> !s.startsWith("#"))
+				.filter(s -> !StringUtils.isEmpty(s))
+				.map(CommuniqueRecipient::parseRecipient)
+				.forEach(this::apply);
 		return this;
 	}
 	
@@ -71,7 +74,9 @@ public class Communique7Parser {
 	/** Returns all of the recipients in the standard NationStates reference name form in a <code>List</code>.
 	 * @return a list of all recipients in standard reference name form */
 	public List<String> getRecipients() {
-		return recipients.stream().map(CommuniqueRecipient::getName).collect(Collectors.toList());
+		return recipients.stream()
+				.map(CommuniqueRecipient::getName)
+				.collect(Collectors.toList());
 	}
 	
 	/** Translates a number of old tokens into the new Communique 7 tokens.
@@ -82,20 +87,20 @@ public class Communique7Parser {
 		for (String oldToken : oldTokens) {
 			if (oldToken.startsWith("flag:recruit")) {
 				tokens.add(oldToken);
-				continue;
+				continue;	// to next!
 			}
 			if (oldToken.contains("->")) {
 				String[] split = oldToken.split("->");
 				tokens.add(translateToken(split[0]));
 				tokens.add(translateToken("->" + split[1]));
-				continue;
+				continue;	// to next!
 			}
 			if (oldToken.contains("-- ")) {
 				String[] split = oldToken.split("-- ");
 				if (split.length == 2) {
 					tokens.add(translateToken(split[0].trim()));
 					tokens.add(translateToken("-- " + split[1].trim()));
-					continue;
+					continue;	// to next!
 				}
 			}
 			tokens.add(translateToken(oldToken));
@@ -112,7 +117,7 @@ public class Communique7Parser {
 		// logic tags, somewhat recursive to ease translation of sub-tokens
 		// no need to use HashMap, that seems over-engineered for something this simple
 		if (oldToken.startsWith("/")) { return "-" + translateToken(oldToken.replaceFirst("/", "").trim()); }
-		if (oldToken.startsWith("-- ")) { return "-" + translateToken(oldToken.replaceFirst("--", "").trim()); }
+		if (oldToken.startsWith("-- ")) { return "-" + translateToken(oldToken.replaceFirst("-- ", "").trim()); }
 		if (oldToken.startsWith("-> ")) { return "+" + translateToken(oldToken.replaceFirst("->", "").trim()); }
 		
 		// translate tags which can be decomposed

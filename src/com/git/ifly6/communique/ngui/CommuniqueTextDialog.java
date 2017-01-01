@@ -22,13 +22,13 @@ import com.git.ifly6.communique.data.Communique7Parser;
 
 /** When constructed, <code>CTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text
  * in that area and a close button. */
-public class CTextDialog extends JDialog {
+public class CommuniqueTextDialog extends JDialog {
 	
-	private static final Logger log = Logger.getLogger(CTextDialog.class.getName());
+	private static final Logger log = Logger.getLogger(CommuniqueTextDialog.class.getName());
 	
 	private static final long serialVersionUID = Communique7Parser.version;
 	
-	public CTextDialog(JFrame parent, String title, String message) {
+	public CommuniqueTextDialog(JFrame parent, String title, String message) {
 		
 		super(parent, title);
 		

@@ -48,14 +48,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.io.CConfig;
-import com.git.ifly6.communique.io.CLoader;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.io.CommuniqueConfig;
+import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
 /** Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
- * interface. The class is designed around the manipulation of {@link CConfig} objects which are then returned to
+ * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned to
  * {@link Communique} for possible saving. */
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 	
@@ -212,7 +215,6 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		btnSendButton.addActionListener(e -> {
 			
 			if (btnSendButton.getText().equals("Send")) {		// STARTING UP
-				
 				btnSendButton.setText("Stop");
 				send();
 				
@@ -350,8 +352,16 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		JMenu mnWindow = new JMenu("Window");
 		menuBar.add(mnWindow);
 		
+		JMenuItem mntmClose = new JMenuItem("Close");
+		mntmClose.setAccelerator(Communique.getOSKeyStroke(KeyEvent.VK_W));
+		mntmClose.addActionListener(e -> {
+			frame.setVisible(false);
+			frame.dispose();
+		});
+		mnWindow.add(mntmClose);
+		
 		JMenuItem mntmMinimise = new JMenuItem("Minimise");
-		Communique.getOSKeyStroke(KeyEvent.VK_M);
+		mntmMinimise.setAccelerator(Communique.getOSKeyStroke(KeyEvent.VK_M));
 		mntmMinimise.addActionListener(e -> {
 			if (frame.getState() == Frame.NORMAL) {
 				frame.setState(Frame.ICONIFIED);
@@ -369,10 +379,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
 	@Override public void sentTo(String recipient, int x, int length) {
-		
-		sentList.add(recipient);
+		sentList.add(Communique7Parser.translateToken(recipient));
 		lblNationsCount.setText(sentList.size() + (sentList.size() == 1 ? " nation" : " nations"));
-		
 		if (!StringUtils.isEmpty(sentListArea.getText())) {
 			sentListArea.append("\n-nation:" + recipient);
 		} else {
@@ -381,17 +389,14 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	}
 	
 	private HashSet<String> listProscribedRegions() {
-		
 		return IntStream.of(excludeList.getSelectedIndices())
 				.mapToObj(x -> excludeList.getModel().getElementAt(x).toString())
 				.collect(Collectors.toCollection(HashSet::new));
-		
 		// HashSet<String> hashSet = new HashSet<>();
 		// int[] sIndices = excludeList.getSelectedIndices();
 		// for (int x : sIndices) {
 		// hashSet.add(excludeList.getModel().getElementAt(x).toString());
 		// }
-		//
 		// return hashSet;
 	}
 	
@@ -409,8 +414,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		// * Creating a configuration file up to specifications
 		// * Importing that configuration into Communique
 		// * Have Communique save that file
-		// ===================
-		CConfig config = new CConfig();
+		CommuniqueConfig config = new CommuniqueConfig();
 		
 		// Set the many flags that need to be set
 		config.isDelegatePrioritised = false;
@@ -421,13 +425,13 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		config.keys = new JTelegramKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
 		
 		// Create and set recipients and sent-lists
-		List<String> recipients = new ArrayList<>(0);
-		recipients.add("flag:recruit");
-		for (String element : listProscribedRegions()) {
-			recipients.add("-region:" + element);
+		List<CommuniqueRecipient> recipients = new ArrayList<>(0);
+		recipients.add(new CommuniqueRecipient(FilterType.NORMAL, RecipientType.FLAG, "recruit"));
+		for (String regionName : listProscribedRegions()) {
+			recipients.add(new CommuniqueRecipient(FilterType.EXCLUDE, RecipientType.REGION, regionName));
 		}
 		
-		config.recipients = recipients.toArray(new String[recipients.size()]);
+		config.recipients = recipients.stream().map(CommuniqueRecipient::toString).toArray(String[]::new);
 		config.sentList = sentList.toArray(new String[sentList.size()]);
 		
 		// Sync up with Communique
@@ -435,7 +439,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		
 		// Save
 		try {
-			CLoader loader = new CLoader(savePath);
+			CommuniqueLoader loader = new CommuniqueLoader(savePath);
 			loader.save(communique.exportState());
 			
 		} catch (IOException e1) {
@@ -470,7 +474,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		telegramIdField.setText(id);
 	}
 	
-	@Override public void setWithCConfig(CConfig config) {
+	@Override public void setWithCConfig(CommuniqueConfig config) {
 		super.setWithCConfig(config);
 		
 		// Update graphical component
@@ -479,8 +483,10 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		// Update list
 		excludeList.clearSelection();
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
-		List<String> mapRecipients = recipients.stream().filter(s -> s.startsWith("-region:"))
-				.map(x -> x.replaceFirst("-region:", "")).collect(Collectors.toList());
+		List<String> mapRecipients = recipients.stream()
+				.filter(s -> s.startsWith("-region:"))
+				.map(x -> x.replaceFirst("-region:", ""))
+				.collect(Collectors.toList());
 		for (String element : mapRecipients) {
 			boolean found = false;
 			for (int i = 0; i < model.getSize(); i++) {

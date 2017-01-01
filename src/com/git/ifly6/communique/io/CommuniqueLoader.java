@@ -12,16 +12,16 @@ import org.apache.commons.lang3.StringUtils;
 import com.git.ifly6.communique.ngui.Communique;
 
 /** <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the
- * process of reading and writing to that data. It uses the <code>{@link CReader}</code> and
- * <code>{@link CWriter}</code> classes to access that data. They are based on reading and writing via use of Google's
- * Gson library, which then allow for reading, writing, and manipulation of a {@link com.git.ifly6.communique.io.CConfig
+ * process of reading and writing to that data. It uses the <code>{@link CommuniqueReader}</code> and
+ * <code>{@link CommuniqueWriter}</code> classes to access that data. They are based on reading and writing via use of Google's
+ * Gson library, which then allow for reading, writing, and manipulation of a {@link com.git.ifly6.communique.io.CommuniqueConfig
  * CConfig} object. */
-public class CLoader {
+public class CommuniqueLoader {
 	
 	Path path;
 	
 	// Force initialisation with appropriate variables
-	@SuppressWarnings(value = { "unused" }) private CLoader() {
+	@SuppressWarnings(value = { "unused" }) private CommuniqueLoader() {
 	}
 	
 	/** Creates the <code>CLoader</code> and sets the path at which the program will do its file operations. The
@@ -29,7 +29,7 @@ public class CLoader {
 	 * Communique folder, by specifying such in the program's myriad file dialog prompts.
 	 *
 	 * @param path */
-	public CLoader(Path path) {
+	public CommuniqueLoader(Path path) {
 		this.path = path;
 	}
 	
@@ -37,8 +37,8 @@ public class CLoader {
 	 *
 	 * @param config
 	 * @throws IOException */
-	public void save(CConfig config) throws IOException {
-		CWriter writer = new CWriter(path, config);
+	public void save(CommuniqueConfig config) throws IOException {
+		CommuniqueWriter writer = new CommuniqueWriter(path, config);
 		writer.write();
 	}
 	
@@ -46,8 +46,8 @@ public class CLoader {
 	 *
 	 * @return a <code>CConfig</code> based on the loaded data from disc
 	 * @throws IOException */
-	public CConfig load() throws IOException {
-		CReader reader = new CReader(path);
+	public CommuniqueConfig load() throws IOException {
+		CommuniqueReader reader = new CommuniqueReader(path);
 		return reader.read();
 	}
 	

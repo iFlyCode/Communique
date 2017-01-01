@@ -2,8 +2,8 @@
 
 /** Classes in this package manage the loading of information for Communique. This falls into two general categories,
  * loading information from disc and from the Internet. Most of the classes have to do with loading information from
- * disc, the most important of which is the {@link com.git.ifly6.communique.io.CLoader CLoader} class, which should be
- * the only way to load or save Communique files, kept in the form defined by {@link com.git.ifly6.communique.io.CConfig
+ * disc, the most important of which is the {@link com.git.ifly6.communique.io.CommuniqueLoader CLoader} class, which should be
+ * the only way to load or save Communique files, kept in the form defined by {@link com.git.ifly6.communique.io.CommuniqueConfig
  * CConfig}. Some of the other classes provide functionality to scrape data from Internet pages.
  *
  * <p>

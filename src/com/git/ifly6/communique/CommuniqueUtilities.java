@@ -58,17 +58,32 @@ public class CommuniqueUtilities {
 		return days + "d:" + hours + "h:" + minutes + "m:" + seconds + "s";
 	}
 	
+	/** Returns the format for the <code>getCurrentDate</code> for a <code>SimpleDateFormat</code>.
+	 * @return a <code>String</code> containing <code>yyyy-MM-dd</code> */
+	public static String getCurrentDateFormat() {
+		return "yyyy-MM-dd";
+	}
+	
+	/** Returns a <code>String</code> stating the current date in the format defined by
+	 * {@link CommuniqueUtilities#getCurrentDateFormat()}
+	 * @return the date */
 	public static String getCurrentDate() {
-		DateFormat dateDays = new SimpleDateFormat("yyyy-MM-dd");
+		DateFormat dateDays = new SimpleDateFormat(getCurrentDateFormat());
 		return dateDays.format(new Date());
 	}
 	
+	/** Returns the format for the <code>getCurrentDateAndTimeFormat</code> for a <code>SimpleDateFormat</code>.
+	 * @return a <code>String</code> containing <code>yyyy-MM-dd HH:mm:ss.SSS</code> */
+	public static String getCurrentDateAndTimeFormat() {
+		return "yyyy-MM-dd HH:mm:ss.SSS";
+	}
+	
+	/** Returns a <code>String</code> stating the current date and time in the format defined by
+	 * {@link CommuniqueUtilities#getCurrentDateAndTimeFormat()}
+	 * @return the date and time */
 	public static String getCurrentDateAndTime() {
 		DateFormat dateWithTime = new SimpleDateFormat(getCurrentDateAndTimeFormat());
 		return dateWithTime.format(new Date());
 	}
 	
-	public static String getCurrentDateAndTimeFormat() {
-		return "yyyy-MM-dd HH:mm:ss.SSS";
-	}
 }

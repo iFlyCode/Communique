@@ -17,12 +17,12 @@ import com.git.ifly6.communique.data.Communique7Parser;
 import com.google.gson.Gson;
 
 // Suppresses deprecation, since it is supposed to read those deprecated files
-@SuppressWarnings("deprecation") class CReader {
+@SuppressWarnings("deprecation") class CommuniqueReader {
 	
-	Logger logger = Logger.getLogger(CReader.class.getName());
+	Logger logger = Logger.getLogger(CommuniqueReader.class.getName());
 	Path path;
 	
-	public CReader(Path path) {
+	public CommuniqueReader(Path path) {
 		this.path = path;
 	}
 	
@@ -32,19 +32,21 @@ import com.google.gson.Gson;
 	 * {@link CommuniqueFileReader}.
 	 * @return a <code>CConfig</code> holding the data specified
 	 * @throws IOException if there is an issue reading the data */
-	public CConfig read() throws IOException {
+	public CommuniqueConfig read() throws IOException {
 		
 		try {
 			
 			Gson gson = new Gson();
-			CConfig config = gson.fromJson(Files.newBufferedReader(path), CConfig.class);
+			CommuniqueConfig config = gson.fromJson(Files.newBufferedReader(path), CommuniqueConfig.class);
 			
 			// if necessary, translate tokens
 			if (config.version < 7) {
-				config.recipients = Communique7Parser.translateTokens(Arrays.asList(config.recipients)).stream()
-						.toArray(String[]::new);
-				config.sentList = Communique7Parser.translateTokens(Arrays.asList(config.sentList)).stream()
-						.toArray(String[]::new);
+				config.recipients = Communique7Parser
+						.translateTokens(Arrays.asList(config.recipients))
+						.stream().toArray(String[]::new);
+				config.sentList = Communique7Parser
+						.translateTokens(Arrays.asList(config.sentList))
+						.stream().toArray(String[]::new);
 			}
 			
 			return config;
@@ -57,7 +59,7 @@ import com.google.gson.Gson;
 			logger.log(Level.INFO, "Cannot load from JSON. Attempting with old file reader.", e);
 			CommuniqueFileReader reader = new CommuniqueFileReader(path.toFile());
 			
-			CConfig config = new CConfig();
+			CommuniqueConfig config = new CommuniqueConfig();
 			config.isDelegatePrioritised = false;	// this flag did not exist, thus, default to false.
 			config.isRandomised = reader.isRandomised();
 			config.isRecruitment = reader.isRecruitment();

@@ -12,11 +12,11 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 
 import com.git.ifly6.communique.data.CommuniqueParser;
-import com.git.ifly6.communique.io.CLoader;
+import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 
-/** This class has been deprecated. Please see {@link CLoader} for write functionality.
+/** This class has been deprecated. Please see {@link CommuniqueLoader} for write functionality.
  *
  * <p>
  * <strike>Convenience class for correctly writing Communiqué configuration files. It is directly based on
@@ -29,7 +29,7 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
  *
  * @see CommuniqueFileWriter
  * @see CommuniqueParser
- * @see CLoader */
+ * @see CommuniqueLoader */
 @Deprecated public class CommuniqueFileWriter {
 	
 	// Requirements to Write

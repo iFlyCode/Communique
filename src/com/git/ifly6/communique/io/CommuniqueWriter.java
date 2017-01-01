@@ -9,15 +9,15 @@ import java.util.Arrays;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-class CWriter {
+class CommuniqueWriter {
 	
 	private Path path;
-	private CConfig config;
+	private CommuniqueConfig config;
 	
 	/** Creates <code>CWriter</code> pointing to some path with some loaded configuration data.
 	 * @param path on which to write
 	 * @param config data */
-	public CWriter(Path path, CConfig config) {
+	public CommuniqueWriter(Path path, CommuniqueConfig config) {
 		this.path = path;
 		this.config = config;
 	}

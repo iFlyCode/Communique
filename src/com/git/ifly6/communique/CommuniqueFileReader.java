@@ -14,7 +14,7 @@ import com.git.ifly6.communique.data.CommuniqueParser;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 
-/** This class has been deprecated. Please see {@link com.git.ifly6.communique.io.CLoader CLoader}. Note that this is
+/** This class has been deprecated. Please see {@link com.git.ifly6.communique.io.CommuniqueLoader CLoader}. Note that this is
  * still in line with Communique 4 and 5's configuration files, and therefore, because it is still used to read those
  * configuration files when necessary, should not be changed.
  * <p>
@@ -23,10 +23,9 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
  * class will automatically load and process any documents you give it when it is created. If you want that behaviour to
  * change, extend the class and write a new constructor.</strike>
  * </p>
- *
  * @see CommuniqueFileWriter
  * @see CommuniqueParser
- * @see com.git.ifly6.communique.io.CLoader CLoader */
+ * @see com.git.ifly6.communique.io.CommuniqueLoader CLoader */
 @Deprecated public class CommuniqueFileReader {
 	
 	List<String> fileContents = new ArrayList<>(0);
@@ -39,7 +38,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	
 	/** Constructs a FileReader tailored to the correct file and loads the entire file into an ArrayList. From there, it
 	 * calls <code>parseConfig()</code> to load all the processed information into an accessible object.
-	 *
 	 * @param file of the Communiqué configuration file
 	 * @throws FileNotFoundException if the Communiqué configuration file is non-existent or unwritable
 	 * @throws JTelegramException if the version is incorrect */
@@ -63,14 +61,12 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	
 	/** Gets the keys from <code>information</code> which is returned in a JTelegramKeys object containing the keys
 	 * which were written onto the configuration file.
-	 *
 	 * @return <code>JTelegramKeys</code> containing the keys */
 	public JTelegramKeys getKeys() {
 		return (JTelegramKeys) information[0];
 	}
 	
 	/** Gets the list of recipients from <code>information</code> which was written on the configuration file.
-	 *
 	 * <p>
 	 * The file structure is pretty simple. It uses comments and tags to store all information which are not the list of
 	 * recipients, as the list of recipients is everything but those two tag types. The tags used here are like the
@@ -78,7 +74,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	 * also ignored. Everything else, as long as it is not a new line, is returned. All of this is implemented in the
 	 * configuration parser in this class.
 	 * </p>
-	 *
 	 * @return <code>String[]</code> containing every entry of the configuration file except the commented or empty
 	 *         lines
 	 * @see #parseConfig */
@@ -87,14 +82,12 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	}
 	
 	/** Gets the flag <code>isRecruitment</code> which was loaded off the provided configuration file.
-	 *
 	 * @return <code>boolean</code> containing the contents of <code>isRecruitment</code> */
 	public boolean isRecruitment() {
 		return recruitment;
 	}
 	
 	/** Gets the flag <code>randomSort</code> which was loaded off the provided configuration file.
-	 *
 	 * @return <code>boolean</code> containing the contents of <code>randomSort</code> */
 	public boolean isRandomised() {
 		return randomised;
@@ -102,7 +95,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	
 	/** Parses the entire configuration file by searching out the <code>client_key</code> and other such keys, ignores
 	 * lines which start with <code>#</code> and then returns everything else as the recipients list.
-	 *
 	 * @return <code>Object[]</code> which replaces the default initialisers of <code>information</code> which is then
 	 *         referenced by other methods in this class. */
 	private Object[] parseConfig() {
@@ -138,7 +130,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	/** Queries the file for an integer version to determine whether it is compatible with this parser. If so, it
 	 * returns true. Otherwise, it will return false. This operation also effectively makes sure that there is a file
 	 * which can be read.
-	 *
 	 * @param version <code>boolean</code> containing true or false on whether the configuration file is compatible.
 	 * @return */
 	public boolean isCompatible() {
@@ -148,7 +139,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	/** Finds the file version declarer by finding the line which states "# Produced by version" or the version tag. The
 	 * following is an integer which determines which version of the program this file was made by. Returns its
 	 * contents.
-	 *
 	 * @return <code>String</code> containing the ending of the commented version line */
 	public int getFileVersion() {
 		
@@ -168,7 +158,6 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	
 	/** Gets the header of the entire file (that is, all comments before the first real entry) and returns it in a
 	 * String array.
-	 *
 	 * @return the header of the file in <code>String[]</code> format */
 	public String[] getHeader() {
 		ArrayList<String> header = new ArrayList<>();
@@ -192,7 +181,9 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	public String[] getFooter() {
 		ArrayList<String> header = new ArrayList<>();
 		String[] tempContents = fileContents.toArray(new String[fileContents.size()]);
-		String[] filteredContents = Stream.of(tempContents).filter(s -> s.trim().length() != 0).toArray(String[]::new);
+		String[] filteredContents = Stream.of(tempContents)
+				.filter(s -> s.trim().length() != 0)
+				.toArray(String[]::new);
 		
 		for (int i = filteredContents.length - 1; i >= 0; i--) {
 			// Start from the bottom and read commented lines.

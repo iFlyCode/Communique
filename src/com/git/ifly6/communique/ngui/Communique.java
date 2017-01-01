@@ -61,12 +61,17 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.io.CConfig;
-import com.git.ifly6.communique.io.CLoader;
-import com.git.ifly6.communique.io.CNetLoader;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.io.CommuniqueConfig;
+import com.git.ifly6.communique.io.CommuniqueConnector;
+import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueUpdater;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
@@ -100,10 +105,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public static Path appSupport;
 	
 	private static final String codeHeader =
-			"# == Communiqué Recipients Code ==\n" + "# Enter recipients, one for each line or use 'region:', 'WA:',\n"
-					+ "# etc tags. Use '/' to say: 'not'. Ex: 'region:europe',\n"
-					+ "# '/imperium anglorum'. Use 'flag:recruit' to open the \n" + "# recruiter. \n\n";
+			"# == Communiqué Recipients Code ==\n" + "# Enter recipients, separated by comma or new lines."
+					+ "# Please read the readme at [ https://github.com/iflycode/communique#readme ]\n\n";
 	
+	private CommuniqueUpdater updater;
 	private CommuniqueRecruiter recruiter;
 	
 	private JProgressBar progressBar;
@@ -169,8 +174,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		initialise();
 		
 		// Check for update, if so, tell the user and prompt
-		CommuniqueUpdater updater = CommuniqueUpdater.getInstance();
-		boolean hasNew = updater.hasNewUpdate();
+		updater = new CommuniqueUpdater();
+		boolean hasNew = updater.shouldRemind();
 		if (hasNew) {
 			showUpdate();
 		}
@@ -180,14 +185,20 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	
 	private void showUpdate() throws HeadlessException {
 		int option = JOptionPane.showConfirmDialog(frame,
-				"There is a new version of Communique.\nOpen the Communique downloads page?", "Communique Update",
-				JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+				"There is a new version of Communique.\nPress YES to open the Communique downloads page.\n"
+						+ "Press NO to never be reminded about this again.\n"
+						+ "Press CANCEL to delay for one week.",
+				"Communique Update",
+				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 		if (option == JOptionPane.YES_OPTION) {
 			try {
 				Desktop.getDesktop().browse(new URI(CommuniqueUpdater.LATEST_RELEASE));
 			} catch (IOException | URISyntaxException e) {
 				e.printStackTrace();
 			}
+		}
+		if (option == JOptionPane.NO_OPTION) {
+			updater.setContinueReminding(false);
 		}
 	}
 	
@@ -220,7 +231,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		txtClientKey = new JTextField();
 		txtClientKey.setFont(new Font(Font.MONOSPACED, 0, 11));
-		txtClientKey.setText(CLoader.readProperties());
+		txtClientKey.setText(CommuniqueLoader.readProperties());
 		controlPanel.add(txtClientKey);
 		txtClientKey.setColumns(10);
 		
@@ -398,8 +409,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		JMenuItem mntmImportKeysFrom = new JMenuItem("Import Keys from Telegram URL");
 		mntmImportKeysFrom.addActionListener(e -> {
 			
-			String rawURL =
-					JOptionPane.showInputDialog("Paste in keys from the URL provided by receipt by the Telegrams API");
+			String rawURL = this.showTextInputDialog("Paste in keys from the URL provided by receipt by the Telegrams API",
+					CommuniqueMessages.TITLE);
 			
 			// Verify that it is a valid NationStates URL
 			String rawUrlStart = "http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
@@ -415,9 +426,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				}
 				
 			} else {
-				String message = "<html>Please input a properly formatted NationStates URL in the form displayed when a "
-						+ "telegram is sent to 'tag:api'</html>";
-				JOptionPane.showMessageDialog(frame, new JLabel(message));
+				String message = "Please input a properly formatted NationStates URL\nin the form displayed when a "
+						+ "telegram is sent to 'tag:api'";
+				this.showMessageDialog(message, CommuniqueMessages.ERROR);
 			}
 		});
 		mnData.add(mntmImportKeysFrom);
@@ -432,15 +443,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mntmAsCommaSeparated.addActionListener(e -> {
 			String message = "Input a string of delegates, as found on a list of delegates\nin one of the "
 					+ "NationStates World Assembly pages:";
-			String input = JOptionPane.showInputDialog(message);
+			String input = this.showTextInputDialog(message, CommuniqueMessages.TITLE);
 			if (input != null) {
-				
 				input = input.replaceAll("\\(.+?\\)", "");
-				String[] list = input.split(",");
-				
-				for (String element : list) {
-					appendCode(element.toLowerCase().trim().replace(" ", "_"));
-				}
+				Stream.of(input.split(",")).parallel()
+						.map(s -> new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, s))
+						.map(CommuniqueRecipient::toString)
+						.forEach(this::appendCode);
 			}
 		});
 		mnImportRecipients.add(mntmAsCommaSeparated);
@@ -457,15 +466,18 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				String[] elements = output.split(" ");
 				if (elements.length == 2) {
 					
-					String chamber = elements[0].equals("GA") ? CNetLoader.GA : CNetLoader.SC;
-					String side = elements[1].equals("For") ? CNetLoader.FOR : CNetLoader.AGAINST;
+					String chamber = elements[0].equals("GA") ? CommuniqueConnector.GA : CommuniqueConnector.SC;
+					String side = elements[1].equals("For") ? CommuniqueConnector.FOR : CommuniqueConnector.AGAINST;
 					
 					try {
-						txtrCode.append(
-								CNetLoader.importAtVoteDelegates(chamber, side).stream().collect(Collectors.joining("\n")));
-					} catch (NullPointerException exc) {
-						JOptionPane.showMessageDialog(frame, "Cannot import data from NationStates website.");
-						log.warning("Cannot import data.");
+						CommuniqueConnector.importAtVoteDelegates(chamber, side).parallelStream()
+								.map(s -> new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, s))
+								.map(CommuniqueRecipient::toString)
+								.forEach(this::appendCode);
+					} catch (RuntimeException exc) {
+						this.showMessageDialog("Cannot import data from NationStates website.", CommuniqueMessages.ERROR);
+						log.warning("Cannot import data. Message:");
+						exc.printStackTrace();
 					}
 					
 				}
@@ -481,7 +493,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				
 				// load data
 				List<String> fileContents = Files.readAllLines(path);
-				fileContents = fileContents.stream().filter(s -> !s.startsWith("#") || !StringUtils.isEmpty(s))
+				fileContents = fileContents.stream()
+						.filter(s -> !s.startsWith("#") || !StringUtils.isEmpty(s))
 						.collect(Collectors.toList());
 				
 				// collate the data
@@ -495,12 +508,11 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				}
 				
 				// add it to the list
-				txtrCode.append(recipients.stream().collect(Collectors.joining("\n")));
+				Communique7Parser.translateTokens(recipients).stream().forEach(this::appendCode);
 				
 			} catch (IOException e1) {
 				// throw an error message
-				JOptionPane.showMessageDialog(frame, "Cannot load file at " + path.toString(), "Error",
-						JOptionPane.PLAIN_MESSAGE, null);
+				this.showMessageDialog("Cannot load file at " + path.toString(), CommuniqueMessages.ERROR);
 			}
 		});
 		mnImportRecipients.add(mntmFromTextFile);
@@ -543,7 +555,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		menuBar.add(mnHelp);
 		
 		JMenuItem mntmAbout = new JMenuItem("About");
-		mntmAbout.addActionListener(e -> new CTextDialog(frame, "About", CommuniqueMessages.acknowledgement));
+		mntmAbout.addActionListener(e -> new CommuniqueTextDialog(frame, "About", CommuniqueMessages.acknowledgement));
 		mnHelp.add(mntmAbout);
 		
 		mnHelp.addSeparator();
@@ -572,12 +584,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		JMenuItem mntmUpdate = new JMenuItem("Check for Update");
 		mntmUpdate.addActionListener((ae) -> {
-			CommuniqueUpdater updater = CommuniqueUpdater.getInstance();
-			if (updater.forceHasNewUpdate()) {
+			if (updater.checkForUpdate()) {
 				showUpdate();
 			} else {
-				JOptionPane.showMessageDialog(frame, "No new updates.", "Communique Updates", JOptionPane.PLAIN_MESSAGE,
-						null);
+				this.showMessageDialog("No new updates.", CommuniqueMessages.UPDATER);
 			}
 		});
 		mnHelp.add(mntmUpdate);
@@ -585,7 +595,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnHelp.addSeparator();
 		
 		JMenuItem mntmLicence = new JMenuItem("Licence");
-		mntmLicence.addActionListener(e -> new CTextDialog(frame, "Licence", CommuniqueMessages.licence));
+		mntmLicence.addActionListener(e -> new CommuniqueTextDialog(frame, "Licence", CommuniqueMessages.licence));
 		mnHelp.add(mntmLicence);
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -593,7 +603,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				try {
 					
 					// Save it to application support
-					CLoader loader = new CLoader(appSupport.resolve("autosave.txt"));
+					CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
 					loader.save(exportState());
 					
 				} catch (IOException e) {
@@ -611,8 +621,12 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				Communique7Parser parser = new Communique7Parser();
 				
 				// Check if a recruit-flag has been used.
-				final List<String> lines = Stream.of(txtrCode.getText().split("\n")).filter(s -> !StringUtils.isEmpty(s))
-						.filter(s -> !s.startsWith("#")).collect(Collectors.toList());
+				final List<String> lines = Stream.of(txtrCode.getText()
+						.split("\n"))
+						.filter(s -> !StringUtils.isEmpty(s))
+						.filter(s -> !s.startsWith("#"))
+						.collect(Collectors.toList());
+				
 				for (String element : lines) {
 					if (element.startsWith("flag:recruit")) {
 						showRecruiter();
@@ -664,7 +678,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		// If there is an auto-save, load it
 		if (Files.exists(appSupport.resolve("autosave.txt"))) {
-			CLoader loader = new CLoader(appSupport.resolve("autosave.txt"));
+			CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
 			try {
 				this.importState(loader.load());
 			} catch (IOException e1) {
@@ -674,18 +688,25 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 	}
 	
-	@Override public CConfig exportState() {
+	private void showMessageDialog(String text, String title) {
+		JOptionPane.showMessageDialog(frame, text, title, JOptionPane.PLAIN_MESSAGE, null);
+	}
+	
+	private String showTextInputDialog(String text, String title) {
+		return JOptionPane.showInputDialog(frame, text, title, JOptionPane.PLAIN_MESSAGE);
+	}
+	
+	@Override public CommuniqueConfig exportState() {
 		
-		CConfig config = new CConfig();
+		CommuniqueConfig config = new CommuniqueConfig();
 		
 		config.isRecruitment = chckbxRecruitment.isSelected();
 		config.isRandomised = chckbxmntmRandomiseRecipients.isSelected();
 		config.keys = new JTelegramKeys(txtClientKey.getText(), txtSecretKey.getText(), txtTelegramId.getText());
 		
-		String[][] recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
-		
-		config.recipients = recipientsAndSents[0];
-		config.sentList = recipientsAndSents[1];
+		Pair<String[], String[]> recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
+		config.recipients = recipientsAndSents.getLeft();
+		config.sentList = recipientsAndSents.getRight();
 		
 		config.defaultVersion();
 		
@@ -694,7 +715,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 	}
 	
-	@Override public void importState(CConfig config) {
+	@Override public void importState(CommuniqueConfig config) {
 		
 		chckbxRecruitment.setSelected(config.isRecruitment);
 		chckbxmntmRandomiseRecipients.setSelected(config.isRandomised);
@@ -716,15 +737,15 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		log.info("Communique info imported");
 	}
 	
-	private void appendCode(String input) {
-		txtrCode.append("\n" + input);
+	private void appendCode(Object input) {
+		txtrCode.append("\n" + input.toString());
 	}
 	
-	private String[][] filterSents(String[] input) {
-		List<String> inputList = Arrays.asList(input);
-		List<String> recipients =
-				inputList.stream().filter(x -> !StringUtils.isEmpty(x) && !x.startsWith("#")).collect(Collectors.toList());
-		return new String[][] { recipients.toArray(new String[recipients.size()]), new String[] {} };
+	private Pair<String[], String[]> filterSents(String[] input) {
+		String[] recipients = Stream.of(input)
+				.filter(x -> !StringUtils.isEmpty(x) && !x.startsWith("#"))
+				.toArray(String[]::new);
+		return new MutablePair<>(recipients, new String[] {});	// there is no need for the sent-list anymore
 	}
 	
 	// Changes the state of the button to reflect whether it is ready to send and or parsed
@@ -744,22 +765,23 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtrCode.append(x == 0 ? "\n\n-nation:" + recipient : "\n-nation:" + recipient);
 		
 		if (timer != null) {
-			timer.stop();
-			progressBar.setValue(0);
-			timer = null;
+			timer.stop();	// stop current timer
+			progressBar.setValue(0);	// reset progress bar
+			timer = null;	// create new timer
 		}
 		
 		if (timer == null) {
-			// Timer for progressBar, ups = updates per second
-			final int ups = 40;
+			
+			final int ups = 60;	// ups = updates per second
+			int totalTime = ups * (chckbxRecruitment.isSelected() ? 180 : 30);	// est delay
+			progressBar.setMaximum(totalTime);	// max = est delay
+			
 			timer = new Timer(1000 / ups, new ActionListener() {
-				int sElapsed = 0;
-				private int totalTime = ups * (chckbxRecruitment.isSelected() ? 180 : 30);
+				int elapsedSteps = 0;	// start at zero
 				
 				@Override public void actionPerformed(ActionEvent ae) {
-					progressBar.setMaximum(totalTime);
-					progressBar.setValue(sElapsed++);
-					if (sElapsed >= totalTime) {
+					progressBar.setValue(elapsedSteps++);	// iterate through
+					if (elapsedSteps >= totalTime) {
 						timer.stop();
 					}
 				}
@@ -884,8 +906,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				
 				// Save client key
 				try {
-					CLoader.writeProperties(txtClientKey.getText());
-					CLoader loader = new CLoader(appSupport.resolve("autosave.txt"));
+					CommuniqueLoader.writeProperties(txtClientKey.getText());
+					CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
 					loader.save(exportState());
 					
 				} catch (IOException e) {
@@ -909,8 +931,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public void completeSend() {
 		
 		log.info("Queries Complete.");
-		JOptionPane.showMessageDialog(frame, "Queries to " + parsedRecipients.size() + " nations complete.", "Complete",
-				JOptionPane.PLAIN_MESSAGE, null);
+		this.showMessageDialog("Queries to " + parsedRecipients.size() + " nations complete.", CommuniqueMessages.TITLE);
 		
 		// Reset the progress bar
 		progressBar.setValue(0);

@@ -17,10 +17,14 @@ public enum FilterType {
 		@Override public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			// match by names, not by recipient type
-			HashSet<String> set = provided.decompose().stream().map(CommuniqueRecipient::getName)
+			HashSet<String> set = provided.decompose().stream()
+					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
-			return recipients.stream().map(CommuniqueRecipient::getName).filter(r -> set.contains(r))
-					.map(CommuniqueRecipient::parseRecipient).collect(Collectors.toList());
+			return recipients.stream()
+					.map(CommuniqueRecipient::getName)
+					.filter(r -> set.contains(r))
+					.map(CommuniqueRecipient::parseRecipient)
+					.collect(Collectors.toList());
 		}
 		
 		@Override public String toString() {
@@ -34,10 +38,14 @@ public enum FilterType {
 		@Override public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			// match by names, not by recipient type
-			HashSet<String> set = provided.decompose().stream().map(CommuniqueRecipient::getName)
+			HashSet<String> set = provided.decompose().stream()
+					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
-			return recipients.stream().map(CommuniqueRecipient::getName).filter(r -> !set.contains(r))
-					.map(CommuniqueRecipient::parseRecipient).collect(Collectors.toList());
+			return recipients.stream()
+					.map(CommuniqueRecipient::getName)
+					.filter(r -> !set.contains(r))
+					.map(CommuniqueRecipient::parseRecipient)
+					.collect(Collectors.toList());
 		}
 		
 		@Override public String toString() {
