@@ -269,8 +269,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		btnRemove.addActionListener(al -> {
 			int[] selectedIndices = excludeList.getSelectedIndices();
 			for (int i = selectedIndices.length - 1; i >= 0; i--) {
-				if (!ArrayUtils.contains(regionList, exListModel.get(i))) {
-					exListModel.removeElementAt(selectedIndices[i]);
+				if (!ArrayUtils.contains(regionList, exListModel.get(selectedIndices[i]))) {
+					exListModel.remove(selectedIndices[i]);
 				}
 			}
 		});
@@ -511,33 +511,35 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	
 	/** @see com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter#send() */
 	@Override public void send() {
+		
 		Runnable runner = () -> {
 			
 			boolean isSending = true;
-			while (isSending) {
-				
-				proscribedRegions = listProscribedRegions();
-				
-				// Otherwise, start sending.
-				JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
-				client.setKeys(
-						new JTelegramKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText()));
-				client.setRecipient(getRecipient());
-				client.connect();
-				
-				for (int x = 0; x < 180; x++) {
-					try {
+			try {
+				while (isSending) {
+					
+					proscribedRegions = listProscribedRegions();
+					
+					// Otherwise, start sending.
+					JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
+					client.setKeys(
+							new JTelegramKeys(clientKeyField.getText(), secretKeyField.getText(),
+									telegramIdField.getText()));
+					client.setRecipient(getRecipient());
+					client.connect();
+					
+					for (int x = 0; x < 180; x++) {
 						progressBar.setValue(x);
 						Thread.sleep(1000);	// 1-second intervals, wake to update the progressBar
-					} catch (InterruptedException e) {
-						isSending = false;
-						return;
 					}
 				}
+			} catch (InterruptedException e) {
+				isSending = false;
+				return;
 			}
 		};
 		
 		thread = new Thread(runner);
-		thread.start();
+		thread.run();
 	}
 }

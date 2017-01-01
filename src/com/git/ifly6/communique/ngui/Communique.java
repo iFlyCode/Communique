@@ -104,8 +104,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public static Path appSupport;
 	
 	private static final String codeHeader =
-			"# == Communiqué Recipients Syntax ==\n" + "# Enter recipients, separated by comma or new lines."
-					+ "# Please read the readme at [ https://github.com/iflycode/communique#readme ]\n\n";
+			"# == Communiqué Recipients Syntax ==\n"
+					+ "# Enter recipients, separated by comma or new lines. Please\n"
+					+ "# read the readme at \n"
+					+ "# [ https://github.com/iflycode/communique#readme ]\n\n";
 	
 	private CommuniqueUpdater updater;
 	private CommuniqueRecruiter recruiter;
@@ -660,6 +662,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					triggerParsed(true);
 					
 				} else {
+					if (parsedRecipients.size() == 0) {
+						Communique.this.showMessageDialog("No recipients specified, cannot send.", CommuniqueMessages.ERROR);
+						return;
+					}
 					send();
 				}
 			}
@@ -839,6 +845,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			// returnVal = (type == FileDialog.SAVE) ? fChooser.showSaveDialog(parent) :
 			// fChooser.showOpenDialog(parent);
 			if (type == FileDialog.SAVE) {
+				fChooser.setDialogTitle("Save session as...");
 				returnVal = fChooser.showSaveDialog(parent);
 			} else {
 				returnVal = fChooser.showOpenDialog(parent);
@@ -854,6 +861,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		} else {
 			
 			FileDialog fDialog = new FileDialog(parent, "Choose file...", type);
+			if (type == FileDialog.SAVE) {
+				fDialog.setTitle("Save session as...");
+			}
 			fDialog.setDirectory(appSupport.toFile().toString());
 			fDialog.setVisible(true);
 			
