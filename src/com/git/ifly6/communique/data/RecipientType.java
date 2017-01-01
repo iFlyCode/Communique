@@ -34,7 +34,7 @@ public enum RecipientType {
 	 * delegates thereof, or new nations. */
 	TAG {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-			String tag = cr.getName();
+			String tag = cr.getName();	// TODO create tag enums for this
 			if (tag.equals("wa")) { return createRecipients(JInfoFetcher.instance().getWAMembers(), cr); }
 			if (tag.equals("delegates")) { return createRecipients(JInfoFetcher.instance().getDelegates(), cr); }
 			if (tag.equals("new")) { return createRecipients(JInfoFetcher.instance().getNew(), cr); }

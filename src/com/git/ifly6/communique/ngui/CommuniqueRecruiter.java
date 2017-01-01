@@ -49,6 +49,7 @@ import org.apache.commons.lang3.SystemUtils;
 
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.data.FilterType;
 import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
@@ -58,8 +59,8 @@ import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
 /** Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
- * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned to
- * {@link Communique} for possible saving. */
+ * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned
+ * to {@link Communique} for possible saving. */
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 	
 	private static final Logger log = Logger.getLogger(CommuniqueRecruiter.class.getName());
@@ -379,12 +380,13 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
 	@Override public void sentTo(String recipient, int x, int length) {
-		sentList.add(Communique7Parser.translateToken(recipient));
+		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
+		sentList.add(recipient);
 		lblNationsCount.setText(sentList.size() + (sentList.size() == 1 ? " nation" : " nations"));
 		if (!StringUtils.isEmpty(sentListArea.getText())) {
-			sentListArea.append("\n-nation:" + recipient);
+			sentListArea.append("\n" + recipient);
 		} else {
-			sentListArea.setText("-nation:" + recipient);
+			sentListArea.setText(recipient);
 		}
 	}
 	

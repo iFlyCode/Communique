@@ -10,6 +10,11 @@ import java.util.List;
  * @author ifly6 */
 public class CommuniqueRecipient {
 	
+	public static final CommuniqueRecipient DELEGATES =
+			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "delegates");
+	public static final CommuniqueRecipient WA_MEMBERS =
+			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "wa");
+	
 	private RecipientType recipientType;
 	private String name;
 	private FilterType filterType;

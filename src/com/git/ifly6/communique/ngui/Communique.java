@@ -67,8 +67,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.FilterType;
-import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueConnector;
 import com.git.ifly6.communique.io.CommuniqueLoader;
@@ -105,7 +104,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public static Path appSupport;
 	
 	private static final String codeHeader =
-			"# == Communiqué Recipients Code ==\n" + "# Enter recipients, separated by comma or new lines."
+			"# == Communiqué Recipients Syntax ==\n" + "# Enter recipients, separated by comma or new lines."
 					+ "# Please read the readme at [ https://github.com/iflycode/communique#readme ]\n\n";
 	
 	private CommuniqueUpdater updater;
@@ -419,10 +418,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				rawURL = rawURL.replace(rawUrlStart, "");
 				rawURL = rawURL.replace("&to=NATION_NAME", "");
 				
-				String[] tags = rawURL.split("&");
-				if (tags.length == 2) {
-					txtTelegramId.setText(tags[0].substring(tags[0].indexOf("=") + 1, tags[0].length()));
-					txtSecretKey.setText(tags[1].substring(tags[1].indexOf("=") + 1, tags[1].length()));
+				String[] shards = rawURL.split("&");
+				if (shards.length == 2) {
+					txtTelegramId.setText(shards[0].substring(shards[0].indexOf("=") + 1, shards[0].length()));
+					txtSecretKey.setText(shards[1].substring(shards[1].indexOf("=") + 1, shards[1].length()));
 				}
 				
 			} else {
@@ -437,7 +436,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnData.add(mnImportRecipients);
 		
 		JMenuItem mntmFromWaDelegate = new JMenuItem("From WA Delegate List");
-		mntmFromWaDelegate.addActionListener(e -> appendCode("wa:delegates"));
+		mntmFromWaDelegate.addActionListener(e -> appendCode(CommuniqueRecipient.DELEGATES));
 		
 		JMenuItem mntmAsCommaSeparated = new JMenuItem("As Comma Separated List");
 		mntmAsCommaSeparated.addActionListener(e -> {
@@ -446,8 +445,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			String input = this.showTextInputDialog(message, CommuniqueMessages.TITLE);
 			if (input != null) {
 				input = input.replaceAll("\\(.+?\\)", "");
-				Stream.of(input.split(",")).parallel()
-						.map(s -> new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, s))
+				Stream.of(input.split(","))
+						.map(s -> CommuniqueRecipients.createNation(s))
 						.map(CommuniqueRecipient::toString)
 						.forEach(this::appendCode);
 			}
@@ -470,8 +469,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					String side = elements[1].equals("For") ? CommuniqueConnector.FOR : CommuniqueConnector.AGAINST;
 					
 					try {
-						CommuniqueConnector.importAtVoteDelegates(chamber, side).parallelStream()
-								.map(s -> new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, s))
+						CommuniqueConnector.importAtVoteDelegates(chamber, side).stream()
+								.map(s -> CommuniqueRecipients.createNation(s))
 								.map(CommuniqueRecipient::toString)
 								.forEach(this::appendCode);
 					} catch (RuntimeException exc) {
@@ -507,7 +506,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					}
 				}
 				
-				// add it to the list
+				// add it to the list, TODO determine whether when importing from a text file, it should
+				// auto-translate/parse
 				Communique7Parser.translateTokens(recipients).stream().forEach(this::appendCode);
 				
 			} catch (IOException e1) {
@@ -601,11 +601,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override public void run() {
 				try {
-					
 					// Save it to application support
 					CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
 					loader.save(exportState());
-					
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -621,8 +619,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				Communique7Parser parser = new Communique7Parser();
 				
 				// Check if a recruit-flag has been used.
-				final List<String> lines = Stream.of(txtrCode.getText()
-						.split("\n"))
+				final List<String> lines = Stream.of(txtrCode.getText().split(System.lineSeparator()))
 						.filter(s -> !StringUtils.isEmpty(s))
 						.filter(s -> !s.startsWith("#"))
 						.collect(Collectors.toList());
@@ -762,12 +759,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
 	@Override public void sentTo(String recipient, int x, int length) {
 		
-		txtrCode.append(x == 0 ? "\n\n-nation:" + recipient : "\n-nation:" + recipient);
+		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
+		txtrCode.append(x == 0 ? "\n\n" + recipient : "\n" + recipient);
 		
 		if (timer != null) {
-			timer.stop();	// stop current timer
+			timer.stop();				// stop current timer
 			progressBar.setValue(0);	// reset progress bar
-			timer = null;	// create new timer
+			timer = null;				// create new timer
 		}
 		
 		if (timer == null) {
