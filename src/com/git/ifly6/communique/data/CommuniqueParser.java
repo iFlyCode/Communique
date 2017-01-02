@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 
 /** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
@@ -221,7 +220,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 		
 		// Filter out comments and empty lines
 		input = Arrays.stream(input)
-				.filter(s -> !s.startsWith("#") && !StringUtils.isEmpty(s))
+				.filter(s -> !s.startsWith("#") && !CommuniqueUtils.isEmpty(s))
 				.toArray(String[]::new);
 		
 		// Form a list of all the nation we want in this list.

@@ -6,10 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
@@ -32,8 +31,11 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		
 		// Process the Recipients list into a string with two columns.
 		Communique7Parser parser = new Communique7Parser();
-		List<String> expandedRecipients = parser.apply(Arrays.asList(ArrayUtils.addAll(config.recipients, config.sentList)))
-				.getRecipients();
+		
+		List<String> input = Arrays.asList(config.recipients);
+		input.addAll(Arrays.asList(config.sentList));
+		
+		List<String> expandedRecipients = parser.apply(input).getRecipients();
 		
 		// If it needs to be randomised, do so.
 		if (config.isRandomised) {
@@ -141,6 +143,10 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
 	@Override public void sentTo(String recipient, int x, int length) {
-		config.sentList = ArrayUtils.add(config.sentList, "nation:" + recipient);
+		String[] sList = new String[config.sentList.length + 1];
+		System.arraycopy(config.sentList, 0, sList, 0, config.sentList.length);
+		sList[sList.length - 1] = CommuniqueRecipients.createExcludedNation(recipient)
+				.toString();
+		config.sentList = sList;
 	}
 }

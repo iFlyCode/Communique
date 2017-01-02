@@ -7,15 +7,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.ngui.Communique;
 
 /** <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the
  * process of reading and writing to that data. It uses the <code>{@link CommuniqueReader}</code> and
- * <code>{@link CommuniqueWriter}</code> classes to access that data. They are based on reading and writing via use of Google's
- * Gson library, which then allow for reading, writing, and manipulation of a {@link com.git.ifly6.communique.io.CommuniqueConfig
- * CConfig} object. */
+ * <code>{@link CommuniqueWriter}</code> classes to access that data. They are based on reading and writing via use of
+ * Google's Gson library, which then allow for reading, writing, and manipulation of a
+ * {@link com.git.ifly6.communique.io.CommuniqueConfig CConfig} object. */
 public class CommuniqueLoader {
 	
 	Path path;
@@ -27,14 +26,12 @@ public class CommuniqueLoader {
 	/** Creates the <code>CLoader</code> and sets the path at which the program will do its file operations. The
 	 * Communique program attempts to default this to the relevant application support folder, resolved to the
 	 * Communique folder, by specifying such in the program's myriad file dialog prompts.
-	 *
 	 * @param path */
 	public CommuniqueLoader(Path path) {
 		this.path = path;
 	}
 	
 	/** Saves a configuration file based on the provided <code>CCoNfig</code>.
-	 *
 	 * @param config
 	 * @throws IOException */
 	public void save(CommuniqueConfig config) throws IOException {
@@ -43,7 +40,6 @@ public class CommuniqueLoader {
 	}
 	
 	/** Loads a configuration file to a new CConfig.
-	 *
 	 * @return a <code>CConfig</code> based on the loaded data from disc
 	 * @throws IOException */
 	public CommuniqueConfig load() throws IOException {
@@ -53,7 +49,6 @@ public class CommuniqueLoader {
 	
 	/** Writes the standard configuration file for the currently used client key. Properties writing here has been
 	 * localised for this setup using this method.
-	 *
 	 * @throws IOException */
 	public static void writeProperties(String clientKey) {
 		
@@ -72,7 +67,6 @@ public class CommuniqueLoader {
 	
 	/** Reads the standard configuration file for the last used client key. The method returns the client key from the
 	 * configuration file.
-	 *
 	 * @return the client key from file
 	 * @throws IOException if there was a problem in reading or finding the configuration file */
 	public static String readProperties() {
@@ -88,6 +82,6 @@ public class CommuniqueLoader {
 		}
 		
 		String clientKey = prop.getProperty("clientKey");
-		return StringUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
+		return CommuniqueUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
 	}
 }

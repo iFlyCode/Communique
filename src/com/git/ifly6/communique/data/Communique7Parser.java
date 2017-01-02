@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
+import com.git.ifly6.communique.CommuniqueUtils;
 
 /** <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
  * recipients as used in NationStates. It supersedes the old parser, {@link CommuniqueParser}, which used the custom
@@ -53,7 +53,7 @@ public class Communique7Parser {
 	public Communique7Parser apply(List<String> list) {
 		list.stream()
 				.filter(s -> !s.startsWith("#"))
-				.filter(s -> !StringUtils.isEmpty(s))
+				.filter(s -> !CommuniqueUtils.isEmpty(s))
 				.map(CommuniqueRecipient::parseRecipient)
 				.forEach(this::apply);
 		return this;

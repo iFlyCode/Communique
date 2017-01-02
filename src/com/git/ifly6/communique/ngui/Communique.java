@@ -25,10 +25,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,13 +60,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -138,10 +136,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			
 		}
 		
-		if (SystemUtils.IS_OS_WINDOWS) {
+		if (CommuniqueUtils.IS_OS_WINDOWS) {
 			appSupport = Paths.get(System.getenv("LOCALAPPDATA"), "Communique");
 			
-		} else if (SystemUtils.IS_OS_MAC) {
+		} else if (CommuniqueUtils.IS_OS_MAC) {
 			appSupport = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "Communique");
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Communiqué " + Communique7Parser.version);
@@ -207,7 +205,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	private void initialise() {
 		
 		frame = new JFrame();
-		if (!SystemUtils.IS_OS_MAC) {
+		if (!CommuniqueUtils.IS_OS_MAC) {
 			frame.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
 		}
 		
@@ -396,7 +394,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnFile.add(mntmShowDirectory);
 		
 		// Only add the Quit menu item if the OS is not Mac
-		if (!SystemUtils.IS_OS_MAC) {
+		if (!CommuniqueUtils.IS_OS_MAC) {
 			mnFile.addSeparator();
 			JMenuItem mntmExit = new JMenuItem("Exit");
 			mntmExit.setAccelerator(getOSKeyStroke(KeyEvent.VK_Q));
@@ -463,7 +461,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			String output = (String) JOptionPane.showInputDialog(frame, "Select which chamber and side you want to address:",
 					"Select Chamber and Side", JOptionPane.PLAIN_MESSAGE, null, possibilities, "GA For");
 			
-			if (!StringUtils.isEmpty(output)) {
+			if (!CommuniqueUtils.isEmpty(output)) {
 				String[] elements = output.split(" ");
 				if (elements.length == 2) {
 					
@@ -494,7 +492,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				
 				// load data
 				List<String> fileContents = Files.lines(path)
-						.filter(s -> !s.startsWith("#") || !StringUtils.isEmpty(s))
+						.filter(s -> !s.startsWith("#") || !CommuniqueUtils.isEmpty(s))
 						.collect(Collectors.toList());
 				
 				// collate the data
@@ -621,7 +619,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				
 				// Check if a recruit-flag has been used.
 				final List<String> lines = Stream.of(txtrCode.getText().split(System.lineSeparator()))
-						.filter(s -> !StringUtils.isEmpty(s))
+						.filter(s -> !CommuniqueUtils.isEmpty(s))
 						.filter(s -> !s.startsWith("#"))
 						.collect(Collectors.toList());
 				
@@ -706,9 +704,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		config.isRandomised = chckbxmntmRandomiseRecipients.isSelected();
 		config.keys = new JTelegramKeys(txtClientKey.getText(), txtSecretKey.getText(), txtTelegramId.getText());
 		
-		Pair<String[], String[]> recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
-		config.recipients = recipientsAndSents.getLeft();
-		config.sentList = recipientsAndSents.getRight();
+		Map.Entry<String[], String[]> recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
+		config.recipients = recipientsAndSents.getKey();
+		config.sentList = recipientsAndSents.getValue();
 		
 		config.defaultVersion();
 		
@@ -726,11 +724,11 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtSecretKey.setText(config.keys.getSecretKey());
 		txtTelegramId.setText(config.keys.getTelegramId());
 		
-		if (!ArrayUtils.isEmpty(config.recipients)) {
+		if (!CommuniqueUtils.isEmpty(config.recipients)) {
 			txtrCode.setText(codeHeader + Arrays.asList(config.recipients).stream().collect(Collectors.joining("\n")));
 		}
 		
-		if (!ArrayUtils.isEmpty(config.sentList)) {
+		if (!CommuniqueUtils.isEmpty(config.sentList)) {
 			String temp = Stream.of(config.sentList).map(s -> s.startsWith("-") ? s : "-" + s)
 					.collect(Collectors.joining("\n", "\n", ""));
 			txtrCode.append(temp);
@@ -743,11 +741,11 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtrCode.append("\n" + input.toString());
 	}
 	
-	private Pair<String[], String[]> filterSents(String[] input) {
+	private Map.Entry<String[], String[]> filterSents(String[] input) {
 		String[] recipients = Stream.of(input)
-				.filter(x -> !StringUtils.isEmpty(x) && !x.startsWith("#"))
+				.filter(x -> !CommuniqueUtils.isEmpty(x) && !x.startsWith("#"))
 				.toArray(String[]::new);
-		return new MutablePair<>(recipients, new String[] {});	// there is no need for the sent-list anymore
+		return new AbstractMap.SimpleEntry<>(recipients, new String[] {});
 	}
 	
 	// Changes the state of the button to reflect whether it is ready to send and or parsed
@@ -815,13 +813,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	 * @return */
 	public static KeyStroke getOSKeyStroke(int keyEvent, boolean shiftMask) {
 		if (shiftMask) {
-			if (SystemUtils.IS_OS_MAC) {
+			if (CommuniqueUtils.IS_OS_MAC) {
 				return KeyStroke.getKeyStroke(keyEvent, Event.META_MASK | Event.SHIFT_MASK);
 			} else {
 				return KeyStroke.getKeyStroke(keyEvent, Event.CTRL_MASK | Event.SHIFT_MASK);
 			}
 		} else {
-			return KeyStroke.getKeyStroke(keyEvent, SystemUtils.IS_OS_MAC ? Event.META_MASK : Event.CTRL_MASK);
+			return KeyStroke.getKeyStroke(keyEvent, CommuniqueUtils.IS_OS_MAC ? Event.META_MASK : Event.CTRL_MASK);
 		}
 	}
 	
@@ -835,7 +833,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		Path savePath;
 		
 		// Due to a problem in Windows and the AWT FileDialog, this will show a JFileChooser on Windows systems.
-		if (!SystemUtils.IS_OS_MAC) {
+		if (!CommuniqueUtils.IS_OS_MAC) {
 			
 			JFileChooser fChooser = new JFileChooser(appSupport.toFile());
 			fChooser.setDialogTitle("Choose file...");

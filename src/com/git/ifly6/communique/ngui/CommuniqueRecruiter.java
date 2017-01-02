@@ -43,11 +43,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -65,7 +62,7 @@ import com.git.ifly6.javatelegram.JavaTelegram;
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 	
 	private static final Logger log = Logger.getLogger(CommuniqueRecruiter.class.getName());
-	public static final String[] regionList = new String[] { "the Pacific", "the North Pacific", "the South Pacific",
+	public static final String[] protectedRegions = new String[] { "the Pacific", "the North Pacific", "the South Pacific",
 			"the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms" };
 	
 	private Communique communique;
@@ -236,7 +233,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		});
 		
 		DefaultListModel<String> exListModel = new DefaultListModel<>();
-		Arrays.stream(regionList).forEach(exListModel::addElement);
+		Arrays.stream(protectedRegions).forEach(exListModel::addElement);
 		
 		excludeList = new JList<>(exListModel);
 		excludeList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -255,7 +252,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		btnAdd.addActionListener(al -> {
 			String rName = (String) JOptionPane.showInputDialog(frame, "Input the name of the region you want to exclude.",
 					"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
-			if (!StringUtils.isEmpty(rName)) {
+			if (!CommuniqueUtils.isEmpty(rName)) {
 				exListModel.addElement(rName);
 			}
 		});
@@ -270,7 +267,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		btnRemove.addActionListener(al -> {
 			int[] selectedIndices = excludeList.getSelectedIndices();
 			for (int i = selectedIndices.length - 1; i >= 0; i--) {
-				if (!ArrayUtils.contains(regionList, exListModel.get(selectedIndices[i]))) {
+				if (!CommuniqueUtils.contains(protectedRegions, exListModel.get(selectedIndices[i]))) {
 					exListModel.remove(selectedIndices[i]);
 				}
 			}
@@ -312,10 +309,10 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		
 		progressBar = new JProgressBar();
 		progressBar.setMaximum(180);
-		if (SystemUtils.IS_OS_MAC) {
+		if (CommuniqueUtils.IS_OS_MAC) {
 			// Mac, make progress bar around the same length as the button
 			progressBar.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
-		} else if (SystemUtils.IS_OS_WINDOWS) {
+		} else if (CommuniqueUtils.IS_OS_WINDOWS) {
 			progressBar.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		}
 		GridBagConstraints gbc_progressBar = new GridBagConstraints();
@@ -384,7 +381,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
 		sentList.add(recipient);
 		lblNationsCount.setText(sentList.size() + (sentList.size() == 1 ? " nation" : " nations"));
-		if (!StringUtils.isEmpty(sentListArea.getText())) {
+		if (!CommuniqueUtils.isEmpty(sentListArea.getText())) {
 			sentListArea.append("\n" + recipient);
 		} else {
 			sentListArea.setText(recipient);

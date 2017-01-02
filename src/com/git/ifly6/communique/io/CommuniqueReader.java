@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.git.ifly6.communique.CommuniqueFileReader;
+import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.google.gson.Gson;
 
@@ -69,7 +68,7 @@ import com.google.gson.Gson;
 			List<String> sentList = new ArrayList<>(0);
 			
 			for (String element : reader.getRecipients()) {
-				if (!StringUtils.isEmpty(element) && !element.startsWith("#")) {
+				if (!CommuniqueUtils.isEmpty(element) && !element.startsWith("#")) {
 					if (element.startsWith("/")) {
 						sentList.add(element);
 					} else {
