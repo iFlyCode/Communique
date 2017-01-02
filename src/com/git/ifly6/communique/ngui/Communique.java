@@ -231,22 +231,22 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		controlPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		txtClientKey = new JTextField();
+		txtClientKey.setToolTipText("Client key");
 		txtClientKey.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtClientKey.setText(CommuniqueLoader.readProperties());
 		controlPanel.add(txtClientKey);
-		txtClientKey.setColumns(10);
 		
 		txtSecretKey = new JTextField();
+		txtSecretKey.setToolTipText("Secret key");
 		txtSecretKey.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtSecretKey.setText("Secret Key");
 		controlPanel.add(txtSecretKey);
-		txtSecretKey.setColumns(10);
 		
 		txtTelegramId = new JTextField();
+		txtTelegramId.setToolTipText("Telegram ID");
 		txtTelegramId.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtTelegramId.setText("Telegram ID");
 		controlPanel.add(txtTelegramId);
-		txtTelegramId.setColumns(10);
 		
 		btnSend = new JButton("Parse");
 		
@@ -493,8 +493,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			try {
 				
 				// load data
-				List<String> fileContents = Files.readAllLines(path);
-				fileContents = fileContents.stream()
+				List<String> fileContents = Files.lines(path)
 						.filter(s -> !s.startsWith("#") || !StringUtils.isEmpty(s))
 						.collect(Collectors.toList());
 				

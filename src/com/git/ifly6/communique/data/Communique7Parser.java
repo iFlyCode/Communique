@@ -2,7 +2,9 @@
 package com.git.ifly6.communique.data;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +25,7 @@ public class Communique7Parser {
 	public static final int version = 7;
 	
 	/** List of recipients changed by various actions and applications called by the parser. */
-	private List<CommuniqueRecipient> recipients = new ArrayList<>(0);
+	private Set<CommuniqueRecipient> recipients = new LinkedHashSet<>(0);
 	
 	/** Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
 	 * methods, either in the form of a <code>List&lt;String&gt;</code> or any number of
@@ -68,7 +70,7 @@ public class Communique7Parser {
 	/** Returns all of the recipients in a <code>List</code> of <code>CommuniqueRecipient</code>.
 	 * @return a list of {@link CommuniqueRecipient} */
 	public List<CommuniqueRecipient> list() {
-		return recipients;
+		return new ArrayList<>(recipients);
 	}
 	
 	/** Returns all of the recipients in the standard NationStates reference name form in a <code>List</code>.

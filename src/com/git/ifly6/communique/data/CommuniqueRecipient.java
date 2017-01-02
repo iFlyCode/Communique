@@ -94,4 +94,26 @@ public class CommuniqueRecipient {
 		
 		return new CommuniqueRecipient(fType, rType, s.substring(s.indexOf(":") + 1));
 	}
+	
+	@Override public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (filterType == null ? 0 : filterType.hashCode());
+		result = prime * result + (name == null ? 0 : name.hashCode());
+		result = prime * result + (recipientType == null ? 0 : recipientType.hashCode());
+		return result;
+	}
+	
+	@Override public boolean equals(Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+		CommuniqueRecipient other = (CommuniqueRecipient) obj;
+		if (filterType != other.filterType) { return false; }
+		if (name == null) {
+			if (other.name != null) { return false; }
+		} else if (!name.equals(other.name)) { return false; }
+		if (recipientType != other.recipientType) { return false; }
+		return true;
+	}
 }

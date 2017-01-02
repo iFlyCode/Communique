@@ -2,7 +2,8 @@
 package com.git.ifly6.communique.data;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /** Defines a number of filter types which can be used in {@link Communique7Parser} to effect the recipients list. All
@@ -14,17 +15,15 @@ public enum FilterType {
 	 * command used in past versions of Communique. Basically, it filter the recipients list to be an intersection of
 	 * the list and the token provided. */
 	INCLUDE {
-		@Override public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients,
+		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			// match by names, not by recipient type
 			HashSet<String> set = provided.decompose().stream()
 					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
 			return recipients.stream()
-					.map(CommuniqueRecipient::getName)
-					.filter(r -> set.contains(r))
-					.map(CommuniqueRecipient::parseRecipient)
-					.collect(Collectors.toList());
+					.filter(r -> set.contains(r.getName()))
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
 		
 		@Override public String toString() {
@@ -35,17 +34,14 @@ public enum FilterType {
 	/** Excludes nations from the recipients list based on the token provided. Provides equivalent functionality as the
 	 * NationStates <code>-</code> command in telegram queries. */
 	EXCLUDE {
-		@Override public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients,
+		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
-			// match by names, not by recipient type
 			HashSet<String> set = provided.decompose().stream()
 					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
 			return recipients.stream()
-					.map(CommuniqueRecipient::getName)
-					.filter(r -> !set.contains(r))
-					.map(CommuniqueRecipient::parseRecipient)
-					.collect(Collectors.toList());
+					.filter(r -> !set.contains(r.getName()))
+					.collect(Collectors.toCollection(LinkedHashSet::new));
 		}
 		
 		@Override public String toString() {
@@ -61,7 +57,7 @@ public enum FilterType {
 	 * </p>
 	*/
 	NORMAL {
-		@Override public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients,
+		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			recipients.addAll(provided.decompose());
 			return recipients;
@@ -77,7 +73,7 @@ public enum FilterType {
 	 * @param recipients upon which the token is to be applied
 	 * @param provided token
 	 * @return recipients after the token is applied */
-	public List<CommuniqueRecipient> apply(List<CommuniqueRecipient> recipients, CommuniqueRecipient provided) {
+	public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients, CommuniqueRecipient provided) {
 		return FilterType.NORMAL.apply(recipients, provided);
 	}
 	
