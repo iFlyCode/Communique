@@ -4,6 +4,7 @@ package com.git.ifly6.communique.data;
 import java.util.List;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** An object in which to store information about a recipient. It is based on three characteristics, a
  * <code>FilterType</code>, a <code>RecipientType</code>, and the name. The filter type can be used to exclude, include,
@@ -56,7 +57,7 @@ public class CommuniqueRecipient {
 	/** Decomposes a tag to its constituent nations. All decompositions are done in
 	 * {@link com.git.ifly6.communique.data.RecipientType RecipientType} class.
 	 * @return a list of <code>CommuniqueRecipient</code>s */
-	public List<CommuniqueRecipient> decompose() {
+	public List<CommuniqueRecipient> decompose() throws JTelegramException {
 		return getRecipientType().decompose(this);
 	}
 	

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
+import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** Defines a number of recipient types and provides methods to decompose those types into lists of
  * <code>CommuniqueRecipient</code>.
@@ -38,7 +39,8 @@ public enum RecipientType {
 			if (tag.equals("wa")) { return createRecipients(JInfoFetcher.instance().getWAMembers(), cr); }
 			if (tag.equals("delegates")) { return createRecipients(JInfoFetcher.instance().getDelegates(), cr); }
 			if (tag.equals("new")) { return createRecipients(JInfoFetcher.instance().getNew(), cr); }
-			return Stream.of(cr).collect(Collectors.toList());
+			if (tag.equals("all")) { return createRecipients(JInfoFetcher.instance().getAll(), cr); }
+			throw new JTelegramException("Invalid tag: " + cr.toString());
 		}
 	},
 	

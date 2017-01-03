@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -73,6 +73,7 @@ import com.git.ifly6.communique.io.CommuniqueUpdater;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
+import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** <code>Communiqué</code> is the main class of the Communiqué system. It handles the GUI aspect of the entire program
  * and other actions. */
@@ -231,7 +232,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtClientKey = new JTextField();
 		txtClientKey.setToolTipText("Client key");
 		txtClientKey.setFont(new Font(Font.MONOSPACED, 0, 11));
-		txtClientKey.setText(CommuniqueLoader.readProperties());
+		txtClientKey.setText(CommuniqueLoader.getClientKey());
 		controlPanel.add(txtClientKey);
 		
 		txtSecretKey = new JTextField();
@@ -470,7 +471,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					
 					try {
 						CommuniqueConnector.importAtVoteDelegates(chamber, side).stream()
-								.map(s -> CommuniqueRecipients.createNation(s))
 								.map(CommuniqueRecipient::toString)
 								.forEach(this::appendCode);
 					} catch (RuntimeException exc) {
@@ -618,7 +618,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				Communique7Parser parser = new Communique7Parser();
 				
 				// Check if a recruit-flag has been used.
-				final List<String> lines = Stream.of(txtrCode.getText().split(System.lineSeparator()))
+				List<String> lines = Stream.of(txtrCode.getText().split("\n"))
 						.filter(s -> !CommuniqueUtils.isEmpty(s))
 						.filter(s -> !s.startsWith("#"))
 						.collect(Collectors.toList());
@@ -635,9 +635,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					// Call and do the parsing
 					log.info("Called parser");
 					
-					List<String> tokens = new ArrayList<>();	// create container
-					lines.stream().forEach(s -> Stream.of(s.split(",")).forEach(tokens::add));	// decompose tokens
-					Communique.this.parsedRecipients = parser.apply(tokens).getRecipients();	// apply all tokens
+					try {
+						List<String> tokens = new ArrayList<>();	// create container
+						lines.stream().forEach(s -> Stream.of(s.split(",")).forEach(tokens::add));	// decompose tokens
+						Communique.this.parsedRecipients = parser.apply(tokens).getRecipients();	// apply all tokens
+					} catch (JTelegramException jte) {
+						Communique.this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+					}
 					
 					// Estimate Time Needed
 					String timeNeeded = estimateTime(parsedRecipients.size(), chckbxRecruitment.isSelected());
@@ -645,7 +649,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					// Show Recipients
 					StringBuilder builder = new StringBuilder();
 					builder.append("# == Communiqué Recipients ==\n" + "# This tab shows all " + parsedRecipients.size()
-							+ " recipients after parsing of the Code tab.\n# Estimated time needed is " + timeNeeded
+							+ " recipients after parsing of the Code\n# tab. Estimated time needed is " + timeNeeded
 							+ "\n\n");
 					for (String element : parsedRecipients) {
 						builder.append(element + "\n");
@@ -704,7 +708,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		config.isRandomised = chckbxmntmRandomiseRecipients.isSelected();
 		config.keys = new JTelegramKeys(txtClientKey.getText(), txtSecretKey.getText(), txtTelegramId.getText());
 		
-		Map.Entry<String[], String[]> recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
+		Entry<String[], String[]> recipientsAndSents = filterSents(txtrCode.getText().split("\n"));
 		config.recipients = recipientsAndSents.getKey();
 		config.sentList = recipientsAndSents.getValue();
 		
@@ -741,7 +745,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtrCode.append("\n" + input.toString());
 	}
 	
-	private Map.Entry<String[], String[]> filterSents(String[] input) {
+	private Entry<String[], String[]> filterSents(String[] input) {
 		String[] recipients = Stream.of(input)
 				.filter(x -> !CommuniqueUtils.isEmpty(x) && !x.startsWith("#"))
 				.toArray(String[]::new);

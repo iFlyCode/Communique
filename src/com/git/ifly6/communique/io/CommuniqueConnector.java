@@ -34,7 +34,7 @@ public class CommuniqueConnector {
 	 * @param url at which to scrape HTML
 	 * @return list containing the HTML
 	 * @throws IOException if there is an error in finding the data */
-	public static synchronized List<String> callUrl(URL url) throws IOException {
+	public static synchronized String callUrl(URL url) throws IOException {
 		
 		try {
 			Thread.sleep(610);
@@ -45,54 +45,40 @@ public class CommuniqueConnector {
 		URLConnection connection = url.openConnection();
 		connection.setRequestProperty("User-Agent", "Communique, maintained by Imperium Anglorum, ifly6@me.com");
 		InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-		List<String> output = new BufferedReader(isr).lines().collect(Collectors.toList());
-		
-		return output;
+		return new BufferedReader(isr).lines().collect(Collectors.joining("\n"));
 	}
 	
 	/** Attempts to scrape the list of delegates voting for or against some proposal.
 	 * @param chamber, either GA or SC
 	 * @param side, either FOR or AGAINST
 	 * @return list of applicable delegate reference names; if failure, empty list. */
-	public static List<String> importAtVoteDelegates(String chamber, String side) {
+	public static List<CommuniqueRecipient> importAtVoteDelegates(String chamber, String side) {
 		
 		try {
 			
-			Document doc = Jsoup.parse(callUrl(new URL(chamber)).stream().collect(Collectors.joining("\n")));
+			Document doc = Jsoup.parse(callUrl(new URL(chamber)));
 			Elements elements = doc.select("div.content");
 			
 			Iterator<Element> eIter = elements.listIterator();
 			while (eIter.hasNext()) {
 				Element element = eIter.next();
-				
 				try {
-					
 					Element strong = element.select("strong").get(0);
 					String text = strong.text();
-					
 					if (text.startsWith(side)) {
-						
 						String data = element.text().replace(side, "").replaceAll("\\(.+?\\)", "");
 						data = data.substring(data.indexOf(":") + 1, data.indexOf("and  individual WA member nations."));
-						
 						return Stream.of(data.split(","))
 								.map(s -> CommuniqueRecipients.createNation(s))
-								.map(CommuniqueRecipient::toString)
 								.collect(Collectors.toList());
-						
 					}
-					
 				} catch (IndexOutOfBoundsException e) {
 					continue;
 				}
-				
 			}
 			
-		} catch (IOException e) {
-			// Do nothing and return null.
-		}
-		
-		return new ArrayList<>(0);
+		} catch (IOException e) {}
+		return new ArrayList<>(0);	// return empty list
 	}
 	
 }

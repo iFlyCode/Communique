@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.git.ifly6.communique.CommuniqueUtils;
+import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
  * recipients as used in NationStates. It supersedes the old parser, {@link CommuniqueParser}, which used the custom
@@ -37,7 +38,7 @@ public class Communique7Parser {
 	 * parser.
 	 * @param token a <code>CommuniqueRecipient</code>
 	 * @return this parser for further token applications, if necessary */
-	public Communique7Parser apply(CommuniqueRecipient token) {
+	public Communique7Parser apply(CommuniqueRecipient token) throws JTelegramException {
 		recipients = token.getFilterType().apply(recipients, token);
 		/* This is the beautiful part, because I've chained everything to a filter, this means that I don't have to
 		 * write any code whatsoever to sort things into what they have to do, unlike the old parser. Now, everything is
@@ -50,7 +51,7 @@ public class Communique7Parser {
 	 * <code>CommuniqueRecipient</code>s.
 	 * @param list of parse-able <code>CommuniqueRecipient</code>s
 	 * @return this object for further applications, if necessary */
-	public Communique7Parser apply(List<String> list) {
+	public Communique7Parser apply(List<String> list) throws JTelegramException {
 		list.stream()
 				.filter(s -> !s.startsWith("#"))
 				.filter(s -> !CommuniqueUtils.isEmpty(s))
@@ -62,7 +63,7 @@ public class Communique7Parser {
 	/** Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
 	 * @param tokens to apply
 	 * @return this parser for further analysis if necessary */
-	public Communique7Parser apply(CommuniqueRecipient... tokens) {
+	public Communique7Parser apply(CommuniqueRecipient... tokens) throws JTelegramException {
 		Stream.of(tokens).forEach(this::apply);
 		return this;
 	}

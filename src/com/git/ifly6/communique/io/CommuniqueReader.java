@@ -29,7 +29,7 @@ import com.google.gson.Gson;
 	 * declared in {@link Communique7Parser} to translate old Communique 6 tokens into the tokens introduced in
 	 * Communique 7. It will also automatically decode old files which throw JSON errors using the deprecated
 	 * {@link CommuniqueFileReader}.
-	 * @return a <code>CConfig</code> holding the data specified
+	 * @return a {@link CommuniqueConfig} holding the data specified
 	 * @throws IOException if there is an issue reading the data */
 	public CommuniqueConfig read() throws IOException {
 		

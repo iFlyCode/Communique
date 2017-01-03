@@ -18,15 +18,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,10 +39,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.CommuniqueUtils;
@@ -116,10 +115,11 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		panel.add(leftPanel);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		gbl_panel_1.columnWidths = new int[] { 0, 0, 0, 0 };
-		gbl_panel_1.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_panel_1.columnWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
-		gbl_panel_1.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-				Double.MIN_VALUE };
+		gbl_panel_1.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panel_1.columnWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panel_1.rowWeights =
+				new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+						Double.MIN_VALUE };
 		leftPanel.setLayout(gbl_panel_1);
 		
 		JLabel lblClientKey = new JLabel("Client Key");
@@ -194,20 +194,12 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		leftPanel.add(telegramIdField, gbc_telegramIdField);
 		telegramIdField.setColumns(10);
 		
-		JSeparator separator = new JSeparator();
-		GridBagConstraints gbc_separator = new GridBagConstraints();
-		gbc_separator.gridwidth = 3;
-		gbc_separator.insets = new Insets(0, 0, 5, 0);
-		gbc_separator.gridx = 0;
-		gbc_separator.gridy = 3;
-		leftPanel.add(separator, gbc_separator);
-		
 		JLabel lblExclude = new JLabel("Exclude:");
 		GridBagConstraints gbc_lblExclude = new GridBagConstraints();
 		gbc_lblExclude.anchor = GridBagConstraints.EAST;
 		gbc_lblExclude.insets = new Insets(0, 0, 5, 5);
 		gbc_lblExclude.gridx = 0;
-		gbc_lblExclude.gridy = 4;
+		gbc_lblExclude.gridy = 3;
 		leftPanel.add(lblExclude, gbc_lblExclude);
 		
 		JButton btnSendButton = new JButton("Send");
@@ -233,78 +225,91 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		});
 		
 		DefaultListModel<String> exListModel = new DefaultListModel<>();
-		Arrays.stream(protectedRegions).forEach(exListModel::addElement);
+		Stream.of(protectedRegions).forEach(exListModel::addElement);
 		
 		excludeList = new JList<>(exListModel);
 		excludeList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		excludeList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		GridBagConstraints gbc_excludeList = new GridBagConstraints();
-		gbc_excludeList.gridwidth = 2;
-		gbc_excludeList.gridheight = 7;
-		gbc_excludeList.insets = new Insets(0, 0, 5, 0);
-		gbc_excludeList.fill = GridBagConstraints.BOTH;
-		gbc_excludeList.gridx = 1;
-		gbc_excludeList.gridy = 4;
-		JScrollPane scrollPane = new JScrollPane(excludeList);
-		leftPanel.add(scrollPane, gbc_excludeList);
-		
-		JButton btnAdd = new JButton("Add");
-		btnAdd.addActionListener(al -> {
-			String rName = (String) JOptionPane.showInputDialog(frame, "Input the name of the region you want to exclude.",
-					"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
-			if (!CommuniqueUtils.isEmpty(rName)) {
-				exListModel.addElement(rName);
+		excludeList.setSelectionModel(new DefaultListSelectionModel() {
+			private static final long serialVersionUID = 1L;
+			boolean gestureStarted = false;
+			
+			@Override public void setSelectionInterval(int index0, int index1) {
+				if (!gestureStarted) {
+					if (isSelectedIndex(index0)) {
+						super.removeSelectionInterval(index0, index1);
+					} else {
+						super.addSelectionInterval(index0, index1);
+					}
+				}
+				gestureStarted = true;
 			}
-		});
-		GridBagConstraints gbc_btnAdd = new GridBagConstraints();
-		gbc_btnAdd.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnAdd.insets = new Insets(0, 0, 5, 5);
-		gbc_btnAdd.gridx = 0;
-		gbc_btnAdd.gridy = 5;
-		leftPanel.add(btnAdd, gbc_btnAdd);
-		
-		JButton btnRemove = new JButton("Remove");
-		btnRemove.addActionListener(al -> {
-			int[] selectedIndices = excludeList.getSelectedIndices();
-			for (int i = selectedIndices.length - 1; i >= 0; i--) {
-				if (!CommuniqueUtils.contains(protectedRegions, exListModel.get(selectedIndices[i]))) {
-					exListModel.remove(selectedIndices[i]);
+			
+			@Override public void setValueIsAdjusting(boolean isAdjusting) {
+				if (isAdjusting == false) {
+					gestureStarted = false;
 				}
 			}
 		});
-		GridBagConstraints gbc_btnRemove = new GridBagConstraints();
-		gbc_btnRemove.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnRemove.insets = new Insets(0, 0, 5, 5);
-		gbc_btnRemove.gridx = 0;
-		gbc_btnRemove.gridy = 6;
-		leftPanel.add(btnRemove, gbc_btnRemove);
+		GridBagConstraints gbc_excludeList = new GridBagConstraints();
+		gbc_excludeList.gridwidth = 2;
+		gbc_excludeList.gridheight = 2;
+		gbc_excludeList.insets = new Insets(0, 0, 5, 0);
+		gbc_excludeList.fill = GridBagConstraints.BOTH;
+		gbc_excludeList.gridx = 1;
+		gbc_excludeList.gridy = 3;
+		JScrollPane scrollPane = new JScrollPane(excludeList);
+		leftPanel.add(scrollPane, gbc_excludeList);
 		
-		JButton btnClear = new JButton("Clear");
-		btnClear.addActionListener(al -> {
-			excludeList.clearSelection();
-		});
-		GridBagConstraints gbc_btnClear = new GridBagConstraints();
-		gbc_btnClear.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnClear.insets = new Insets(0, 0, 5, 5);
-		gbc_btnClear.gridx = 0;
-		gbc_btnClear.gridy = 7;
-		leftPanel.add(btnClear, gbc_btnClear);
+		JPanel buttonsPane = new JPanel();
+		buttonsPane.setLayout(new GridLayout(1, 3, 0, 0));
+		buttonsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+		GridBagConstraints gbc_buttonsPane = new GridBagConstraints();
+		gbc_buttonsPane.insets = new Insets(0, 0, 5, 5);
+		gbc_buttonsPane.gridx = 1;
+		gbc_buttonsPane.gridy = 5;
+		leftPanel.add(buttonsPane, gbc_buttonsPane);
+		{
+			JButton btnAdd = new JButton("+");
+			btnAdd.setPreferredSize(new Dimension(25, 20));
+			btnAdd.addActionListener(al -> {
+				String rName =
+						(String) JOptionPane.showInputDialog(frame, "Input the name of the region you want to exclude.",
+								"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
+				if (!CommuniqueUtils.isEmpty(rName)) {
+					exListModel.addElement(rName);
+				}
+			});
+			buttonsPane.add(btnAdd);
+			
+			JButton btnRemove = new JButton("—");
+			btnRemove.setPreferredSize(new Dimension(25, 20));
+			btnRemove.addActionListener(al -> {
+				int[] selectedIndices = excludeList.getSelectedIndices();
+				for (int i = selectedIndices.length - 1; i >= 0; i--) {
+					if (!CommuniqueUtils.contains(protectedRegions, exListModel.get(selectedIndices[i]))) {
+						exListModel.remove(selectedIndices[i]);
+					}
+				}
+			});
+			buttonsPane.add(btnRemove);
+		}
 		
 		JLabel lblSentTo = new JLabel("Sent to");
 		GridBagConstraints gbc_lblSentTo = new GridBagConstraints();
 		gbc_lblSentTo.anchor = GridBagConstraints.EAST;
 		gbc_lblSentTo.insets = new Insets(0, 0, 5, 5);
 		gbc_lblSentTo.gridx = 0;
-		gbc_lblSentTo.gridy = 11;
+		gbc_lblSentTo.gridy = 6;
 		leftPanel.add(lblSentTo, gbc_lblSentTo);
 		
 		lblNationsCount = new JLabel("0 nations");
 		lblNationsCount.setText("0 nations");
 		GridBagConstraints gbc_lblNationscount = new GridBagConstraints();
+		gbc_lblNationscount.gridwidth = 2;
 		gbc_lblNationscount.anchor = GridBagConstraints.WEST;
-		gbc_lblNationscount.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNationscount.insets = new Insets(0, 0, 5, 0);
 		gbc_lblNationscount.gridx = 1;
-		gbc_lblNationscount.gridy = 11;
+		gbc_lblNationscount.gridy = 6;
 		leftPanel.add(lblNationsCount, gbc_lblNationscount);
 		
 		progressBar = new JProgressBar();
@@ -320,13 +325,13 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		gbc_progressBar.gridwidth = 3;
 		gbc_progressBar.insets = new Insets(0, 0, 5, 0);
 		gbc_progressBar.gridx = 0;
-		gbc_progressBar.gridy = 12;
+		gbc_progressBar.gridy = 7;
 		leftPanel.add(progressBar, gbc_progressBar);
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
 		gbc_btnNewButton.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnNewButton.gridwidth = 3;
 		gbc_btnNewButton.gridx = 0;
-		gbc_btnNewButton.gridy = 13;
+		gbc_btnNewButton.gridy = 8;
 		leftPanel.add(btnSendButton, gbc_btnNewButton);
 		
 		JPanel rightPanel = new JPanel();
@@ -483,14 +488,15 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		// Update list
 		excludeList.clearSelection();
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
+		String excludeRegionPrefix = new CommuniqueRecipient(FilterType.EXCLUDE, RecipientType.REGION, "").toString();
 		List<String> excludeRegions = recipients.stream()
-				.filter(s -> s.startsWith("-region:"))
-				.map(s -> s.replaceFirst("-region:", ""))
+				.filter(s -> s.startsWith(excludeRegionPrefix))
+				.map(s -> s.replaceFirst(excludeRegionPrefix, ""))
 				.collect(Collectors.toList());
+		
 		for (String element : excludeRegions) {
 			boolean found = false;
 			for (int i = 0; i < model.getSize(); i++) {
-				// search in the list, if it is already there, select it
 				String modelName = CommuniqueUtilities.ref(model.getElementAt(i).toString());
 				if (modelName.equals(CommuniqueUtilities.ref(element))) {
 					excludeList.addSelectionInterval(i, i);
@@ -499,10 +505,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				}
 			}
 			if (!found) {
-				// add to the list
-				model.addElement(element);
-				excludeList.addSelectionInterval(model.size(), model.size());
-				// TODO fix bug here where the first element added is not selected for some reason
+				model.addElement(element); // add to the list
+				excludeList.addSelectionInterval(model.size() - 1, model.size() - 1);
 			}
 		}
 	}
@@ -511,17 +515,12 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	@Override public void send() {
 		
 		Runnable runner = () -> {
-			boolean isSending = true;
+			boolean sending = true;
 			try {
-				while (isSending) {
-					
+				while (sending) {
 					proscribedRegions = listProscribedRegions();
-					
-					// Otherwise, start sending.
 					JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
-					client.setKeys(
-							new JTelegramKeys(clientKeyField.getText(), secretKeyField.getText(),
-									telegramIdField.getText()));
+					client.setKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
 					client.setRecipient(getRecipient());
 					client.connect();
 					
@@ -531,7 +530,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 					}
 				}
 			} catch (InterruptedException e) {
-				isSending = false;
+				sending = false;
 				return;
 			}
 		};

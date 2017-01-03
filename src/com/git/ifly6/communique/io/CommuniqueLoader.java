@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.ngui.Communique;
+import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the
  * process of reading and writing to that data. It uses the <code>{@link CommuniqueReader}</code> and
@@ -51,37 +52,28 @@ public class CommuniqueLoader {
 	 * localised for this setup using this method.
 	 * @throws IOException */
 	public static void writeProperties(String clientKey) {
-		
 		try {
-			
 			Properties prop = new Properties();
-			FileOutputStream output = new FileOutputStream(Communique.appSupport + "/config.properties");
 			prop.setProperty("clientKey", clientKey);
-			prop.store(output, "");
+			FileOutputStream output = new FileOutputStream(Communique.appSupport.resolve("config.properties").toFile());
+			prop.store(output, "Communique Properties");
 			output.close();
-			
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new JTelegramException("Cannot write Communique properties", e);
 		}
 	}
 	
-	/** Reads the standard configuration file for the last used client key. The method returns the client key from the
-	 * configuration file.
+	/** Returns the last used client key from the configuration file.
 	 * @return the client key from file
 	 * @throws IOException if there was a problem in reading or finding the configuration file */
-	public static String readProperties() {
-		
-		Properties prop = new Properties();
-		
+	public static String getClientKey() {
 		try {
-			FileInputStream stream = new FileInputStream(Communique.appSupport + "/config.properties");
-			prop.load(stream);
-			
+			Properties prop = new Properties();
+			prop.load(new FileInputStream(Communique.appSupport.resolve("config.properties").toFile()));
+			String clientKey = prop.getProperty("clientKey");
+			return CommuniqueUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
 		} catch (IOException e) {
 			return "Client Key";
 		}
-		
-		String clientKey = prop.getProperty("clientKey");
-		return CommuniqueUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
 	}
 }
