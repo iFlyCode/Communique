@@ -636,11 +636,14 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					log.info("Called parser");
 					
 					try {
-						List<String> tokens = new ArrayList<>();	// create container
-						lines.stream().forEach(s -> Stream.of(s.split(",")).forEach(tokens::add));	// decompose tokens
-						Communique.this.parsedRecipients = parser.apply(tokens).getRecipients();	// apply all tokens
+						List<CommuniqueRecipient> tokens = new ArrayList<>();	// create container
+						lines.stream().forEach(s -> Stream.of(s.split(","))		// decompose and parse
+								.map(CommuniqueRecipient::parseRecipient)
+								.forEach(tokens::add));
+						Communique.this.parsedRecipients = parser.apply(tokens).getRecipients();	// apply
 					} catch (JTelegramException jte) {
 						Communique.this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+						return;
 					}
 					
 					// Estimate Time Needed

@@ -25,8 +25,9 @@ It is *your* responsibility to know how the telegram API works. Use of this prog
   - Regions must be declared with the following syntax `region:[name]` and can also be separated by commas or new lines.
   - There are three tags supported in Communiqué, `tag:wa`, `tag:delegates`, and `tag:new`. The first is the list of all World Assembly members. The second is the list of all World Assembly delegates. The third is a list of new nations.
   - There are two filters which can be applied by prefixing `+` or `-`. `+` is an intersection operator, which requires that all preceding recipients also meet the criteria put with `+`. `-` is an exclusion operator, which requires that all preceding recipients be removed if they match criteria.
-  	- For example, `region:Europe +tag:WA` would find all members of Europe, and then return the list of nations which are also WA members.
-  	- `region:Europe -tag:WA` does the opposite, where it finds all member of Europe and then removes all WA members.
+  	- For example, `region:Europe, +tag:WA` would find all members of Europe, and then return the list of nations which are also WA members.
+  	- `region:Europe, -tag:WA` does the opposite, where it finds all member of Europe and then removes all WA members.
+  	- While we strongly recommend putting each recipient on each line, it is possible to use commas as well.
   - This format system should be identical with the vanilla recipients system used in NationStates 
   - In version `6`, a Recruitment wizard was added. Simply use `flag:recruit` (or go into the menu) as your recipient to bring it up. Note that `flag:recruit` is not compatible with sending a telegram to any other nations. You can also specify regions to exclude from recruitment using the `-region:[name]` syntax.
 

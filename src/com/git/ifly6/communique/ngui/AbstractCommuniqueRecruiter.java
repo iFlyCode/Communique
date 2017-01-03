@@ -8,10 +8,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 import com.git.ifly6.marconi.MarconiRecruiter;
+import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSNation;
 
 /** Provides the outline for the recruiter classes. Also provides recipient search functionality shared between
@@ -71,7 +73,7 @@ public abstract class AbstractCommuniqueRecruiter {
 					// @formatter:off
 					if (sentList.contains(element)) { match = false; }
 					if (isProscribed(nation)) { match = false; }
-					if (nation.isRecruitable() == false) { match = false; }
+					if (!nation.isRecruitable()) { match = false; }
 					// @formatter:on
 				} catch (RuntimeException e) { // If there are any issues, set it to false.
 					match = false;
@@ -101,15 +103,16 @@ public abstract class AbstractCommuniqueRecruiter {
 		if (!nation.hasData()) {
 			try {
 				nation.populateData();
+			} catch (NSException e) {
+				return false;	// if it does not exist, it is fine
 			} catch (IOException e) {
-				// Failure to fetch information means false
-				return false;
+				e.printStackTrace();	// print it
 			}
 		}
 		
-		String nRegion = nation.getRegion().replaceAll(" ", "_");
+		String nRegion = CommuniqueUtilities.ref(nation.getRegion());
 		for (String proscribedRegion : proscribedRegions) {
-			if (proscribedRegion.replaceAll(" ", "_").equalsIgnoreCase(nRegion)) { return true; }
+			if (CommuniqueUtilities.ref(proscribedRegion).equals(nRegion)) { return true; }
 		}
 		
 		return false;

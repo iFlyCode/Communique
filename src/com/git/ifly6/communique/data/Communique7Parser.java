@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
@@ -47,23 +46,18 @@ public class Communique7Parser {
 		return this;
 	}
 	
-	/** Applies the tokens to the recipients list with a specified list of tokens. All of these should be parse-able
-	 * <code>CommuniqueRecipient</code>s.
-	 * @param list of parse-able <code>CommuniqueRecipient</code>s
+	/** Applies the tokens to the recipients list with a specified list of tokens.
+	 * @param list of <code>CommuniqueRecipient</code>s
 	 * @return this object for further applications, if necessary */
-	public Communique7Parser apply(List<String> list) throws JTelegramException {
-		list.stream()
-				.filter(s -> !s.startsWith("#"))
-				.filter(s -> !CommuniqueUtils.isEmpty(s))
-				.map(CommuniqueRecipient::parseRecipient)
-				.forEach(this::apply);
+	public Communique7Parser apply(List<CommuniqueRecipient> list) throws JTelegramException {
+		list.stream().forEach(this::apply);
 		return this;
 	}
 	
 	/** Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
 	 * @param tokens to apply
 	 * @return this parser for further analysis if necessary */
-	public Communique7Parser apply(CommuniqueRecipient... tokens) throws JTelegramException {
+	public Communique7Parser apply(CommuniqueRecipient... tokens) {
 		Stream.of(tokens).forEach(this::apply);
 		return this;
 	}

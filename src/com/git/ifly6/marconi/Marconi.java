@@ -4,10 +4,12 @@ package com.git.ifly6.marconi;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
@@ -35,7 +37,10 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		List<String> input = Arrays.asList(config.recipients);
 		input.addAll(Arrays.asList(config.sentList));
 		
-		List<String> expandedRecipients = parser.apply(input).getRecipients();
+		List<CommuniqueRecipient> tokens = input.stream()
+				.map(CommuniqueRecipient::parseRecipient)
+				.collect(Collectors.toList());
+		List<String> expandedRecipients = parser.apply(tokens).getRecipients();
 		
 		// If it needs to be randomised, do so.
 		if (config.isRandomised) {

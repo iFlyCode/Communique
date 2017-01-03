@@ -359,6 +359,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		JMenuItem mntmClose = new JMenuItem("Close");
 		mntmClose.setAccelerator(Communique.getOSKeyStroke(KeyEvent.VK_W));
 		mntmClose.addActionListener(e -> {
+			thread.interrupt();
 			frame.setVisible(false);
 			frame.dispose();
 		});
@@ -516,26 +517,27 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		
 		Runnable runner = () -> {
 			boolean sending = true;
-			try {
-				while (sending) {
-					proscribedRegions = listProscribedRegions();
-					JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
-					client.setKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
-					client.setRecipient(getRecipient());
-					client.connect();
-					
-					for (int x = 0; x < 180; x++) {
+			while (sending) {
+				
+				proscribedRegions = listProscribedRegions();
+				JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
+				client.setKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
+				client.setRecipient(getRecipient());
+				client.connect();
+				
+				for (int x = 0; x < 180; x++) {
+					try {
 						progressBar.setValue(x);
 						Thread.sleep(1000);	// 1-second intervals, wake to update the progressBar
+					} catch (InterruptedException e) {
+						sending = false;
+						return;
 					}
 				}
-			} catch (InterruptedException e) {
-				sending = false;
-				return;
 			}
 		};
 		
 		thread = new Thread(runner);
-		thread.run();
+		thread.start();	// thread#run does not work
 	}
 }

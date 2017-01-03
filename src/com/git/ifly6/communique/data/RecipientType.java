@@ -26,7 +26,7 @@ public enum RecipientType {
 	/** Declares the recipient is a region, allowing for decomposition into a list of {@link CommuniqueRecipient}
 	 * nations in the region. */
 	REGION {
-		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
+		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			return createRecipients(JInfoFetcher.instance().getRegion(cr.getName()), cr);
 		}
 	},
@@ -34,13 +34,13 @@ public enum RecipientType {
 	/** Declares the recipient is one of various tags, which can be used to get the members of the World Assembly,
 	 * delegates thereof, or new nations. */
 	TAG {
-		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
+		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			String tag = cr.getName();	// TODO create tag enums for this
 			if (tag.equals("wa")) { return createRecipients(JInfoFetcher.instance().getWAMembers(), cr); }
 			if (tag.equals("delegates")) { return createRecipients(JInfoFetcher.instance().getDelegates(), cr); }
 			if (tag.equals("new")) { return createRecipients(JInfoFetcher.instance().getNew(), cr); }
 			if (tag.equals("all")) { return createRecipients(JInfoFetcher.instance().getAll(), cr); }
-			throw new JTelegramException("Invalid tag: " + cr.toString());
+			throw new JTelegramException("Invalid tag: \"" + cr.toString() + "\"");
 		}
 	},
 	
