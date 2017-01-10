@@ -9,3 +9,8 @@
 *.properties
 /bin/
 /target/
+/.classpath
+/.project
+build-communique.xml
+build-marconi.xml
+/.settings/

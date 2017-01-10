@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -53,8 +55,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -119,16 +123,17 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public static void main(String[] args) {
 		
 		try {
-			
-			// Set system look and feel.
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException lfE) {
-			
-			// If not possible, set the cross-platform look and feel.
 			try {
-				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+					if ("Nimbus".equals(info.getName())) {
+						UIManager.setLookAndFeel(info.getClassName());
+						break;
+					}
+				}
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 					| UnsupportedLookAndFeelException e) {
 				e.printStackTrace();
@@ -227,25 +232,21 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		JPanel controlPanel = new JPanel();
 		contentPane.add(controlPanel, BorderLayout.SOUTH);
-		controlPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		txtClientKey = new JTextField();
 		txtClientKey.setToolTipText("Client key");
 		txtClientKey.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtClientKey.setText(CommuniqueLoader.getClientKey());
-		controlPanel.add(txtClientKey);
 		
 		txtSecretKey = new JTextField();
 		txtSecretKey.setToolTipText("Secret key");
 		txtSecretKey.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtSecretKey.setText("Secret Key");
-		controlPanel.add(txtSecretKey);
 		
 		txtTelegramId = new JTextField();
 		txtTelegramId.setToolTipText("Telegram ID");
 		txtTelegramId.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtTelegramId.setText("Telegram ID");
-		controlPanel.add(txtTelegramId);
 		
 		btnSend = new JButton("Parse");
 		
@@ -253,8 +254,27 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		chckbxRecruitment.addActionListener(l -> {
 			triggerParsed(false);
 		});
-		controlPanel.add(chckbxRecruitment);
-		controlPanel.add(btnSend);
+		
+		GroupLayout gl_controlPanel = new GroupLayout(controlPanel);
+		gl_controlPanel.setHorizontalGroup(
+				gl_controlPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_controlPanel.createSequentialGroup()
+								.addComponent(txtClientKey, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+								.addComponent(txtSecretKey, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+								.addComponent(txtTelegramId, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+								.addComponent(chckbxRecruitment, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(btnSend, GroupLayout.PREFERRED_SIZE, 190, GroupLayout.PREFERRED_SIZE)
+								.addGap(0)));
+		gl_controlPanel.setVerticalGroup(
+				gl_controlPanel.createParallelGroup(Alignment.LEADING)
+						.addComponent(txtClientKey, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE)
+						.addComponent(txtSecretKey, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE)
+						.addComponent(txtTelegramId, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE)
+						.addGroup(gl_controlPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(chckbxRecruitment, GroupLayout.PREFERRED_SIZE, 29, GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnSend)));
+		controlPanel.setLayout(gl_controlPanel);
 		
 		JPanel metaDataPanel = new JPanel();
 		metaDataPanel.setLayout(new BorderLayout());
@@ -298,8 +318,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		JTextArea txtrRecipients = new JTextArea();
 		txtrRecipients.setEditable(false);
-		txtrRecipients.setText(
-				"# == Communiqué Recipients ==\n# This tab shows all recipients after parsing of the Code tab.\n\n");
+		txtrRecipients.setText("# == Communiqué Recipients ==\n# This tab shows all recipients after parsing of the "
+				+ "Code tab.\n\n");
 		txtrRecipients.setFont(new Font(Font.MONOSPACED, 0, 11));
 		txtrRecipients.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		recipientsPanel.add(new JScrollPane(txtrRecipients), BorderLayout.CENTER);
@@ -666,10 +686,17 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					triggerParsed(true);
 					
 				} else {
+					
 					if (parsedRecipients.size() == 0) {
 						Communique.this.showMessageDialog("No recipients specified, cannot send.", CommuniqueMessages.ERROR);
 						return;
 					}
+					
+					if (sendingThread.isAlive() && btnSend.getText().equalsIgnoreCase("Stop")) {
+						sendingThread.interrupt();
+						client.setKillThread(true);
+					}
+					
 					send();
 				}
 			}
@@ -789,7 +816,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				
 				@Override public void actionPerformed(ActionEvent ae) {
 					progressBar.setValue(elapsedSteps++);	// iterate through
-					if (elapsedSteps >= totalTime) {
+					if (elapsedSteps >= totalTime || sendingThread.isInterrupted()) {
 						timer.stop();
 					}
 				}
@@ -910,7 +937,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				}
 				
 				client.setRecipients(parsedRecipients);	// Set recipients
-				System.err.println(parsedRecipients);
 				client.setKeys(new JTelegramKeys(txtClientKey.getText(), txtSecretKey.getText(), txtTelegramId.getText()));
 				
 				// Set recruitment Status, JavaTelegram defaults to true
@@ -927,12 +953,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				}
 				
 				client.connect();
-				this.completeSend();
-				
+				completeSend();
 			};
 			
 			sendingThread = new Thread(runner);
 			sendingThread.start();
+			
+			btnSend.setText("Stop");
 			
 		} else {
 			log.info("There is already a campaign running. Terminate that campaign and then retry.");

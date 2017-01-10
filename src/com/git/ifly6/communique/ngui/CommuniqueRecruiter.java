@@ -6,10 +6,7 @@ import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -20,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -28,6 +24,8 @@ import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -41,6 +39,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.CommuniqueUtils;
@@ -60,7 +59,6 @@ import com.git.ifly6.javatelegram.JavaTelegram;
  * to {@link Communique} for possible saving. */
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 	
-	private static final Logger log = Logger.getLogger(CommuniqueRecruiter.class.getName());
 	public static final String[] protectedRegions = new String[] { "the Pacific", "the North Pacific", "the South Pacific",
 			"the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms" };
 	
@@ -98,8 +96,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 			Dimension screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
 			double sWidth = screenDimensions.getWidth();
 			double sHeight = screenDimensions.getHeight();
-			int windowWidth = 800;
-			int windowHeight = 500;
+			int windowWidth = 600;
+			int windowHeight = 400;
 			frame.setBounds((int) (sWidth / 2 - windowWidth / 2), (int) (sHeight / 2 - windowHeight / 2), windowWidth,
 					windowHeight);
 			frame.setMinimumSize(new Dimension(600, 400));
@@ -113,22 +111,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		JPanel leftPanel = new JPanel();
 		leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		panel.add(leftPanel);
-		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[] { 0, 0, 0, 0 };
-		gbl_panel_1.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_panel_1.columnWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
-		gbl_panel_1.rowWeights =
-				new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-						Double.MIN_VALUE };
-		leftPanel.setLayout(gbl_panel_1);
 		
 		JLabel lblClientKey = new JLabel("Client Key");
-		GridBagConstraints gbc_lblClientKey = new GridBagConstraints();
-		gbc_lblClientKey.anchor = GridBagConstraints.EAST;
-		gbc_lblClientKey.insets = new Insets(0, 0, 5, 5);
-		gbc_lblClientKey.gridx = 0;
-		gbc_lblClientKey.gridy = 0;
-		leftPanel.add(lblClientKey, gbc_lblClientKey);
 		
 		clientKeyField = new JTextField();
 		clientKeyField.setFont(new Font(Font.MONOSPACED, 0, 11));
@@ -137,22 +121,9 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				((JTextField) e.getComponent()).setText("");
 			}
 		});
-		GridBagConstraints gbc_clientKeyField = new GridBagConstraints();
-		gbc_clientKeyField.gridwidth = 2;
-		gbc_clientKeyField.insets = new Insets(0, 0, 5, 0);
-		gbc_clientKeyField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_clientKeyField.gridx = 1;
-		gbc_clientKeyField.gridy = 0;
-		leftPanel.add(clientKeyField, gbc_clientKeyField);
 		clientKeyField.setColumns(10);
 		
 		JLabel lblSecretKey = new JLabel("Secret Key");
-		GridBagConstraints gbc_lblSecretKey = new GridBagConstraints();
-		gbc_lblSecretKey.anchor = GridBagConstraints.EAST;
-		gbc_lblSecretKey.insets = new Insets(0, 0, 5, 5);
-		gbc_lblSecretKey.gridx = 0;
-		gbc_lblSecretKey.gridy = 1;
-		leftPanel.add(lblSecretKey, gbc_lblSecretKey);
 		
 		secretKeyField = new JTextField();
 		secretKeyField.setFont(new Font(Font.MONOSPACED, 0, 11));
@@ -161,22 +132,9 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				((JTextField) e.getComponent()).setText("");
 			}
 		});
-		GridBagConstraints gbc_secretKeyField = new GridBagConstraints();
-		gbc_secretKeyField.gridwidth = 2;
-		gbc_secretKeyField.insets = new Insets(0, 0, 5, 0);
-		gbc_secretKeyField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_secretKeyField.gridx = 1;
-		gbc_secretKeyField.gridy = 1;
-		leftPanel.add(secretKeyField, gbc_secretKeyField);
 		secretKeyField.setColumns(10);
 		
 		JLabel lblTelegramId = new JLabel("Telegram ID");
-		GridBagConstraints gbc_lblTelegramId = new GridBagConstraints();
-		gbc_lblTelegramId.anchor = GridBagConstraints.EAST;
-		gbc_lblTelegramId.insets = new Insets(0, 0, 5, 5);
-		gbc_lblTelegramId.gridx = 0;
-		gbc_lblTelegramId.gridy = 2;
-		leftPanel.add(lblTelegramId, gbc_lblTelegramId);
 		
 		telegramIdField = new JTextField();
 		telegramIdField.setFont(new Font(Font.MONOSPACED, 0, 11));
@@ -185,22 +143,9 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				((JTextField) e.getComponent()).setText("");
 			}
 		});
-		GridBagConstraints gbc_telegramIdField = new GridBagConstraints();
-		gbc_telegramIdField.gridwidth = 2;
-		gbc_telegramIdField.insets = new Insets(0, 0, 5, 0);
-		gbc_telegramIdField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_telegramIdField.gridx = 1;
-		gbc_telegramIdField.gridy = 2;
-		leftPanel.add(telegramIdField, gbc_telegramIdField);
 		telegramIdField.setColumns(10);
 		
 		JLabel lblExclude = new JLabel("Exclude:");
-		GridBagConstraints gbc_lblExclude = new GridBagConstraints();
-		gbc_lblExclude.anchor = GridBagConstraints.EAST;
-		gbc_lblExclude.insets = new Insets(0, 0, 5, 5);
-		gbc_lblExclude.gridx = 0;
-		gbc_lblExclude.gridy = 3;
-		leftPanel.add(lblExclude, gbc_lblExclude);
 		
 		JButton btnSendButton = new JButton("Send");
 		btnSendButton.addActionListener(e -> {
@@ -250,67 +195,16 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				}
 			}
 		});
-		GridBagConstraints gbc_excludeList = new GridBagConstraints();
-		gbc_excludeList.gridwidth = 2;
-		gbc_excludeList.gridheight = 2;
-		gbc_excludeList.insets = new Insets(0, 0, 5, 0);
-		gbc_excludeList.fill = GridBagConstraints.BOTH;
-		gbc_excludeList.gridx = 1;
-		gbc_excludeList.gridy = 3;
 		JScrollPane scrollPane = new JScrollPane(excludeList);
-		leftPanel.add(scrollPane, gbc_excludeList);
 		
 		JPanel buttonsPane = new JPanel();
 		buttonsPane.setLayout(new GridLayout(1, 3, 0, 0));
 		buttonsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-		GridBagConstraints gbc_buttonsPane = new GridBagConstraints();
-		gbc_buttonsPane.insets = new Insets(0, 0, 5, 5);
-		gbc_buttonsPane.gridx = 1;
-		gbc_buttonsPane.gridy = 5;
-		leftPanel.add(buttonsPane, gbc_buttonsPane);
-		{
-			JButton btnAdd = new JButton("+");
-			btnAdd.setPreferredSize(new Dimension(25, 20));
-			btnAdd.addActionListener(al -> {
-				String rName =
-						(String) JOptionPane.showInputDialog(frame, "Input the name of the region you want to exclude.",
-								"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
-				if (!CommuniqueUtils.isEmpty(rName)) {
-					exListModel.addElement(rName);
-				}
-			});
-			buttonsPane.add(btnAdd);
-			
-			JButton btnRemove = new JButton("—");
-			btnRemove.setPreferredSize(new Dimension(25, 20));
-			btnRemove.addActionListener(al -> {
-				int[] selectedIndices = excludeList.getSelectedIndices();
-				for (int i = selectedIndices.length - 1; i >= 0; i--) {
-					if (!CommuniqueUtils.contains(protectedRegions, exListModel.get(selectedIndices[i]))) {
-						exListModel.remove(selectedIndices[i]);
-					}
-				}
-			});
-			buttonsPane.add(btnRemove);
-		}
 		
 		JLabel lblSentTo = new JLabel("Sent to");
-		GridBagConstraints gbc_lblSentTo = new GridBagConstraints();
-		gbc_lblSentTo.anchor = GridBagConstraints.EAST;
-		gbc_lblSentTo.insets = new Insets(0, 0, 5, 5);
-		gbc_lblSentTo.gridx = 0;
-		gbc_lblSentTo.gridy = 6;
-		leftPanel.add(lblSentTo, gbc_lblSentTo);
 		
 		lblNationsCount = new JLabel("0 nations");
 		lblNationsCount.setText("0 nations");
-		GridBagConstraints gbc_lblNationscount = new GridBagConstraints();
-		gbc_lblNationscount.gridwidth = 2;
-		gbc_lblNationscount.anchor = GridBagConstraints.WEST;
-		gbc_lblNationscount.insets = new Insets(0, 0, 5, 0);
-		gbc_lblNationscount.gridx = 1;
-		gbc_lblNationscount.gridy = 6;
-		leftPanel.add(lblNationsCount, gbc_lblNationscount);
 		
 		progressBar = new JProgressBar();
 		progressBar.setMaximum(180);
@@ -320,19 +214,119 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		} else if (CommuniqueUtils.IS_OS_WINDOWS) {
 			progressBar.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
 		}
-		GridBagConstraints gbc_progressBar = new GridBagConstraints();
-		gbc_progressBar.fill = GridBagConstraints.HORIZONTAL;
-		gbc_progressBar.gridwidth = 3;
-		gbc_progressBar.insets = new Insets(0, 0, 5, 0);
-		gbc_progressBar.gridx = 0;
-		gbc_progressBar.gridy = 7;
-		leftPanel.add(progressBar, gbc_progressBar);
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnNewButton.gridwidth = 3;
-		gbc_btnNewButton.gridx = 0;
-		gbc_btnNewButton.gridy = 8;
-		leftPanel.add(btnSendButton, gbc_btnNewButton);
+		
+		JButton btnAdd = new JButton("+");
+		btnAdd.setPreferredSize(new Dimension(25, 20));
+		btnAdd.addActionListener(al -> {
+			String rName =
+					(String) JOptionPane.showInputDialog(frame, "Input the name of the region you want to exclude.",
+							"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
+			if (!CommuniqueUtils.isEmpty(rName)) {
+				exListModel.addElement(rName);
+			}
+		});
+		
+		JButton btnRemove = new JButton("—");
+		btnRemove.setPreferredSize(new Dimension(25, 20));
+		btnRemove.addActionListener(al -> {
+			int[] selectedIndices = excludeList.getSelectedIndices();
+			for (int i = selectedIndices.length - 1; i >= 0; i--) {
+				if (!CommuniqueUtils.contains(protectedRegions, exListModel.get(selectedIndices[i]))) {
+					exListModel.remove(selectedIndices[i]);
+				}
+			}
+			this.sync();
+		});
+		
+		GroupLayout gl_leftPanel = new GroupLayout(leftPanel);
+		gl_leftPanel.setHorizontalGroup(
+				gl_leftPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_leftPanel.createSequentialGroup()
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_leftPanel.createSequentialGroup()
+												.addContainerGap()
+												.addComponent(lblSentTo)
+												.addPreferredGap(ComponentPlacement.RELATED)
+												.addComponent(lblNationsCount))
+										.addGroup(gl_leftPanel.createSequentialGroup()
+												.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+														.addComponent(lblClientKey)
+														.addComponent(lblSecretKey)
+														.addComponent(lblTelegramId))
+												.addPreferredGap(ComponentPlacement.RELATED)
+												.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+														.addComponent(secretKeyField, GroupLayout.DEFAULT_SIZE, 300,
+																Short.MAX_VALUE)
+														.addComponent(clientKeyField, Alignment.TRAILING,
+																GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+														.addComponent(telegramIdField, Alignment.TRAILING,
+																GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
+										.addGroup(gl_leftPanel.createSequentialGroup()
+												.addComponent(lblExclude, GroupLayout.PREFERRED_SIZE, 59,
+														GroupLayout.PREFERRED_SIZE)
+												.addGap(18)
+												.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+														.addGroup(gl_leftPanel.createSequentialGroup()
+																.addComponent(btnAdd, GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+																.addPreferredGap(ComponentPlacement.RELATED)
+																.addComponent(btnRemove, GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+																.addGap(30)
+																.addComponent(buttonsPane, GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+																.addPreferredGap(ComponentPlacement.RELATED, 219,
+																		Short.MAX_VALUE))
+														.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 305,
+																Short.MAX_VALUE)))
+										.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+										.addComponent(btnSendButton, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))
+								.addGap(0)));
+		gl_leftPanel.setVerticalGroup(
+				gl_leftPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_leftPanel.createSequentialGroup()
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.BASELINE)
+										.addComponent(clientKeyField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+												GroupLayout.PREFERRED_SIZE)
+										.addComponent(lblClientKey))
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.BASELINE)
+										.addComponent(secretKeyField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+												GroupLayout.PREFERRED_SIZE)
+										.addComponent(lblSecretKey))
+								.addGap(5)
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.BASELINE)
+										.addComponent(telegramIdField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+												GroupLayout.PREFERRED_SIZE)
+										.addComponent(lblTelegramId))
+								.addGap(8)
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_leftPanel.createSequentialGroup()
+												.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
+												.addGap(5)
+												.addGroup(gl_leftPanel.createParallelGroup(Alignment.LEADING)
+														.addGroup(gl_leftPanel.createParallelGroup(Alignment.BASELINE)
+																.addComponent(btnAdd, GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+																.addComponent(btnRemove, GroupLayout.PREFERRED_SIZE,
+																		GroupLayout.DEFAULT_SIZE,
+																		GroupLayout.PREFERRED_SIZE))
+														.addComponent(buttonsPane, GroupLayout.PREFERRED_SIZE,
+																GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+												.addGap(5))
+										.addGroup(gl_leftPanel.createSequentialGroup()
+												.addComponent(lblExclude)
+												.addPreferredGap(ComponentPlacement.RELATED)))
+								.addGroup(gl_leftPanel.createParallelGroup(Alignment.BASELINE)
+										.addComponent(lblSentTo)
+										.addComponent(lblNationsCount))
+								.addGap(5)
+								.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+										GroupLayout.PREFERRED_SIZE)
+								.addGap(5)
+								.addComponent(btnSendButton)
+								.addGap(4)));
+		leftPanel.setLayout(gl_leftPanel);
 		
 		JPanel rightPanel = new JPanel();
 		panel.add(rightPanel);
@@ -359,7 +353,9 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		JMenuItem mntmClose = new JMenuItem("Close");
 		mntmClose.setAccelerator(Communique.getOSKeyStroke(KeyEvent.VK_W));
 		mntmClose.addActionListener(e -> {
-			thread.interrupt();
+			if (thread != null) {
+				thread.interrupt();
+			}
 			frame.setVisible(false);
 			frame.dispose();
 		});
@@ -409,21 +405,30 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	/** @param file */
 	private void save(Path savePath) {
 		
-		log.info("User elected to save file at " + savePath.toAbsolutePath().toString());
-		
-		// If it does not end in txt, make it end in txt
-		if (!savePath.toAbsolutePath().toString().endsWith(".txt")) {
-			savePath = Paths.get(savePath.toAbsolutePath().toString() + ".txt");
-		}
-		
 		// Prepare to save by:
 		// * Creating a configuration file up to specifications
 		// * Importing that configuration into Communique
 		// * Have Communique save that file
+		sync();
+		
+		// Save
+		try {
+			if (!savePath.toAbsolutePath().toString().endsWith(".txt")) {
+				savePath = Paths.get(savePath.toAbsolutePath().toString() + ".txt");
+			}
+			CommuniqueLoader loader = new CommuniqueLoader(savePath);
+			loader.save(communique.exportState());
+			
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	private void sync() {
+		
 		CommuniqueConfig config = new CommuniqueConfig();
 		
-		// Set the many flags that need to be set
-		config.isDelegatePrioritised = false;
+		config.isDelegatePrioritised = false;	// set appropriate flags
 		config.isRandomised = false;
 		config.isRecruitment = true;
 		config.defaultVersion();
@@ -442,15 +447,6 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		
 		// Sync up with Communique
 		communique.importState(config);
-		
-		// Save
-		try {
-			CommuniqueLoader loader = new CommuniqueLoader(savePath);
-			loader.save(communique.exportState());
-			
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 	}
 	
 	public boolean isDisplayable() {

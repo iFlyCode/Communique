@@ -16,7 +16,7 @@ public class CommuniqueUtilities {
 	 * @param name to turn into a reference name
 	 * @return reference name form of the input name */
 	public static String ref(String name) {
-		return name.trim().toLowerCase().replace("\\s", "_");
+		return name.trim().toLowerCase().replace(" ", "_");
 	}
 	
 	/** This changes raw seconds directly into days, hours, minutes, and seconds. Very helpful for creating a system of
