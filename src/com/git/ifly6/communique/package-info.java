@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 
 /** Classes which used to be the centre of the Communique system. Much of the classes, due to the need for
  * maintainability, have now be shuffled into new packages as they have been rewritten. For example, the

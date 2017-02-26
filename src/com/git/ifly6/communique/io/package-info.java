@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 
 /** Classes in this package manage the loading of information for Communique. This falls into two general categories,
  * loading information from disc and from the Internet. Most of the classes have to do with loading information from

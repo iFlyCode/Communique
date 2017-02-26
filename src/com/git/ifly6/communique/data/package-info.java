@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 
 /** This package manages parsing for the Communique system. Each recipient is contained in a
  * {@link com.git.ifly6.communique.data.CommuniqueRecipient CommuniqueRecipient} object, which can then be applied via

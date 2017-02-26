@@ -1,4 +1,4 @@
-/* Copyright (c) 2016 Kevin Wong
+/* Copyright (c) 2017 Kevin Wong
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -31,7 +31,7 @@ public class CommuniqueMessages {
 					+ "thanks to bug-testers Tinfect, Krypton Nova, and Wallenburg.";
 	
 	public static final String licence =
-			"Copyright (c) 2016 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "
+			"Copyright (c) 2017 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "
 					+ "OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
 					+ "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT "
 					+ "HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, "
