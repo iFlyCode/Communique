@@ -1,27 +1,20 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.ngui.Communique;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.ngui.Communique;
-import com.sun.istack.internal.logging.Logger;
 
 /** @author ifly6 */
 public class CommuniqueUpdater {
@@ -30,34 +23,33 @@ public class CommuniqueUpdater {
 	public static final String LATEST_RELEASE = "https://github.com/iFlyCode/Communique/releases/latest";
 	
 	/** Path pointing to the application support folder, resolving a hidden file. */
-	private static Path updatePath;
+	private static Path updatePath = Communique.appSupport.resolve(".updater-properties");
 	
 	/** Properties object to serialise and deserialise. */
-	private CommuniqueUpdaterProperties updaterProps;
+	private CommuniqueUpdaterProperties updaterProps = new CommuniqueUpdaterProperties();
 	
 	/** Creates a new <code>CommuniqueUpdater</code> instance which loads the date at which it was last checked and
 	 * whether it should continue checking into file. If an <code>IOException</code> occurs or there is no file, the
 	 * program defaults to a last-checked date of now and defaults to continue checking. */
 	public CommuniqueUpdater() {
-		updatePath = Communique.appSupport.resolve(".updater-properties");
-		updaterProps = new CommuniqueUpdaterProperties();	// create default values
 		try {
 			ObjectInputStream oiStream = new ObjectInputStream(Files.newInputStream(updatePath));
-			updaterProps = (CommuniqueUpdaterProperties) oiStream.readObject();
+			updaterProps = (CommuniqueUpdaterProperties) oiStream.readObject();	// replace original
 		} catch (RuntimeException | IOException | ClassNotFoundException e) {
-			Logger.getLogger(this.getClass()).info("Could not get updater properties.");
+			Logger.getLogger(this.getClass().getName()).info("Could not get updater properties.");
 			// accept default values
 		}
 	}
-	
-	public CommuniqueUpdater(boolean continueChecking) {
-		this();
+
+	/** Sets the appropriate continue checking value and then saves it with a new check date */
+	public void setContinueReminding(boolean continueChecking) {
 		this.updaterProps.continueChecking = continueChecking;
+		save();
 	}
-	
+
 	/** Returns true if there is a major version update.
-	 * @return <code>boolean</code> on whether there is a new major version update */
-	public boolean checkForUpdate() {
+	 * @return <code>boolean</code> if there is a new major version update */
+	public boolean hasUpdate() {
 		
 		try {
 			
@@ -71,11 +63,11 @@ public class CommuniqueUpdater {
 			}
 			
 			Document doc = Jsoup.parse(html);
-			Elements elements = doc.select("div.release-meta").select("span.css-truncate-target");
+			Elements elements = doc.select("div.release-meta").select("span.css-truncate-target");	// parse GitHub page
 			String versionString = elements.first().text().trim().replace("v", "");
 			
 			int majorVersion = Integer.parseInt(versionString.substring(0,
-					versionString.indexOf(".") == -1 ? versionString.length() : versionString.indexOf(".")));
+					!versionString.contains(".") ? versionString.length() : versionString.indexOf(".")));
 			if (majorVersion > Communique7Parser.version) { return true; }	// if higher major version, return for
 																				// update
 			
@@ -93,17 +85,15 @@ public class CommuniqueUpdater {
 	 * the last week and there is a new major version update.
 	 * @return <code>true</code> if there is a new update and it has not been checked within the last week */
 	public boolean shouldRemind() {
-		if (canCheck()) { return false; }
-		return checkForUpdate();
+		return !recentCheck() && hasUpdate();
 	}
 	
 	/** Determines whether Communique has recently checked for an update. If it has checked within the last week, it
 	 * will skip checking again.
 	 * @return <code>boolean</code> about whether a check has been conducted within the last week */
-	private boolean canCheck() {
+	private boolean recentCheck() {
 		boolean notWithinWeek = new Date().getTime() - updaterProps.lastChecked.getTime() < 86400000 * 7;
-		if (updaterProps.continueChecking && notWithinWeek) { return true; }
-		return false;
+		return updaterProps.continueChecking && notWithinWeek;
 	}
 	
 	/** Saves the check date along with the continue checking information. Note that this method uses the standard Java
@@ -121,14 +111,13 @@ public class CommuniqueUpdater {
 		}
 	}
 	
-	// Sets the appropriate continue checking value and then saves it with a new check date
-	public void setContinueReminding(boolean continueChecking) {
-		this.updaterProps.continueChecking = continueChecking;
-		save();
-	}
-	
 }
 
+/**
+ * Basically a C-style <code>struct</code> for easily serialising information on the last time an update was checked
+ * and whether Communique should continue checking. In {@link CommuniqueUpdater#updatePath}, it is saved to an
+ * invisible file in the application support director.
+ */
 class CommuniqueUpdaterProperties implements Serializable {
 	
 	private static final long serialVersionUID = Communique7Parser.version;

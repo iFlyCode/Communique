@@ -1,121 +1,118 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
+import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 import com.git.ifly6.javatelegram.util.JTelegramException;
 import com.git.ifly6.marconi.MarconiRecruiter;
-import com.git.ifly6.nsapi.NSException;
+import com.git.ifly6.marconi.MarconiUtilities;
+import com.git.ifly6.nsapi.NSApiException;
 import com.git.ifly6.nsapi.NSNation;
 
-/** Provides the outline for the recruiter classes. Also provides recipient search functionality shared between
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+/**
+ * Provides the outline for the recruiter classes. Also provides recipient search functionality shared between
  * {@link CommuniqueRecruiter} and {@link MarconiRecruiter}.
- * @author ifly6 */
-public abstract class AbstractCommuniqueRecruiter {
-	
-	public static final JInfoFetcher fetcher = JInfoFetcher.instance();
-	
-	protected String clientKey;
-	protected String secretKey;
-	protected String telegramId;
-	
-	protected List<String> recipients;
-	protected LinkedHashSet<String> sentList;
-	protected Set<String> proscribedRegions;
-	
+ * @author ifly6
+ */
+public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
+
+	private static final JInfoFetcher fetcher = JInfoFetcher.instance();
+	private static final Logger LOGGER = Logger.getLogger(AbstractCommuniqueRecruiter.class.getName());
+
+	protected LinkedHashSet<CommuniqueRecipient> sentList;
+	protected Set<CommuniqueRecipient> proscribedRegions;
+
 	public void setWithCConfig(CommuniqueConfig config) {
-		
-		setClientKey(config.keys.getClientKey());
-		setSecretKey(config.keys.getSecretKey());
-		setTelegramId(config.keys.getTelegramId());
-		
-		recipients = new ArrayList<>(Arrays.asList(config.recipients));
-		sentList = new LinkedHashSet<>(Arrays.asList(config.sentList));
-		
+		sentList = config.getcRecipients().stream()
+				.filter(r -> r.getRecipientType() == RecipientType.NATION)
+				.filter(r -> r.getFilterType() == FilterType.EXCLUDE)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
-	
-	public void setClientKey(String key) {
-		this.clientKey = key;
-	}
-	
-	public void setSecretKey(String key) {
-		this.secretKey = key;
-	}
-	
-	public void setTelegramId(String id) {
-		this.telegramId = id;
-	}
-	
+
 	public abstract void send();
-	
-	/** Returns a recipient based on the new recipients list from the NS API, filtered by whether it is proscribed. Note
+
+	public void sentTo(String recipient, int x, int length){
+		sentList.add(CommuniqueRecipients.createExcludedNation(recipient));
+	}
+
+	/**
+	 * Returns a recipient based on the new recipients list from the NS API, filtered by whether it is proscribed. Note
 	 * that any issues or problems are dealt with my defaulting to the newest nation, ignoring the proscription filter.
 	 * It also filters by whether the nation is recruitable.
-	 * @return a <code>String</code> with the name of the recipient */
-	public String getRecipient() {
-		
+	 * @return a <code>String</code> with the name of the recipient
+	 */
+	public CommuniqueRecipient getRecipient() {
+
 		try {
-			recipients = fetcher.getNew();
-			for (String element : recipients) {
-				
-				boolean match = true;
-				NSNation nation = new NSNation(element);
-				
+			List<String> possibleRecipients = CommuniqueUtilities.ref(fetcher.getNew());
+			for (String element : possibleRecipients) {
+
+				// if in sent list, next
+				// if not recruitable, next
+				// if proscribed, next
+				// otherwise, return
+
+				if (sentList.stream()   // must map to names
+						.map(CommuniqueRecipient::getName)
+						.anyMatch(s -> s.equalsIgnoreCase(element))) continue;
+
 				try {
-					// @formatter:off
-					if (sentList.contains(element)) { match = false; }
-					if (isProscribed(nation)) { match = false; }
-					if (!nation.isRecruitable()) { match = false; }
-					// @formatter:on
-				} catch (RuntimeException e) { // If there are any issues, set it to false.
-					match = false;
+					NSNation prNation = new NSNation(element).populateData();
+					if (!prNation.isRecruitable()) continue;
+					if (isProscribed(prNation)) continue;
+
+				} catch (NSApiException e) {
+					// if it doesn't exist, ignore it
+					continue;
 				}
-				
-				// Return if match is still true
-				if (match) { return element; }
-				
+
+				// 2017-03-18 proscription and recruit checks are now performed by JavaTelegram#predicates
+				return CommuniqueRecipients.createNation(element);
 			}
-			
+
 			// If the filtering failed, then simply just return the newest nation.
-			return recipients.get(0);
-			
+			return CommuniqueRecipients.createNation(possibleRecipients.get(0));
+
 		} catch (JTelegramException e) {
-			e.printStackTrace();
-			return getRecipient();
+			LOGGER.warning("Cannot fetch new nations [" + MarconiUtilities.currentTime() + "]. Retrying.");
+			return getRecipient();  // retry
+
+		} catch (RuntimeException e) {
+			LOGGER.warning("Cannot load data for nation");
+			return getRecipient();  // retry
 		}
 	}
-	
-	/** Determines whether a nation is in a region excluded by the JList <code>excludeList</code>. This method acts with
+
+	/**
+	 * Determines whether a nation is in a region excluded by the JList <code>excludeList</code>. This method acts with
 	 * two assumptions: (1) it is not all right to telegram to anyone who resides in a prescribed region and (2) if they
 	 * moved out of the region since founding, it is certainly all right to do so.
-	 * @param nationName
-	 * @return <code>boolean</code> on whether it is proscribed */
-	public boolean isProscribed(NSNation nation) {
-		
-		if (!nation.hasData()) {
-			try {
-				nation.populateData();
-			} catch (NSException e) {
-				return false;	// if it does not exist, it is fine
-			} catch (IOException e) {
-				e.printStackTrace();	// print it
-			}
-		}
-		
+	 * @param nation to check
+	 * @return <code>boolean</code> on whether it is proscribed
+	 */
+	private boolean isProscribed(NSNation nation) {
+
+		if (!nation.hasData()) nation.populateData();
+
+		// API gives region names, can only do this by converting to ref names and then comparing
 		String nRegion = CommuniqueUtilities.ref(nation.getRegion());
-		for (String proscribedRegion : proscribedRegions) {
-			if (CommuniqueUtilities.ref(proscribedRegion).equals(nRegion)) { return true; }
-		}
-		
-		return false;
+		return proscribedRegions.stream()
+				.map(CommuniqueRecipient::getName)
+				.map(CommuniqueUtilities::ref)
+				.anyMatch(regionName -> regionName.equals(nRegion));
+
 	}
-	
+
 }

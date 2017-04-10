@@ -1,23 +1,23 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
-	
+
+	private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
+
 	private JavaTelegram client = new JavaTelegram(this);
 	private CommuniqueConfig config;
 	
@@ -33,14 +33,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		
 		// Process the Recipients list into a string with two columns.
 		Communique7Parser parser = new Communique7Parser();
-		
-		List<String> input = Arrays.asList(config.recipients);
-		input.addAll(Arrays.asList(config.sentList));
-		
-		List<CommuniqueRecipient> tokens = input.stream()
-				.map(CommuniqueRecipient::parseRecipient)
-				.collect(Collectors.toList());
-		List<String> expandedRecipients = parser.apply(tokens).getRecipients();
+		List<String> expandedRecipients = parser.apply(config.getcRecipients()).getRecipients();
 		
 		// If it needs to be randomised, do so.
 		if (config.isRandomised) {
@@ -77,7 +70,12 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		client.setRecruitment(config.isRecruitment);
 		client.setRecipients(expandedRecipients);
 		
-		client.connect();
+		// Check for file lock
+		if (!MarconiUtilities.isFileLocked()) {
+			client.connect();
+		} else {
+			throw new RuntimeException("Cannot send, as another instance of Marconi is already sending.");
+		}
 	}
 	
 	/** Should the problem be prompted to manually check all flags, this method does so, retrieving the flags and asking
@@ -121,11 +119,8 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	 * if any elements start with a negation <code>/</code>, it will remove it.
 	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#exportState() */
 	@Override public CommuniqueConfig exportState() {
-		
-		// Remove duplicates from the sentList
-		config.sentList = Stream.of(config.sentList).distinct().map(s -> s.startsWith("-") ? s.substring(1) : s)
-				.toArray(String[]::new);
-		
+		// Remove duplicates from the sentList as part of save action
+		config.setcRecipients(config.getcRecipients().stream().distinct().collect(Collectors.toList()));
 		return config;
 		
 	}
@@ -137,21 +132,11 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String) */
 	@Override public void log(String input) {
-		
-		// If we are recruiting, suppress the API Queries message
-		if (recruiting) {
-			if (input.equals("API Queries Complete.")) { return; }
-		}
-		
-		System.out.println("[" + MarconiUtilities.currentTime() + "] " + input);
+		LOGGER.info(input);
 	}
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-	@Override public void sentTo(String recipient, int x, int length) {
-		String[] sList = new String[config.sentList.length + 1];
-		System.arraycopy(config.sentList, 0, sList, 0, config.sentList.length);
-		sList[sList.length - 1] = CommuniqueRecipients.createExcludedNation(recipient)
-				.toString();
-		config.sentList = sList;
+	@Override public void sentTo(String nationName, int x, int length) {
+		config.addcRecipient(CommuniqueRecipients.createExcludedNation(nationName));
 	}
 }

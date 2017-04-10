@@ -1,90 +1,125 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
-
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 /** @author Kevin */
 public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
-	
+
+	private static final Logger LOGGER = Logger.getLogger(MarconiRecruiter.class.getName());
 	private Marconi marconi;
-	private Thread thread;
-	
-	/** @param marconi */
-	public MarconiRecruiter(Marconi marconi) {
+
+	/** @param marconi framework to piggy-back upon to send data */
+	MarconiRecruiter(Marconi marconi) {
 		this.marconi = marconi;
 	}
-	
+
 	/** @see com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter#send() */
-	@Override public void send() {
-		
+	@Override
+	public void send() {
+
+		if (MarconiUtilities.isFileLocked())
+			throw new RuntimeException("Another instance of Marconi is already running. Cannot send.");
+
 		Runnable runner = () -> {
-			
-			boolean isSending = true;
-			while (isSending) {
-				
-				proscribedRegions = populateProscribedRegions();
-				String recipient = getRecipient();
-				
+
+			proscribedRegions = getProscribedRegions();
+			AtomicReference<String> nextRecipient = new AtomicReference<>(getRecipient().getName());
+			AtomicBoolean foundNext = new AtomicBoolean(false);
+
+			while (true) {
+
 				// Otherwise, start sending.
 				JavaTelegram client = new JavaTelegram(this);
 				client.setKeys(marconi.exportState().keys);
-				client.setRecipient(recipient);
+				client.setRecipient(nextRecipient.get());
 				client.connect();
-				
+				foundNext.set(false);
+
 				// Report information
-				marconi.log("Sent recruitment telegram " + marconi.exportState().sentList.length + " to " + recipient);
-				
+				marconi.log(String.format("Attempted dispatch of telegram %d to %s", sentList.size(),
+						nextRecipient.get()));
+
 				Calendar now = Calendar.getInstance();
 				now.add(Calendar.SECOND, 180);
 				String nextTelegramTime = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
-				marconi.log("Next recruitment telegram in 180 seconds at " + nextTelegramTime);
-				
-				try {
-					Thread.sleep(180 * 1000);
-				} catch (InterruptedException e) {
-					// nothing, since it cannot be interrupted.
+				marconi.log("Next recruitment telegram probably in 180 seconds at " + nextTelegramTime);
+
+				// new 2017-03-25
+				for (AtomicInteger x = new AtomicInteger(1); ; x.getAndIncrement()) {
+
+					try {
+						Thread.sleep(1000);    // 1-second intervals, wake to update the progressBar
+						LOGGER.finest("Interval " + x.get());
+					} catch (InterruptedException e) {
+						return; // also breaks
+					}
+
+					if (x.get() == 170) {
+						Runnable runnable1 = () -> {
+							nextRecipient.set(getRecipient().getName());
+							LOGGER.fine("Found next recipient, " + nextRecipient.get() + ", at " + x.get());
+							foundNext.set(true);
+						};
+						LOGGER.fine("Running runnable to find next recipient at " + x.get());
+						new Thread(runnable1).start();
+					}
+
+					if (x.get() >= 180 && foundNext.get()) {
+						LOGGER.info(String.format("Starting next loop, delay of %d s for telegram %d", 180 - x.get(),
+								sentList.size()));
+						break;  // break this loop, and dispatch the next telegram
+					}
+
 				}
-				
+
 			}
 		};
-		
-		thread = new Thread(runner);
+
+		Thread thread = new Thread(runner);
 		thread.start();
-		
+
 	}
-	
-	private Set<String> populateProscribedRegions() {
-		
-		if (proscribedRegions == null) {
-			
-			String[] recipients = marconi.exportState().recipients;
-			proscribedRegions = new HashSet<>();
-			for (String element : recipients) {
-				if (element.startsWith("flags:recruit -- region:")) {
-					proscribedRegions.add(element);
-				}
-			}
-			
-		}
-		
+
+	/**
+	 * @return the regions currently specified as excluded in the recipients code
+	 */
+	private Set<CommuniqueRecipient> getProscribedRegions() {
+		if (proscribedRegions == null)
+			return marconi.exportState().getcRecipients().stream()
+					.filter(r -> r.getFilterType() == FilterType.EXCLUDE)
+					.filter(r -> r.getRecipientType() == RecipientType.REGION)
+					.collect(Collectors.toSet());
 		return proscribedRegions;
 	}
-	
+
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String) */
-	@Override public void log(String input) {
+	@Override
+	public void log(String input) {
+		// Get rid of useless messages
+		if (input.equals("API Queries Complete.")) return;
 		marconi.log(input);
 	}
-	
+
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-	@Override public void sentTo(String recipient, int x, int length) {
-		marconi.sentTo(recipient, x, length);
+	@Override
+	public void sentTo(String r, int x, int i) {
+		super.sentTo(r, x, i);
+		marconi.sentTo(r, x, i);
 	}
-	
+
 }

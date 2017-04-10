@@ -18,7 +18,7 @@ public enum FilterType {
 		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			// match by names, not by recipient type
-			HashSet<String> set = provided.decompose().stream()
+			Set<String> set = provided.decompose().stream()
 					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
 			return recipients.stream()
@@ -32,11 +32,11 @@ public enum FilterType {
 	},
 	
 	/** Excludes nations from the recipients list based on the token provided. Provides equivalent functionality as the
-	 * NationStates <code>-</code> command in telegram queries. */
+	 * NationStates <code>-</code> command (e.g. <code>-region:Europe</code>) in telegram queries. */
 	EXCLUDE {
 		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
-			HashSet<String> set = provided.decompose().stream()
+			Set<String> set = provided.decompose().stream()
 					.map(CommuniqueRecipient::getName)
 					.collect(Collectors.toCollection(HashSet::new));
 			return recipients.stream()
@@ -78,7 +78,7 @@ public enum FilterType {
 	}
 	
 	/** Helps to translate a {@link CommuniqueRecipient} in a compatible fashion with the NationStates telegram system
-	 * syntax. The default <code>toString</code> method defaults to {@link FilterType.NORMAL.toString()}, which returns
+	 * syntax. The default <code>toString</code> method defaults to {@link FilterType#NORMAL#toString()}, which returns
 	 * an empty string. */
 	@Override public String toString() {
 		return NORMAL.toString();

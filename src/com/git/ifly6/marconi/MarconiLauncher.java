@@ -1,26 +1,23 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.RecipientType;
+import org.apache.commons.cli.*;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
-import com.git.ifly6.communique.data.Communique7Parser;
-
 /** @author Kevin */
 public class MarconiLauncher {
 	
-	private static final Logger log = Logger.getLogger(Marconi.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
 	
 	// Deal with command line options
 	public static final Options COMMAND_LINE_OPTIONS;
@@ -40,16 +37,19 @@ public class MarconiLauncher {
 	}
 	
 	public static void main(String[] args) {
-		
+
+		// Get us a reasonable-looking log format
+		System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tF %1$tT %4$s %2$s %5$s%6$s%n");
+
 		if (args.length == 0) {
-			System.err.println("Runtime Error. Please provide a single valid Communiqué configuration file of version "
+			LOGGER.severe("Runtime Error. Please provide a single valid Communiqué configuration file of version "
 					+ Communique7Parser.version + ".");
 			System.exit(0);
 		}
 		
-		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
 			e.printStackTrace();
-			log.log(Level.SEVERE, "Exception in " + t + ": " + e.toString(), e);
+			LOGGER.log(Level.SEVERE, "Exception in " + t + ": " + e.toString(), e);
 		});
 		
 		CommandLineParser cliParse = new DefaultParser();
@@ -65,9 +65,8 @@ public class MarconiLauncher {
 				
 				String fileName;
 				try {
-					fileName = new File(
-							MarconiLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
-									.getName();
+					URI u = MarconiLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+					fileName = new File(u).getName();
 				} catch (Exception e1) {
 					// Catch any and all exceptions as default to standard naming format.
 					fileName = "Marconi_" + Communique7Parser.version;
@@ -80,23 +79,19 @@ public class MarconiLauncher {
 				System.out.println();
 				return;
 			}
-			if (commandLine.hasOption("S")) {
-				skipChecks = true;
-			}
-			if (commandLine.hasOption("R")) {
-				recruiting = true;
-			}
+			if (commandLine.hasOption("S")) skipChecks = true;
+			if (commandLine.hasOption("R")) recruiting = true;
 			if (commandLine.hasOption("v")) {
 				System.out.println("Marconi version " + Communique7Parser.version + "\n"
 						+ "Please visit https://github.com/iFlyCode/Communique/releases.\n");
-				return;
+				return; // exit
 			}
 			
 			// Deal with the remaining arguments
 			String[] fileList = commandLine.getArgs();
 			if (fileList.length != 1) {
-				
-				System.err.println("Please provide only one file argument to the program.\n");
+
+				LOGGER.severe("Please provide only one file argument to the program.\n");
 				System.exit(0);
 				
 			} else {
@@ -107,11 +102,11 @@ public class MarconiLauncher {
 			}
 			
 		} catch (ParseException e) {
-			System.err.println("Please refer to the help, accessible using '-h'\n");
+			LOGGER.severe("Please refer to the help, accessible using '-h'\n");
 			e.printStackTrace();
 			
 		} catch (IOException e) {
-			System.err.println("Please provide a valid or existing file argument to the program.\n");
+			LOGGER.severe("Please provide a valid or existing file argument to the program.\n");
 			e.printStackTrace();
 		}
 	}
@@ -120,21 +115,18 @@ public class MarconiLauncher {
 		
 		Marconi marconi = new Marconi(skipChecks, recruiting);
 		marconi.load(configPath);
-		
-		// Accept text commands to recruit...
-		String[] recipients = marconi.exportState().recipients;
-		for (String element : recipients) {
-			if (element.startsWith("flag:recruit")) {
-				recruiting = true;
-				break;
-			}
-		}
+
+		// If there is a recruit flag, set it to true
+		boolean recruiting = marconi.exportState().getcRecipients().stream()
+				.anyMatch(r -> r.getRecipientType() == RecipientType.FLAG && r.getName().equals("recruit"));
 		
 		// Add shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
-				System.err.println("Attempting to save to:" + configPath.toAbsolutePath().toString());
+				LOGGER.info("Attempting to save to:" + configPath.toAbsolutePath().toString());	// save config
 				marconi.save(configPath);
+				if (Files.deleteIfExists(MarconiUtilities.lockFile))
+					LOGGER.info("Removed file lock");	// remove file lock, if it exists
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -6,11 +6,22 @@
 *.war
 *.ear
 
+# include properties, as we hold client keys there
 *.properties
+test-file.json
+
 /bin/
 /target/
+
+# eclipse files
 /.classpath
 /.project
 build-communique.xml
 build-marconi.xml
 /.settings/
+Communique.userlibraries
+Communique.eml
+
+# IDEA files
+Communique.iml
+/.idea/

@@ -1,6 +1,10 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique;
 
+import com.git.ifly6.communique.data.CommuniqueParser;
+import com.git.ifly6.javatelegram.JTelegramKeys;
+import com.git.ifly6.javatelegram.util.JTelegramException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,10 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
-
-import com.git.ifly6.communique.data.CommuniqueParser;
-import com.git.ifly6.javatelegram.JTelegramKeys;
-import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** This class has been deprecated. Please see {@link com.git.ifly6.communique.io.CommuniqueLoader CLoader}. Note that this is
  * still in line with Communique 4 and 5's configuration files, and therefore, because it is still used to read those
@@ -130,10 +130,9 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	/** Queries the file for an integer version to determine whether it is compatible with this parser. If so, it
 	 * returns true. Otherwise, it will return false. This operation also effectively makes sure that there is a file
 	 * which can be read.
-	 * @param version <code>boolean</code> containing true or false on whether the configuration file is compatible.
-	 * @return */
+	 * @return <code>boolean</code> containing true or false on whether the configuration file is compatible. */
 	public boolean isCompatible() {
-		return getFileVersion() <= CommuniqueParser.version ? true : false;
+		return getFileVersion() < 7;    // changed
 	}
 	
 	/** Finds the file version declarer by finding the line which states "# Produced by version" or the version tag. The
@@ -162,13 +161,13 @@ import com.git.ifly6.javatelegram.util.JTelegramException;
 	public String[] getHeader() {
 		ArrayList<String> header = new ArrayList<>();
 		String[] filteredContents = fileContents.stream().filter(s -> s.trim().length() != 0).toArray(String[]::new);
-		
-		for (int i = 0; i < filteredContents.length; i++) {
-			if (!filteredContents[i].startsWith("#")) {
+
+		for (String filteredContent : filteredContents) {
+			if (!filteredContent.startsWith("#")) {
 				// When comments end, break.
 				break;
 			} else {
-				header.add(filteredContents[i]);
+				header.add(filteredContent);
 			}
 		}
 		

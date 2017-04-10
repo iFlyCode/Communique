@@ -31,5 +31,9 @@ public class CommuniqueRecipients {
 	public static CommuniqueRecipient createFlag(String flag) {
 		return new CommuniqueRecipient(FilterType.NORMAL, RecipientType.FLAG, flag);
 	}
-	
+
+	public static CommuniqueRecipient exclude(CommuniqueRecipient recipient) {
+		return new CommuniqueRecipient(FilterType.EXCLUDE, recipient.getRecipientType(), recipient.getName());
+	}
+
 }

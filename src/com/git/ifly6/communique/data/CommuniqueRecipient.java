@@ -1,10 +1,10 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
-import java.util.List;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.javatelegram.util.JTelegramException;
+
+import java.util.List;
 
 /** An object in which to store information about a recipient. It is based on three characteristics, a
  * <code>FilterType</code>, a <code>RecipientType</code>, and the name. The filter type can be used to exclude, include,
@@ -17,16 +17,21 @@ public class CommuniqueRecipient {
 			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "delegates");
 	public static final CommuniqueRecipient WA_MEMBERS =
 			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "wa");
-	
+
+	private FilterType filterType;
 	private RecipientType recipientType;
 	private String name;
-	private FilterType filterType;
 	
 	/** Creates a <code>CommuniqueRecipient</code> with certain characteristics. */
 	public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
+
 		this.filterType = filterType;
 		this.recipientType = recipientType;
 		this.name = CommuniqueUtilities.ref(name);	// convert to reference name
+
+		// some format checking for the name
+		if (name.contains(":")) throw new IllegalArgumentException("nation name [" + name + "] is invalid");
+
 	}
 	
 	/** Returns the name, which, for all elements, will be the reference name format.
@@ -69,7 +74,6 @@ public class CommuniqueRecipient {
 	 * <code>imperium_anglorum</code>, it is assumed that this is a <code>FilterType.NORMAL</code> nation with that
 	 * name.
 	 * </p>
-	 * @param <code>s</code>, a <code>String</code> to be parsed
 	 * @return a <code>CommuniqueRecipient</code> representing that string */
 	public static CommuniqueRecipient parseRecipient(String s) {
 		
@@ -92,8 +96,9 @@ public class CommuniqueRecipient {
 				break;
 			}
 		}
-		
-		return new CommuniqueRecipient(fType, rType, s.substring(s.indexOf(":") + 1));
+
+		// 2017-03-30 use lastIndexOf to deal with strange name changes
+		return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));
 	}
 	
 	@Override public int hashCode() {
@@ -114,7 +119,14 @@ public class CommuniqueRecipient {
 		if (name == null) {
 			if (other.name != null) { return false; }
 		} else if (!name.equals(other.name)) { return false; }
-		if (recipientType != other.recipientType) { return false; }
-		return true;
+		return recipientType == other.recipientType;
+	}
+
+	/**
+	 * Returns whether the <code>CommuniqueRecipient</code> is excluding
+	 * @return
+	 */
+	public boolean isExcluding() {
+		return filterType == FilterType.EXCLUDE;
 	}
 }

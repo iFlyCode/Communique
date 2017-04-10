@@ -1,13 +1,13 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 class CommuniqueWriter {
 	
@@ -17,15 +17,18 @@ class CommuniqueWriter {
 	/** Creates <code>CWriter</code> pointing to some path with some loaded configuration data.
 	 * @param path on which to write
 	 * @param config data */
-	public CommuniqueWriter(Path path, CommuniqueConfig config) {
+	CommuniqueWriter(Path path, CommuniqueConfig config) {
 		this.path = path;
 		this.config = config;
 	}
 	
 	/** Writes the configuration data to the path specified in the constructor.
 	 * @throws IOException if there is an error in writing the file */
-	public void write() throws IOException {
-		
+	void write() throws IOException {
+
+		// Data-checking on writing
+		config.checkData();
+
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String response = gson.toJson(config);
 		

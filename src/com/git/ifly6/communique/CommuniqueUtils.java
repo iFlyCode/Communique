@@ -26,18 +26,14 @@ public class CommuniqueUtils {
 	 * @param string to check
 	 * @return <code>boolean</code> answering that question */
 	public static boolean isEmpty(String string) {
-		if (string == null) { return true; }
-		if (string.trim().length() == 0) { return true; }
-		return false;
+		return string == null || string.trim().length() == 0;
 	}
 	
 	/** Determines whether an array is empty.
-	 * @param recipients
+	 * @param a
 	 * @return <code>boolean</code> answering that question */
 	public static boolean isEmpty(Object[] a) {
-		if (a == null) { return true; }
-		if (a.length == 0) { return true; }
-		return false;
+		return a == null || a.length == 0;
 	}
 	
 	/** Adds all the elements of the given arrays into a new array. The new array contains all of the element of array1
