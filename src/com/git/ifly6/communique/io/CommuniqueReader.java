@@ -114,11 +114,11 @@ class CommuniqueReader {
 	 */
 	private List<CommuniqueRecipient> unifySendList(CommuniqueConfig config) {
 		List<CommuniqueRecipient> list = new ArrayList<>(); // deal with null case, create new
-		if (config.recipients != null)
+		if (config.recipients != null && config.recipients.length != 0)
 			list.addAll(Stream.of(config.recipients)    // add all recipients
 					.map(CommuniqueRecipient::parseRecipient)
 					.collect(Collectors.toList()));
-		if (config.sentList != null)
+		if (config.sentList != null && config.sentList.length != 0)
 			list.addAll(Stream.of(config.sentList)  // translate, then change flag as necessary
 					.map(CommuniqueRecipient::parseRecipient)
 					.map(CommuniqueRecipients::exclude)

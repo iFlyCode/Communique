@@ -805,7 +805,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		timer = new Timer(1000 / ups, new ActionListener() {
 			int elapsedSteps = 0;    // start at zero
-
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				progressBar.setValue(elapsedSteps++);    // iterate through

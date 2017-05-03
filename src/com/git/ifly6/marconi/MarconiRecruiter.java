@@ -38,29 +38,49 @@ public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTe
 		Runnable runner = () -> {
 
 			proscribedRegions = getProscribedRegions();
+
+			// init with first recipient so we can immediately start sending
 			AtomicReference<String> nextRecipient = new AtomicReference<>(getRecipient().getName());
 			AtomicBoolean foundNext = new AtomicBoolean(false);
 
 			while (true) {
 
+				int setX;
+
 				// Otherwise, start sending.
-				JavaTelegram client = new JavaTelegram(this);
-				client.setKeys(marconi.exportState().keys);
-				client.setRecipient(nextRecipient.get());
-				client.connect();
-				foundNext.set(false);
+				try {
+					JavaTelegram client = new JavaTelegram(this);
+					client.setKeys(marconi.exportState().keys);
+					client.setRecipient(nextRecipient.get());
+					client.connect();
+					foundNext.set(false);
 
-				// Report information
-				marconi.log(String.format("Attempted dispatch of telegram %d to %s", sentList.size(),
-						nextRecipient.get()));
+					// Report information
+					marconi.log(String.format("Attempted dispatch of telegram %d to %s", sentList.size(),
+							nextRecipient.get()));
 
-				Calendar now = Calendar.getInstance();
-				now.add(Calendar.SECOND, 180);
-				String nextTelegramTime = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
-				marconi.log("Next recruitment telegram probably in 180 seconds at " + nextTelegramTime);
+					Calendar now = Calendar.getInstance();
+					now.add(Calendar.SECOND, 180);
+					String nextTelegramTime = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
+					marconi.log("Next recruitment telegram probably in 180 seconds at " + nextTelegramTime);
+					setX = 1;
+
+				} catch (RuntimeException e) {    // Catch, if error between recipient retrieval and telegram dispatch
+					// this catch block allows for that extra bit of fault tolerance
+
+					marconi.log("Failed to dispatch telegram to " + nextRecipient.get());
+					marconi.log(e.toString());
+
+					Calendar now = Calendar.getInstance();
+					now.add(Calendar.SECOND, 10);
+					String nextTelegramTime = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
+					marconi.log("Next recruitment telegram probably in 10 seconds at " + nextTelegramTime);
+					setX = 170;
+
+				}
 
 				// new 2017-03-25
-				for (AtomicInteger x = new AtomicInteger(1); ; x.getAndIncrement()) {
+				for (AtomicInteger x = new AtomicInteger(setX); ; x.getAndIncrement()) {
 
 					try {
 						Thread.sleep(1000);    // 1-second intervals, wake to update the progressBar
@@ -79,7 +99,7 @@ public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTe
 						new Thread(runnable1).start();
 					}
 
-					if (x.get() >= 180 && foundNext.get()) {
+					if (x.get() >= 180 && foundNext.get()) {    // delay until recipient is found by runnable1's thread
 						LOGGER.info(String.format("Starting next loop, delay of %d s for telegram %d", 180 - x.get(),
 								sentList.size()));
 						break;  // break this loop, and dispatch the next telegram
