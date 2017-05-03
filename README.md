@@ -65,4 +65,6 @@ While there will be a version number, currently, there is no such number, since,
   - A logging system has also been built to export relevant logs to a text area and print them to file.
   - Finished a small web-scraper that parses out the delegates supporting and opposing some motion in the World Assembly.
 
-7. Version 7 rehashes the entire Communiqué syntax structure to operate in line with the NationStates telegram API system. Thus, a query in the NationStates API like `region:Europe, tag:WA` will function exactly the same in Communiqué. This version also switches to HTTPS per the recent NationStates update and implements a new update-checker (it will check, at most, once a week).
+7. Version 7 rehashes the entire Communiqué syntax structure to operate in line with the NationStates telegram API system. Thus, a query in the NationStates API like `region:Europe, +tag:WA` will function exactly the same in Communiqué.
+  - This version also switches to HTTPS per the recent NationStates update and implements a new update-checker (it will check, at most, once a week). 
+  - It also implements a change in how telegram requests are queued. Before, a time delay would commence, and after that delay, the program would check for whether the recipient is a valid recipient. Now, during that time delay, the program checks for whether the recipient is valid, saving around 1.6 seconds from every recruitment call. When not on recruitment, it also checks whether that nation has opt-ed into campaign telegrams, and if not, skips to the next recipient.
