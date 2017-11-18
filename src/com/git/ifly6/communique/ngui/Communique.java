@@ -20,6 +20,7 @@ import org.apache.commons.io.FilenameUtils;
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.Timer;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -36,8 +37,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -71,6 +71,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	private JCheckBox chckbxRecruitment;
 
 	private List<String> parsedRecipients;
+	private Map<String, Boolean> rSuccessTracker;
 
 	private static final String codeHeader =
 			"# == Communiqué Recipients Syntax ==\n"
@@ -188,7 +189,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			}
 		}
 		if (option == JOptionPane.NO_OPTION) {
-			updater.setContinueReminding(false);
+			updater.stopReminding();
 		}
 	}
 
@@ -350,7 +351,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			Path savePath = showFileChooser(frame, FileDialog.SAVE);
 
 			if (savePath == null) {
-				log.info("Returned path was null.");
+				log.info("Returned path was null");
 				return;
 			}
 
@@ -368,7 +369,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			Path savePath = showFileChooser(frame, FileDialog.LOAD);
 
 			if (savePath == null) {
-				log.info("Returned path was null.");
+				log.info("Returned path was null");
 				return;
 			}
 
@@ -498,7 +499,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 								.map(CommuniqueRecipient::toString)
 								.forEach(this::appendCode);
 					} catch (RuntimeException exc) {
-						this.showMessageDialog("Cannot import data from NationStates website.", CommuniqueMessages.ERROR);
+						this.showMessageDialog("Cannot import data from NationStates website", CommuniqueMessages.ERROR);
 						log.warning("Cannot import data. Message:");
 						exc.printStackTrace();
 					}
@@ -577,7 +578,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		menuBar.add(mnHelp);
 
 		JMenuItem mntmAbout = new JMenuItem("About");
-		mntmAbout.addActionListener(e -> new CommuniqueTextDialog(frame, "About", CommuniqueMessages.acknowledgement));
+		mntmAbout.addActionListener(e -> CommuniqueTextDialog.createDialog(frame, "About", CommuniqueMessages
+				.acknowledgement));
 		mnHelp.add(mntmAbout);
 
 		mnHelp.addSeparator();
@@ -587,7 +589,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			try {
 				Desktop.getDesktop().browse(new URL("https://github.com/iFlyCode/Communique#communiqué").toURI());
 			} catch (IOException | URISyntaxException e1) {
-				log.warning("Cannot open Communiqué documentation.");
+				log.warning("Cannot open Communiqué documentation");
 				e1.printStackTrace();
 			}
 		});
@@ -598,7 +600,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			try {
 				Desktop.getDesktop().browse(new URI("http://forum.nationstates.net/viewtopic.php?f=15&t=352065"));
 			} catch (IOException | URISyntaxException e1) {
-				log.warning("Cannot open NationStates forum support thread for Communiqué.");
+				log.warning("Cannot open NationStates forum support thread for Communiqué");
 				e1.printStackTrace();
 			}
 		});
@@ -609,7 +611,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			if (updater.hasUpdate()) {
 				showUpdate();
 			} else {
-				this.showMessageDialog("No new updates.", CommuniqueMessages.UPDATER);
+				this.showMessageDialog("No new updates", CommuniqueMessages.UPDATER);
 			}
 		});
 		mnHelp.add(mntmUpdate);
@@ -617,7 +619,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnHelp.addSeparator();
 
 		JMenuItem mntmLicence = new JMenuItem("Licence");
-		mntmLicence.addActionListener(e -> new CommuniqueTextDialog(frame, "Licence", CommuniqueMessages.licence));
+		mntmLicence.addActionListener(e -> CommuniqueTextDialog.createDialog(frame, "Licence",
+				CommuniqueMessages.licence));
 		mnHelp.add(mntmLicence);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -629,7 +632,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				e.printStackTrace();
 			}
 		}));
-		log.info("Shutdown hook added.");
+		log.info("Shutdown hook added");
 
 		// Parse action for above
 		btnSend.addActionListener(new ActionListener() {
@@ -671,7 +674,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					tx.add("# tab. Estimated time needed is " + timeNeeded + "\n");
 					parsedRecipients.forEach(tx::add);
 
-					log.info("Recipients Parsed.");
+					log.info("Recipients Parsed");
 
 					// Change GUI elements
 					txtrRecipients.setText(tx.stream().collect(Collectors.joining("\n")));
@@ -681,7 +684,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				} else {
 
 					if (parsedRecipients.size() == 0) {
-						Communique.this.showMessageDialog("No recipients specified, cannot send.", CommuniqueMessages.ERROR);
+						Communique.this.showMessageDialog("No recipients specified, cannot send", CommuniqueMessages.ERROR);
 						return;
 					}
 
@@ -700,7 +703,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			}
 		});
 
-		log.info("Communiqué loaded.");
+		log.info("Communiqué loaded");
 
 		// If there is an auto-save, load it
 		if (Files.exists(appSupport.resolve("autosave.txt"))) {
@@ -713,7 +716,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			}
 		}
 
-		log.info("Autosave loaded.");
+		log.info("Autosave loaded");
 
 	}
 
@@ -750,7 +753,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		config.defaultVersion();
 
-		log.info("Communiqué config exported.");
+		log.info("Communiqué config exported");
 		return config;
 
 	}
@@ -773,51 +776,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	private void appendCode(Object input) {
 		txtrCode.append("\n" + input.toString());
-	}
-
-	// Changes the state of the button to reflect whether it is ready to send and or parsed
-	private void triggerParsed(boolean parsed) {
-		this.parsed = parsed;
-		btnSend.setText(parsed ? "Send" : "Parse");
-	}
-
-	/** @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String) */
-	@Override
-	public void log(String input) {
-		log.info(input);
-	}
-
-	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-	@Override
-	public void sentTo(String recipient, int x, int length) {
-
-		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
-		txtrCode.append(x == 0 ? "\n\n" + recipient : "\n" + recipient);
-
-		if (timer != null) {
-			timer.stop();                // stop current timer
-			progressBar.setValue(0);    // reset progress bar
-		}
-
-		final int ups = 60;    // ups = updates per second
-		int totalTime = ups * (chckbxRecruitment.isSelected() ? 180 : 30);    // est delay
-		progressBar.setMaximum(totalTime);    // max = est delay
-
-		timer = new Timer(1000 / ups, new ActionListener() {
-			int elapsedSteps = 0;    // start at zero
-			@Override
-			public void actionPerformed(ActionEvent ae) {
-				progressBar.setValue(elapsedSteps++);    // iterate through
-				if (elapsedSteps >= totalTime || sendingThread.isInterrupted()) {
-					timer.stop();
-				}
-			}
-		});
-		timer.start();
-
-		// Label update
-		progressLabel.setText(String.format("%d / %d", x + 1, length));
-
 	}
 
 	/**
@@ -930,7 +888,15 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					loader.save(exportState());
 
 				} catch (IOException e) {
-					log.severe("Exception in writing autosave or properties file.");
+					log.severe("Exception in writing autosave or properties file");
+					e.printStackTrace();
+				}
+
+				// Create tracker, initialise success tracking HashMap
+				rSuccessTracker = new LinkedHashMap<>();
+				parsedRecipients.forEach(r -> rSuccessTracker.put(r, false));
+				if (rSuccessTracker == null) {
+					log.severe("Success tracker is null");
 				}
 
 				client.connect();
@@ -944,20 +910,84 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			btnSend.setText("Stop");
 
 		} else {
-			log.info("There is already a campaign running. Terminate that campaign and then retry.");
+			log.info(btnSend.getText().equals("Stop")
+					? "Interrupting and terminating sending thread"
+					: "There is already a campaign running. Terminate that campaign and then retry");
 		}
+	}
+
+	// Changes the state of the button to reflect whether it is ready to send and or parsed
+	private void triggerParsed(boolean parsed) {
+		this.parsed = parsed;
+		btnSend.setText(parsed ? "Send" : "Parse");
+	}
+
+	/** @see com.git.ifly6.javatelegram.JTelegramLogger#log(java.lang.String) */
+	@Override
+	public void log(String input) {
+		log.info(input);
+	}
+
+	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
+	@Override
+	public void sentTo(String recipient, int x, int length) {
+
+		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
+		txtrCode.append(x == 0 ? "\n\n" + recipient : "\n" + recipient);
+
+		// Progress bar reset code
+		if (timer != null) {
+			timer.stop();               // stop current timer
+			progressBar.setValue(0);    // reset progress bar
+		}
+
+		final int ups = 60;    // ups = updates per second
+		int totalTime = ups * (chckbxRecruitment.isSelected() ? 180 : 30);    // est delay
+		progressBar.setMaximum(totalTime);    // max = est delay
+
+		timer = new Timer(1000 / ups, new ActionListener() {
+			int elapsedSteps = 0;    // start at zero
+
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				progressBar.setValue(elapsedSteps++);    // iterate through
+				if (elapsedSteps >= totalTime || sendingThread.isInterrupted()) {
+					timer.stop();
+				}
+			}
+		});
+		timer.start();
+
+		// Update the label and log successes as relevant
+		progressLabel.setText(String.format("%d / %d", x + 1, length));
+		rSuccessTracker.put(recipient, true);
+
 	}
 
 	/** Cleanup commands to be done when sending is complete. */
 	private void completeSend() {
+		log.info("Queries complete");
 
-		log.info("Queries Complete.");
-		this.showMessageDialog("Queries to " + parsedRecipients.size() + " nations complete.", CommuniqueMessages.TITLE);
+		List<String> messages = new ArrayList<>();
+		messages.add(String.format("Successful queries to %d of %d nations.\n",
+				rSuccessTracker.entrySet().stream().filter(e -> e.getValue() == Boolean.TRUE).count(),  // # successes
+				parsedRecipients.size()));
+		if (rSuccessTracker.containsValue(Boolean.FALSE)) { // if there was a failure to connect,
+			messages.add("Failure to dispatch to the following nations, not auto-excluded:\n");  // add formatting,
+			rSuccessTracker.entrySet().stream() // and then list the relevant nations to which there was a failure
+					.filter(e -> e.getValue() == Boolean.FALSE)
+					.forEach(e -> messages.add("- " + e.getKey()));
+		}
 
-		// Reset the progress bar
-		progressBar.setValue(0);
+		if (!rSuccessTracker.containsValue(Boolean.TRUE))   // if does not contain any trues, i.e. all false
+			messages.add("\nNo successful queries. Check the log file for errors and report to author as necessary.");
+
+		// display that data in a CommuniqueTextDialog
+		CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
+				messages.stream().collect(Collectors.joining("\n")));
+
+		progressBar.setValue(0);    // Reset the progress bar
 		progressBar.setMaximum(0);
 		timer.stop();
-
 	}
 }

@@ -9,15 +9,25 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.logging.Logger;
 
-/** When constructed, <code>CTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text
- * in that area and a close button. */
+/**
+ * When constructed, <code>CTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text
+ * in that area and a close button.
+ */
 class CommuniqueTextDialog extends JDialog {
 
 	private static final Logger log = Logger.getLogger(CommuniqueTextDialog.class.getName());
 
 	private static final long serialVersionUID = Communique7Parser.version;
 
-	CommuniqueTextDialog(JFrame parent, String title, String message) {
+	static void createDialog(JFrame parent, String title, String message) {
+		new CommuniqueTextDialog(parent, title, message, Font.getFont(Font.SANS_SERIF));
+	}
+
+	static void createMonospacedDialog(JFrame parent, String title, String message) {
+		new CommuniqueTextDialog(parent, title, message, Font.getFont(Font.MONOSPACED));
+	}
+
+	private CommuniqueTextDialog(JFrame parent, String title, String message, Font font) {
 
 		super(parent, title);
 
@@ -35,9 +45,10 @@ class CommuniqueTextDialog extends JDialog {
 
 		this.setContentPane(panel);
 
-		// TextArea
+		// textArea
 		JTextArea textArea = new JTextArea(message);
 		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		textArea.setFont(font);
 		textArea.setEditable(false);
 		textArea.setWrapStyleWord(true);
 		textArea.setLineWrap(true);
@@ -64,17 +75,15 @@ class CommuniqueTextDialog extends JDialog {
 		buttonPanel.add(closeButton);
 
 		// Make pressing the enter key the same as hitting the button.
-		// @formatter:off
 		this.addKeyListener(new KeyListener() {
+			// @formatter:off
 			@Override public void keyTyped(KeyEvent e) { }
 			@Override public void keyReleased(KeyEvent e) { }
 			@Override public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					closeButton.doClick();
-				}
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) closeButton.doClick();
 			}
+			// @formatter:on
 		});
-		// @formatter:on
 
 		this.setVisible(true);
 		log.finer("Showing CTextDialog with: " + message);

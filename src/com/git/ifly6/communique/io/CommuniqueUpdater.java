@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 /** @author ifly6 */
 public class CommuniqueUpdater {
+
+	private static final Logger LOGGER = Logger.getLogger(CommuniqueUpdater.class.getName());
 	
 	/** String for a pointing to the latest release of Communique. */
 	public static final String LATEST_RELEASE = "https://github.com/iFlyCode/Communique/releases/latest";
@@ -36,14 +38,14 @@ public class CommuniqueUpdater {
 			ObjectInputStream oiStream = new ObjectInputStream(Files.newInputStream(updatePath));
 			updaterProps = (CommuniqueUpdaterProperties) oiStream.readObject();	// replace original
 		} catch (RuntimeException | IOException | ClassNotFoundException e) {
-			Logger.getLogger(this.getClass().getName()).info("Could not get updater properties.");
+			LOGGER.info("Could not get updater properties");
 			// accept default values
 		}
 	}
 
 	/** Sets the appropriate continue checking value and then saves it with a new check date */
-	public void setContinueReminding(boolean continueChecking) {
-		this.updaterProps.continueChecking = continueChecking;
+	public void stopReminding() {
+		this.updaterProps.continueChecking = false;
 		save();
 	}
 
@@ -67,7 +69,7 @@ public class CommuniqueUpdater {
 			String versionString = elements.first().text().trim().replace("v", "");
 			
 			int majorVersion = Integer.parseInt(versionString.substring(0,
-					!versionString.contains(".") ? versionString.length() : versionString.indexOf(".")));
+					versionString.contains(".") ? versionString.indexOf(".") : versionString.length()));
 			if (majorVersion > Communique7Parser.version) { return true; }	// if higher major version, return for
 																				// update
 			
@@ -101,6 +103,7 @@ public class CommuniqueUpdater {
 	 * to change Java Serialisation's data than it is JSON data.
 	 * @see CommuniqueUpdaterProperties */
 	private void save() {
+		LOGGER.info("Saving Communique updater properties");
 		try {
 			FileOutputStream foStream = new FileOutputStream(updatePath.toFile());
 			ObjectOutputStream ooStream = new ObjectOutputStream(foStream);
