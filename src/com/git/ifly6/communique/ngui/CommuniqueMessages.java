@@ -27,8 +27,8 @@ public class CommuniqueMessages {
 	
 	public static final String acknowledgement =
 			"Developed by Kevin Wong (username: ifly6), contributing to the repository at "
-					+ "[github.com/iflycode/communique], also known as the nation Imperium Anglorum on NationStates. My "
-					+ "thanks to bug-testers Tinfect, Krypton Nova, and Wallenburg.";
+					+ "[github.com/iflycode/communique], also known as the nation Imperium Anglorum on "
+					+ "NationStates.\n\nMy thanks to bug-testers Tinfect, Krypton Nova, and Wallenburg.";
 	
 	public static final String licence =
 			"Copyright (c) 2017 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "

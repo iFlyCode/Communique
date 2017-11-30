@@ -1,6 +1,11 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -9,15 +14,10 @@ import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
-
+	
 	private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
-
+	
 	private JavaTelegram client = new JavaTelegram(this);
 	private CommuniqueConfig config;
 	
@@ -36,33 +36,28 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		List<String> expandedRecipients = parser.apply(config.getcRecipients()).getRecipients();
 		
 		// If it needs to be randomised, do so.
-		if (config.isRandomised) {
-			Collections.shuffle(expandedRecipients);
-		}
+		if (config.isRandomised) Collections.shuffle(expandedRecipients);
 		
 		// Show the recipients in the order we are to send the telegrams.
 		System.out.println();
-		for (int x = 0; x < expandedRecipients.size(); x = x + 2) {
+		for (int x = 0; x < expandedRecipients.size(); x = x + 2)
 			try {
 				System.out.printf("%-30.30s  %-30.30s%n", expandedRecipients.get(x), expandedRecipients.get(x + 1));
 			} catch (IndexOutOfBoundsException e) {
 				System.out.printf(expandedRecipients.get(x) + "\n");
 			}
-		}
 		
 		System.out.println();
-		System.out.println("This will take "
-				+ CommuniqueUtilities
-						.time((int) Math.round(expandedRecipients.size() * (config.isRecruitment ? 180.05 : 30.05)))
-				+ " to send " + expandedRecipients.size() + " telegrams.");
+		System.out.println(String.format("This will take %s to send %d telegrams",
+				CommuniqueUtilities.time(Math.round(expandedRecipients.size()
+						* (config.isRecruitment ? JavaTelegram.RECRUIT_TIME / 1000 : JavaTelegram.CAMPAIGN_TIME / 1000))),
+				expandedRecipients.size()));
 		
 		if (!skipChecks) {
 			// Give a chance to check the recipients.
 			String recipientsReponse = MarconiUtilities
 					.promptYN("Are you sure you want to send to these recipients? [Yes] or [No]?");
-			if (recipientsReponse.startsWith("n")) {
-				System.exit(0);
-			}
+			if (recipientsReponse.startsWith("n")) System.exit(0);
 		}
 		
 		// Set the client up and go.
@@ -71,11 +66,8 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		client.setRecipients(expandedRecipients);
 		
 		// Check for file lock
-		if (!MarconiUtilities.isFileLocked()) {
-			client.connect();
-		} else {
-			throw new RuntimeException("Cannot send, as another instance of Marconi is already sending.");
-		}
+		if (!MarconiUtilities.isFileLocked()) client.connect();
+		else throw new RuntimeException("Cannot send, as another instance of Marconi is already sending.");
 	}
 	
 	/** Should the problem be prompted to manually check all flags, this method does so, retrieving the flags and asking
@@ -85,31 +77,28 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		if (!skipChecks) {
 			
 			// Give a chance to check the keys.
-			String keysResponse = MarconiUtilities.promptYN("Are these keys correct? " + config.keys.getClientKey() + ", "
-					+ config.keys.getSecretKey() + ", " + config.keys.getTelegramId() + " [Yes] or [No]?");
-			if (!keysResponse.startsWith("y")) { return; }
+			String keysResponse = MarconiUtilities.promptYN(String
+					.format("Are these keys correct? %s, %s, %s [Yes] or [No]", config.keys.getClientKey(),
+							config.keys.getSecretKey(), config.keys.getTelegramId()));
+			if (!keysResponse.startsWith("y")) return;
 			
 			if (!recruiting) {
 				// Confirm the recruitment flag.
 				while (true) {
-					String recruitResponse = MarconiUtilities.promptYN(
-							"Is the recruitment flag (" + config.isRecruitment + ") set correctly? [Yes] or [No]?");
-					if (recruitResponse.startsWith("n")) {
-						config.isRecruitment = !config.isRecruitment;
-					} else if (recruitResponse.startsWith("y")) {
-						break;
-					}
+					String recruitResponse = MarconiUtilities.promptYN(String
+							.format("Is the recruitment flag (%s) set correctly? [Yes] or [No]?",
+									String.valueOf(config.isRecruitment)));
+					if (recruitResponse.startsWith("n")) config.isRecruitment = !config.isRecruitment;
+					else if (recruitResponse.startsWith("y")) break;
 				}
 				
 				// Confirm the randomisation flag.
 				while (true) {
-					String randomResponse = MarconiUtilities.promptYN(
-							"Is the randomisation flag (" + config.isRandomised + ") set correctly? [Yes] or [No]?");
-					if (randomResponse.startsWith("n")) {
-						config.isRandomised = !config.isRandomised;
-					} else if (randomResponse.startsWith("y")) {
-						break;
-					}
+					String randomResponse = MarconiUtilities.promptYN(String
+							.format("Is the randomisation flag (%s) set correctly? [Yes] or [No]?",
+									String.valueOf(config.isRandomised)));
+					if (randomResponse.startsWith("n")) config.isRandomised = !config.isRandomised;
+					else if (randomResponse.startsWith("y")) break;
 				}
 			}
 		}

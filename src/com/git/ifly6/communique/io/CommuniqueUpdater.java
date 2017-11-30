@@ -1,24 +1,26 @@
 /* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
-import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.ngui.Communique;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.ngui.Communique;
 
 /** @author ifly6 */
 public class CommuniqueUpdater {
-
+	
 	private static final Logger LOGGER = Logger.getLogger(CommuniqueUpdater.class.getName());
 	
 	/** String for a pointing to the latest release of Communique. */
@@ -42,36 +44,27 @@ public class CommuniqueUpdater {
 			// accept default values
 		}
 	}
-
+	
 	/** Sets the appropriate continue checking value and then saves it with a new check date */
 	public void stopReminding() {
 		this.updaterProps.continueChecking = false;
 		save();
 	}
-
+	
 	/** Returns true if there is a major version update.
 	 * @return <code>boolean</code> if there is a new major version update */
 	public boolean hasUpdate() {
 		
 		try {
-			
 			save();
-			URLConnection connection = new URL(LATEST_RELEASE).openConnection();	// no need to rate-limit
-			connection.connect();
-			
-			String html;
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-				html = reader.lines().collect(Collectors.joining("\n"));
-			}
-			
-			Document doc = Jsoup.parse(html);
+			Document doc = Jsoup.connect(LATEST_RELEASE).get();
 			Elements elements = doc.select("div.release-meta").select("span.css-truncate-target");	// parse GitHub page
 			String versionString = elements.first().text().trim().replace("v", "");
 			
 			int majorVersion = Integer.parseInt(versionString.substring(0,
 					versionString.contains(".") ? versionString.indexOf(".") : versionString.length()));
-			if (majorVersion > Communique7Parser.version) { return true; }	// if higher major version, return for
-																				// update
+			if (majorVersion > Communique7Parser.version)
+				return true;
 			
 			// TODO find some way to recognise a new minor version
 			
@@ -116,11 +109,9 @@ public class CommuniqueUpdater {
 	
 }
 
-/**
- * Basically a C-style <code>struct</code> for easily serialising information on the last time an update was checked
- * and whether Communique should continue checking. In {@link CommuniqueUpdater#updatePath}, it is saved to an
- * invisible file in the application support director.
- */
+/** Basically a C-style <code>struct</code> for easily serialising information on the last time an update was checked
+ * and whether Communique should continue checking. In {@link CommuniqueUpdater#updatePath}, it is saved to an invisible
+ * file in the application support director. */
 class CommuniqueUpdaterProperties implements Serializable {
 	
 	private static final long serialVersionUID = Communique7Parser.version;

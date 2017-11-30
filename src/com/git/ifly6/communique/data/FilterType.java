@@ -18,12 +18,10 @@ public enum FilterType {
 		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
 			// match by names, not by recipient type
-			Set<String> set = provided.decompose().stream()
-					.map(CommuniqueRecipient::getName)
-					.collect(Collectors.toCollection(HashSet::new));
+			Set<String> set = toSetDecompose(provided);
 			return recipients.stream()
 					.filter(r -> set.contains(r.getName()))
-					.collect(Collectors.toCollection(LinkedHashSet::new));
+					.collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
 		}
 		
 		@Override public String toString() {
@@ -36,12 +34,10 @@ public enum FilterType {
 	EXCLUDE {
 		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
-			Set<String> set = provided.decompose().stream()
-					.map(CommuniqueRecipient::getName)
-					.collect(Collectors.toCollection(HashSet::new));
+			Set<String> set = toSetDecompose(provided);
 			return recipients.stream()
 					.filter(r -> !set.contains(r.getName()))
-					.collect(Collectors.toCollection(LinkedHashSet::new));
+					.collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
 		}
 		
 		@Override public String toString() {
@@ -55,7 +51,7 @@ public enum FilterType {
 	 * Please note that this portion of the <code>enum</code> should be kept at the bottom of the class, or otherwise,
 	 * {@link CommuniqueRecipient#parseRecipient} will break.
 	 * </p>
-	*/
+	 */
 	NORMAL {
 		@Override public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
 				CommuniqueRecipient provided) {
@@ -77,11 +73,18 @@ public enum FilterType {
 		return FilterType.NORMAL.apply(recipients, provided);
 	}
 	
-	/** Helps to translate a {@link CommuniqueRecipient} in a compatible fashion with the NationStates telegram system
-	 * syntax. The default <code>toString</code> method defaults to {@link FilterType#NORMAL#toString()}, which returns
-	 * an empty string. */
+	/** Translates a {@link CommuniqueRecipient} in a compatible fashion with the NationStates telegram system syntax.
+	 * The default <code>toString</code> method defaults to {@link FilterType#NORMAL#toString()}, which returns an empty
+	 * string. */
 	@Override public String toString() {
 		return NORMAL.toString();
+	}
+	
+	private static Set<String> toSetDecompose(CommuniqueRecipient recipient) {
+		return recipient
+				.decompose() // turn it into the raw recipients
+				.stream().map(CommuniqueRecipient::getName)	// get strings for matching
+				.collect(Collectors.toCollection(HashSet::new)); // for fast Set.contains()
 	}
 	
 }
