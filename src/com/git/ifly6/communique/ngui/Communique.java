@@ -66,9 +66,10 @@ import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
-import com.git.ifly6.communique.io.CommuniqueConnector;
 import com.git.ifly6.communique.io.CommuniqueLoader;
+import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.io.CommuniqueUpdater;
+import com.git.ifly6.communique.io.NoResolutionException;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
@@ -529,26 +530,27 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mntmFromAtVote.addActionListener(e -> {
 			
 			Object[] possibilities = { "GA For", "GA Against", "SC For", "SC Against" };
-			String output = (String) JOptionPane.showInputDialog(frame, "Select which chamber and side you want to address:",
-					"Select Chamber and Side", JOptionPane.PLAIN_MESSAGE, null, possibilities, "GA For");
+			String selection =
+					(String) JOptionPane.showInputDialog(frame, "Select which chamber and side you want to address:",
+							"Select Chamber and Side", JOptionPane.PLAIN_MESSAGE, null, possibilities, "GA For");
 			
-			if (!CommuniqueUtils.isEmpty(output)) {
-				String[] elements = output.split(" ");
-				if (elements.length == 2) {
-					
-					String chamber = elements[0].equals("GA") ? CommuniqueConnector.GA : CommuniqueConnector.SC;
-					String side = elements[1].equals("For") ? CommuniqueConnector.FOR : CommuniqueConnector.AGAINST;
-					
-					try {
-						CommuniqueConnector.importAtVoteDelegates(chamber, side).stream()
-								.map(CommuniqueRecipient::toString)
-								.forEach(this::appendCode);
-					} catch (RuntimeException exc) {
-						this.showMessageDialog("Cannot import data from NationStates website", CommuniqueMessages.ERROR);
-						LOGGER.warning("Cannot import data. Message:");
-						exc.printStackTrace();
-					}
-					
+			if (!CommuniqueUtils.isEmpty(selection)) {
+				LOGGER.info("Starting scrape of NS WA voting page, " + selection);
+				String[] elements = selection.split(" ");
+				String chamber = elements[0].equals("GA") ? CommuniqueScraper.GA : CommuniqueScraper.SC;
+				String side = elements[1].equals("For") ? CommuniqueScraper.FOR : CommuniqueScraper.AGAINST;
+				
+				try {
+					CommuniqueScraper.importAtVoteDelegates(chamber, side).stream()
+							.map(CommuniqueRecipient::toString)
+							.forEach(this::appendCode);
+				} catch (NoResolutionException nre) {
+					this.showMessageDialog("No resolution at vote in that chamber, cannot import data",
+							CommuniqueMessages.ERROR);
+				} catch (RuntimeException exc) {
+					this.showMessageDialog("Cannot import data from NationStates website", CommuniqueMessages.ERROR);
+					LOGGER.warning("Cannot import data.");
+					exc.printStackTrace();
 				}
 			}
 			

@@ -132,7 +132,7 @@ import java.util.stream.Stream;
 	 * which can be read.
 	 * @return <code>boolean</code> containing true or false on whether the configuration file is compatible. */
 	public boolean isCompatible() {
-		return getFileVersion() < 7;    // changed
+		return getFileVersion() < 7;    // changed from original
 	}
 	
 	/** Finds the file version declarer by finding the line which states "# Produced by version" or the version tag. The

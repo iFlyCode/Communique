@@ -27,12 +27,13 @@ public class Communique7Parser {
 	public static final int version = 7;
 	
 	/** List of recipients changed by various actions and applications called by the parser. */
-	private Set<CommuniqueRecipient> recipients = new LinkedHashSet<>(0);
+	private Set<CommuniqueRecipient> recipients;
 	
 	/** Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
 	 * methods, either in the form of a <code>List&lt;String&gt;</code> or any number of
 	 * <code>CommuniqueRecipient</code>. */
 	public Communique7Parser() {
+		recipients = new LinkedHashSet<>();
 	}
 	
 	/** Applies the tokens, specified in the <code>CommuniqueRecipient</code> object, to the recipients list in the
