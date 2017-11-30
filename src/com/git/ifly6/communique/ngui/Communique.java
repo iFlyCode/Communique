@@ -70,10 +70,10 @@ import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.io.CommuniqueUpdater;
 import com.git.ifly6.communique.io.NoResolutionException;
+import com.git.ifly6.javatelegram.JTelegramException;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
-import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** <code>Communiqué</code> is the main class of the Communiqué system. It handles the GUI aspect of the entire program
  * and other actions. */
@@ -616,7 +616,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		JMenuItem mntmDocumentation = new JMenuItem("Documentation");
 		mntmDocumentation.addActionListener(e -> {
 			try {
-				Desktop.getDesktop().browse(new URL("https://github.com/iFlyCode/Communique#communiqué").toURI());
+				Desktop.getDesktop().browse(new URL("https://github.com/iFlyCode/Communique").toURI());
 			} catch (IOException | URISyntaxException e1) {
 				LOGGER.warning("Cannot open Communiqué documentation");
 				e1.printStackTrace();

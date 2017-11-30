@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.git.ifly6.javatelegram.JTelegramException;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
-import com.git.ifly6.javatelegram.util.JTelegramException;
 
 /** Defines a number of recipient types and provides methods to decompose those types into lists of
  * <code>CommuniqueRecipient</code>.

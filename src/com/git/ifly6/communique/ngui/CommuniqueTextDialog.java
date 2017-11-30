@@ -39,7 +39,7 @@ class CommuniqueTextDialog extends JDialog {
 	
 	private CommuniqueTextDialog(JFrame parent, String title, String message, Font font) {
 		
-		super(parent, true);
+		super(parent, true); // all of these will be modal
 		setTitle(title);
 		
 		int width = 400;

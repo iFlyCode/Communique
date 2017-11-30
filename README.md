@@ -40,13 +40,13 @@ It is *your* responsibility to know how the telegram API works. Use of this prog
 	`NationStates JavaTelegram (maintained by Imperium Anglorum, used by <client key>)`
 
 ## Changelog ##
-While there will be a version number, currently, there is no such number, since, for obvious reasons, we are still in alpha. Version numbers will start after the program is released.
+The following are the various changelogs from various version of Communique:
 
 1. Version 1 comes in three flavours, Communiqué (GUI), Morse (old CLI), and Marconi (new CLI).
    - Communiqué has support for the keys, variable flags, and the saving and loading of the program configuration. 
    - Morse does not do any of this. It only has support for a simple list of recipients without support for loading or saving of anything more than the client key. 
    - Marconi is a headless client. It will only accept valid files from Communiqué and then read those files and use all the data in them. It does not write these files (other than updating their sent lists). 
-   - Note that Morse will likely be phased out in favour of just Communiqué and Marconi.
+   - Note that Morse will likely be phased out in favour of just Communiqué and Marconi. *Edit: Morse no longer exists.*
 
 2. Version 2 is a change due to the introduction of a new operator which is written to file. The `->` operator, signifying 'in', cannot be parsed by version 1 parsers, and hence, necessitated a change in the version number.
    - Added `->` modifier, signifying 'in', e.g. `region:europe -> wa:members` would return 'nations of Europe in WA:members' and `region:europe -> wa:delegates` would return the Delegate of Europe. Due to the way the 'both' function works, it is commutative.
@@ -68,3 +68,4 @@ While there will be a version number, currently, there is no such number, since,
 7. Version 7 rehashes the entire Communiqué syntax structure to operate in line with the NationStates telegram API system. Thus, a query in the NationStates API like `region:Europe, +tag:WA` will function exactly the same in Communiqué.
    - This version also switches to HTTPS per the recent NationStates update and implements a new update-checker (it will check, at most, once a week). 
    - It also implements a change in how telegram requests are queued. Before, a time delay would commence, and after that delay, the program would check for whether the recipient is a valid recipient. Now, during that time delay, the program checks for whether the recipient is valid, saving around 1.6 seconds from every recruitment call. When not on recruitment, it also checks whether that nation has opt-ed into campaign telegrams, and if not, skips to the next recipient.
+   - Version 7.1 overhauls the UI present since version 5. This eliminates the second text area showing the parsed recipients and creates a dialog which shows them. It also puts out a bug fix to the web scraper introduced in version 6 and increases the number of tags which the automatic token translation system can handle. 

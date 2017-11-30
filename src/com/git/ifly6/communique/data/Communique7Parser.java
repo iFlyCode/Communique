@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.git.ifly6.javatelegram.util.JTelegramException;
+import com.git.ifly6.javatelegram.JTelegramException;
 
 /** <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
  * recipients as used in NationStates. It supersedes the old parser, {@link CommuniqueParser}, which used the custom

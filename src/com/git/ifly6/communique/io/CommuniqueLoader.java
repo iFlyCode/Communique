@@ -3,7 +3,7 @@ package com.git.ifly6.communique.io;
 
 import com.git.ifly6.communique.CommuniqueUtils;
 import com.git.ifly6.communique.ngui.Communique;
-import com.git.ifly6.javatelegram.util.JTelegramException;
+import com.git.ifly6.javatelegram.JTelegramException;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

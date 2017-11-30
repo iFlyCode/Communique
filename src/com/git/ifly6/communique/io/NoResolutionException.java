@@ -14,5 +14,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package com.git.ifly6.communique.io;
 
+/** Thrown by {@link CommuniqueScraper} if there is no resolution in the WA chamber selected.
+ * @author ifly6 */
 public class NoResolutionException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
 }

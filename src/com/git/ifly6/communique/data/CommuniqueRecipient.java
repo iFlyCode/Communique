@@ -2,7 +2,7 @@
 package com.git.ifly6.communique.data;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
-import com.git.ifly6.javatelegram.util.JTelegramException;
+import com.git.ifly6.javatelegram.JTelegramException;
 
 import java.util.List;
 
