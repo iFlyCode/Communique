@@ -37,7 +37,7 @@ public class CommuniqueUtilities {
 	 * @return a string in days, hours, minutes, and seconds */
 	public static String time(int seconds) {
 		Duration duration = Duration.of(seconds, ChronoUnit.SECONDS);
-		return String.format("%dd:%dh:%dm:%s", duration.toDaysPart(), duration.toHoursPart(), duration.toMinutesPart(),
+		return String.format("%dd:%dh:%dm:%ds", duration.toDaysPart(), duration.toHoursPart(), duration.toMinutesPart(),
 				duration.toSecondsPart());
 	}
 	

@@ -5,15 +5,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.git.ifly6.communique.CommuniqueUtilities;
 
 public class MarconiUtilities {
 	
@@ -29,20 +28,13 @@ public class MarconiUtilities {
 		// determine whether the program is already running
 		try {
 			if (!Files.exists(lockFile)) {
-				Files.write(lockFile, Collections.singletonList(MarconiUtilities.currentTime()));
+				Files.write(lockFile, Collections.singletonList(CommuniqueUtilities.getCurrentDateAndTime()));
 				return false;
 			} else return true;
 		} catch (IOException exc) {
 			LOGGER.log(Level.INFO, "Cannot determine if program is already running from lock file.", exc);
 			return false;
 		}
-	}
-	
-	/** @return the current date and time in the format YYYY/MM/DD HH:MM:SS */
-	public static String currentTime() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		return dateFormat.format(date);
 	}
 	
 	/** Shorthand for the scanner creation, the posing of the question, and the getting of the response. This version of
