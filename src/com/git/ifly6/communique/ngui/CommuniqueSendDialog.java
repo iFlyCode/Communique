@@ -165,7 +165,9 @@ public class CommuniqueSendDialog extends JDialog {
 	
 	private String estimateTime(int count, boolean isRecruitment) {
 		int seconds = Math.round(count *
-				(isRecruitment ? JavaTelegram.RECRUIT_TIME / 1000 : JavaTelegram.CAMPAIGN_TIME / 1000));
+				(isRecruitment
+						? JavaTelegram.RECRUIT_TIME / 1000
+						: JavaTelegram.CAMPAIGN_TIME / 1000));
 		return CommuniqueUtilities.time(seconds);
 	}
 	

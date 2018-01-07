@@ -97,8 +97,9 @@ public class CommuniqueUpdater {
 	 * will skip checking again.
 	 * @return <code>boolean</code> about whether a check has been conducted within the last week */
 	private boolean recentCheck() {
-		return Instant.now().compareTo(updaterProps.lastChecked.plus(1, ChronoUnit.WEEKS)) > 0;
-		// is now after the last checked date + 1 week?
+		return Instant.now().compareTo(updaterProps.lastChecked.plus(3, ChronoUnit.DAYS)) > 0;
+		// is now after the last checked date + 3 days?
+		// max supported ChronoUnit size is DAYS
 	}
 	
 	/** Saves the check date along with the continue checking information. Note that this method uses the standard Java
