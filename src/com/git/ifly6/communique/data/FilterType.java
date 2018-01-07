@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
 import java.util.HashSet;
@@ -69,21 +69,13 @@ public enum FilterType {
 	 * @param recipients upon which the token is to be applied
 	 * @param provided token
 	 * @return recipients after the token is applied */
-	public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients, CommuniqueRecipient provided) {
-		return FilterType.NORMAL.apply(recipients, provided);
-	}
-	
-	/** Translates a {@link CommuniqueRecipient} in a compatible fashion with the NationStates telegram system syntax.
-	 * The default <code>toString</code> method defaults to {@link FilterType#NORMAL#toString()}, which returns an empty
-	 * string. */
-	@Override public String toString() {
-		return NORMAL.toString();
-	}
+	public abstract Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
+			CommuniqueRecipient provided);
 	
 	private static Set<String> toSetDecompose(CommuniqueRecipient recipient) {
 		return recipient
-				.decompose() // turn it into the raw recipients
-				.stream().map(CommuniqueRecipient::getName)	// get strings for matching
+				.decompose().stream() // turn it into the raw recipients
+				.map(CommuniqueRecipient::getName) // get strings for matching
 				.collect(Collectors.toCollection(HashSet::new)); // for fast Set.contains()
 	}
 	

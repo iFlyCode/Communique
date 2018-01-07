@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
 import java.awt.BorderLayout;
@@ -54,6 +54,7 @@ import com.git.ifly6.communique.data.FilterType;
 import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
+import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
@@ -390,9 +391,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	private void sync() {
 		
 		CommuniqueConfig config = new CommuniqueConfig();
-		
-		config.isDelegatePrioritised = false;    // set appropriate flags
-		config.isRandomised = false;
+		config.processingAction = CommuniqueProcessingAction.NONE;
 		config.isRecruitment = true;
 		config.defaultVersion();
 		
@@ -435,6 +434,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
 		List<String> excludeRegions = config.getcRecipients().stream()
 				.filter(r -> r.getRecipientType() == RecipientType.REGION)
+				.filter(r -> r.getFilterType() == FilterType.EXCLUDE)
 				.map(CommuniqueRecipient::getName)
 				.collect(Collectors.toList());
 		

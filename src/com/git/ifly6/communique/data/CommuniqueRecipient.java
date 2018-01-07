@@ -1,15 +1,15 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
+
+import java.util.List;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.javatelegram.JTelegramException;
 
-import java.util.List;
-
-/** An object in which to store information about a recipient. It is based on three characteristics, a
- * <code>FilterType</code>, a <code>RecipientType</code>, and the name. The filter type can be used to exclude, include,
- * or simply add. The recipient type can be used to specify multiple recipients, like in a region or in the set of World
- * Assembly delegates. The name specifies exactly what is being queried for.
+/** Stores information about a recipient. It is based on three characteristics, a <code>FilterType</code>, a
+ * <code>RecipientType</code>, and the name. The filter type can be used to exclude, include, or simply add. The
+ * recipient type can be used to specify multiple recipients, like in a region or in the set of World Assembly
+ * delegates. All <code>CommuniqueRecipient</code>s have names which are reference-name safe.
  * @author ifly6 */
 public class CommuniqueRecipient {
 	
@@ -17,21 +17,21 @@ public class CommuniqueRecipient {
 			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "delegates");
 	public static final CommuniqueRecipient WA_MEMBERS =
 			new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "wa");
-
+	
 	private FilterType filterType;
 	private RecipientType recipientType;
 	private String name;
 	
 	/** Creates a <code>CommuniqueRecipient</code> with certain characteristics. */
 	public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
-
+		
 		this.filterType = filterType;
 		this.recipientType = recipientType;
 		this.name = CommuniqueUtilities.ref(name);	// convert to reference name
-
+		
 		// some format checking for the name
 		if (name.contains(":")) throw new IllegalArgumentException("nation name [" + name + "] is invalid");
-
+		
 	}
 	
 	/** Returns the name, which, for all elements, will be the reference name format.
@@ -79,24 +79,22 @@ public class CommuniqueRecipient {
 		
 		s = s.trim();
 		
-		FilterType fType = FilterType.NORMAL;
-		for (FilterType type : FilterType.values()) {
+		FilterType fType = FilterType.NORMAL; // default
+		for (FilterType type : FilterType.values())
 			if (s.startsWith(type.toString())) {
 				fType = type;
 				s = s.substring(type.toString().length());
 				break;
 			}
-		}
 		
-		RecipientType rType = RecipientType.NATION;
-		for (RecipientType type : RecipientType.values()) {
+		RecipientType rType = RecipientType.NATION; // default
+		for (RecipientType type : RecipientType.values())
 			if (s.startsWith(type.toString())) {
 				rType = type;
 				s = s.substring(type.toString().length());
 				break;
 			}
-		}
-
+		
 		// 2017-03-30 use lastIndexOf to deal with strange name changes
 		return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));
 	}
@@ -111,22 +109,14 @@ public class CommuniqueRecipient {
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (this == obj) { return true; }
-		if (obj == null) { return false; }
-		if (getClass() != obj.getClass()) { return false; }
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		CommuniqueRecipient other = (CommuniqueRecipient) obj;
-		if (filterType != other.filterType) { return false; }
+		if (filterType != other.filterType) return false;
 		if (name == null) {
-			if (other.name != null) { return false; }
-		} else if (!name.equals(other.name)) { return false; }
+			if (other.name != null) return false;
+		} else if (!name.equals(other.name)) return false;
 		return recipientType == other.recipientType;
-	}
-
-	/**
-	 * Returns whether the <code>CommuniqueRecipient</code> is excluding
-	 * @return
-	 */
-	public boolean isExcluding() {
-		return filterType == FilterType.EXCLUDE;
 	}
 }

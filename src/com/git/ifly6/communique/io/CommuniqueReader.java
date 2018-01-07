@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
 import java.io.IOException;
@@ -41,9 +41,18 @@ import com.google.gson.JsonSyntaxException;
 		
 		CommuniqueConfig config;
 		
-		try {
+		try { // note, this will handle future version of the class by ignoring the now-irrelevant fields
 			Gson gson = new Gson();
 			config = gson.fromJson(Files.newBufferedReader(path), CommuniqueConfig.class);
+			
+			if (config.version == 7) { // convert from randomise flag to new enums
+				List<String> lines = Files.readAllLines(path).stream()
+						.map(String::trim)
+						.collect(Collectors.toList());
+				for (String line : lines)
+					if (line.equals("\"isRandomised\": true,"))
+						config.processingAction = CommuniqueProcessingAction.RANDOMISE;
+			}
 			
 		} catch (JsonSyntaxException | JsonIOException e) {
 			
@@ -54,8 +63,9 @@ import com.google.gson.JsonSyntaxException;
 			CommuniqueFileReader reader = new CommuniqueFileReader(path.toFile());
 			
 			config = new CommuniqueConfig();
-			config.isDelegatePrioritised = false;    // this flag did not exist, thus, default to false.
-			config.isRandomised = reader.isRandomised();
+			config.processingAction = reader.isRandomised()
+					? CommuniqueProcessingAction.RANDOMISE
+					: CommuniqueProcessingAction.NONE;
 			config.isRecruitment = reader.isRecruitment();
 			config.keys = reader.getKeys();
 			

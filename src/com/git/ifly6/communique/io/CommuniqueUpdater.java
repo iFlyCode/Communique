@@ -1,14 +1,17 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.logging.Logger;
 
 import org.jsoup.Jsoup;
@@ -39,8 +42,12 @@ public class CommuniqueUpdater {
 		try {
 			ObjectInputStream oiStream = new ObjectInputStream(Files.newInputStream(updatePath));
 			updaterProps = (CommuniqueUpdaterProperties) oiStream.readObject();	// replace original
+			
+		} catch (NoSuchFileException | FileNotFoundException e) {
+			LOGGER.info(String.format("Updater file not found, %s", updatePath.toString()));
 		} catch (RuntimeException | IOException | ClassNotFoundException e) {
-			LOGGER.info("Could not get updater properties");
+			LOGGER.info("Runtime exception in getting updater properties");
+			e.printStackTrace();
 			// accept default values
 		}
 	}
@@ -56,10 +63,12 @@ public class CommuniqueUpdater {
 	public boolean hasUpdate() {
 		
 		try {
-			save();
-			Document doc = Jsoup.connect(LATEST_RELEASE).get();
-			Elements elements = doc.select("div.release-meta").select("span.css-truncate-target");	// parse GitHub page
+			Document doc = Jsoup.connect(LATEST_RELEASE).get(); // get Communique releases page
+			Elements elements = doc.select("div.release-meta").select("span.css-truncate-target");
 			String versionString = elements.first().text().trim().replace("v", "");
+			
+			updaterProps.lastChecked = Instant.now(); // set last updated to now
+			save();
 			
 			int majorVersion = Integer.parseInt(versionString.substring(0,
 					versionString.contains(".") ? versionString.indexOf(".") : versionString.length()));
@@ -69,6 +78,7 @@ public class CommuniqueUpdater {
 			// TODO find some way to recognise a new minor version
 			
 		} catch (IOException e) {
+			LOGGER.info("Cannot access Github releases page, IO exception");
 			e.printStackTrace();
 			return false;
 		}
@@ -80,15 +90,15 @@ public class CommuniqueUpdater {
 	 * the last week and there is a new major version update.
 	 * @return <code>true</code> if there is a new update and it has not been checked within the last week */
 	public boolean shouldRemind() {
-		return !recentCheck() && hasUpdate();
+		return !recentCheck() && hasUpdate() && updaterProps.continueChecking;
 	}
 	
 	/** Determines whether Communique has recently checked for an update. If it has checked within the last week, it
 	 * will skip checking again.
 	 * @return <code>boolean</code> about whether a check has been conducted within the last week */
 	private boolean recentCheck() {
-		boolean notWithinWeek = new Date().getTime() - updaterProps.lastChecked.getTime() < 86400000 * 7;
-		return updaterProps.continueChecking && notWithinWeek;
+		return Instant.now().compareTo(updaterProps.lastChecked.plus(1, ChronoUnit.WEEKS)) > 0;
+		// is now after the last checked date + 1 week?
 	}
 	
 	/** Saves the check date along with the continue checking information. Note that this method uses the standard Java
@@ -115,7 +125,7 @@ public class CommuniqueUpdater {
 class CommuniqueUpdaterProperties implements Serializable {
 	
 	private static final long serialVersionUID = Communique7Parser.version;
-	Date lastChecked = new Date();
+	Instant lastChecked = Instant.MIN;
 	boolean continueChecking = true;	// default values
 	
 }

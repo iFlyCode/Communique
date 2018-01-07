@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
 import java.awt.BorderLayout;
@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -53,7 +54,6 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.undo.UndoManager;
@@ -67,6 +67,7 @@ import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
+import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.io.CommuniqueUpdater;
 import com.git.ifly6.communique.io.NoResolutionException;
@@ -85,17 +86,18 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	public static Path appSupport; // Hit open, what directory?
 	static FileHandler loggerFileHandler; // Save logs to file
 	
+	private CommuniqueConfig config = new CommuniqueConfig();
 	private JavaTelegram client; // Sending client
 	private Thread sendingThread = new Thread(); // Sending thread
 	
 	private JFrame frame;
+	private JTextArea txtrCode;
 	private JTextField txtClientKey;
 	private JTextField txtSecretKey;
 	private JTextField txtTelegramId;
-	private JButton btnParse;
-	private JTextArea txtrCode;
-	private JCheckBox chckbxRandomiseRecipients;
 	private JCheckBox chckbxRecruitment;
+	private JComboBox<CommuniqueProcessingAction> specialAction;
+	private JButton btnParse;
 	
 	private List<String> parsedRecipients;
 	private Map<String, Boolean> rSuccessTracker;
@@ -126,11 +128,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException lfE) {
 			try {
-				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels())
-					if ("Nimbus".equals(info.getName())) {
-						UIManager.setLookAndFeel(info.getClassName());
-						break;
-					}
+				UIManager.setLookAndFeel(Stream.of(UIManager.getInstalledLookAndFeels())
+						.filter(laf -> laf.getName().equals("Nimbus"))
+						.findFirst().get().getClassName());
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 					| UnsupportedLookAndFeelException e) {
 				e.printStackTrace();
@@ -157,9 +157,11 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		// Make sure we can also log to file, apply this to the root logger
 		try {
-			loggerFileHandler = new FileHandler(appSupport.resolve("last-session-log.log").toString());
+			Path logFile = appSupport.resolve("log").resolve("communique-last-session.log");
+			Files.createDirectories(logFile.getParent()); // make directory
+			loggerFileHandler = new FileHandler(logFile.toString());
 			loggerFileHandler.setFormatter(new SimpleFormatter());
-			Logger.getLogger("").addHandler(loggerFileHandler);
+			Logger.getGlobal().addHandler(loggerFileHandler);
 			
 		} catch (SecurityException | IOException e) {
 			e.printStackTrace();
@@ -183,6 +185,15 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		client = new JavaTelegram(this);
 		initialise();
+		
+		// Make sure user is connected to the Internet
+		try {
+			URL nsUrl = new URL("http://www.nationstates.net");
+			nsUrl.openConnection().connect();
+		} catch (IOException e) {
+			this.showMessageDialog("You are not connected to the Internet.\nTo send any telegrams, "
+					+ "you must be connected to the Internet.", CommuniqueMessages.ERROR);
+		}
 		
 		// Check for update, if so, tell the user and prompt
 		updater = new CommuniqueUpdater();
@@ -211,7 +222,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	private void initialise() {
 		
 		frame = new JFrame();
-		if (!CommuniqueUtils.IS_OS_MAC) frame.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
+		if (!CommuniqueUtils.IS_OS_MAC)
+			frame.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
 		
 		Dimension screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
 		double sWidth = screenDimensions.getWidth();
@@ -235,6 +247,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtrCode.setText(codeHeader);
 		txtrCode.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		txtrCode.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		txtrCode.getDocument().addDocumentListener(new CommuniqueDocumentListener(e -> {
+			Communique.this.config.setcRecipients(exportRecipients()); // dynamic update config
+		}));
 		JScrollPane scrollPane = new JScrollPane(txtrCode);
 		
 		progressBar = new JProgressBar();
@@ -243,76 +258,86 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		progressLabel = new JLabel("? / ?");
 		
 		txtClientKey = new JTextField();
-		txtClientKey.setToolTipText("Client key");
+		txtClientKey.setToolTipText("Put your client key here");
 		txtClientKey.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		txtClientKey.setText(CommuniqueLoader.getClientKey());
+		txtClientKey.getDocument().addDocumentListener(new CommuniqueDocumentListener(event -> {
+			config.keys.setClientKey(txtClientKey.getText()); // dynamic update config
+		}));
 		
 		txtSecretKey = new JTextField();
-		txtSecretKey.setToolTipText("Secret key");
+		txtSecretKey.setToolTipText("Put your telegram's secret key here");
 		txtSecretKey.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-		txtSecretKey.setText("Secret Key");
+		txtSecretKey.getDocument().addDocumentListener(new CommuniqueDocumentListener(event -> {
+			config.keys.setSecretKey(txtSecretKey.getText()); // dynamic update config
+		}));
 		
 		txtTelegramId = new JTextField();
-		txtTelegramId.setToolTipText("Telegram ID");
+		txtTelegramId.setToolTipText("Put your telegram's ID, a long multidigit integer, here");
 		txtTelegramId.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-		txtTelegramId.setText("Telegram ID");
-		
-		chckbxRecruitment = new JCheckBox("Recruit rate-limit");
+		txtTelegramId.getDocument().addDocumentListener(new CommuniqueDocumentListener(event -> {
+			config.keys.setTelegramId(txtTelegramId.getText()); // dynamic update config
+		}));
 		
 		btnParse = new JButton("Parse");
-		
-		// Parse action for above
-		btnParse.addActionListener(new ActionListener() {
+		btnParse.addActionListener(ae -> {
 			
-			@Override public void actionPerformed(ActionEvent e) {
-				
-				// Process in the case that the button currently says stop
-				if (sendingThread.isAlive() && btnParse.getText().equalsIgnoreCase("Stop")) {
-					// kill the thread
-					sendingThread.interrupt();
-					client.setKillThread(true);
-					return;
-				}
-				
-				Communique7Parser parser = new Communique7Parser();
-				List<CommuniqueRecipient> tokens = exportRecipients();
-				
-				// Check if a recruit-flag has been used.
-				boolean rfPresent = tokens.stream()
-						.filter(t -> t.getRecipientType() == RecipientType.FLAG)
-						.anyMatch(t -> t.getName().equals("recruit"));
-				if (rfPresent) {
-					showRecruiter();
-					return;
-				}
-				
-				// Call and do the parsing
-				LOGGER.info("Called parser");
-				try {
-					Communique.this.parsedRecipients = parser.apply(tokens).getRecipients();    // apply
-				} catch (JTelegramException jte) {
-					Communique.this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
-					return;
-				}
-				LOGGER.info("Recipients Parsed");
-				
-				// Change GUI elements
-				progressLabel.setText("0 / " + parsedRecipients.size());
-				
-				// Run checks
-				if (chckbxRandomiseRecipients.isSelected()) Collections.shuffle(parsedRecipients);
-				if (parsedRecipients.size() == 0) {
-					Communique.this.showMessageDialog("No recipients specified, cannot send", CommuniqueMessages.ERROR);
-					return;
-				}
-				
-				// Ask for confirmation
-				CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients,
-						chckbxRecruitment.isSelected());
-				LOGGER.info("Displayed CommuniqueSendDialog");
-				LOGGER.info("sendDialog.getValue():\t" + sendDialog.getValue());
-				if (sendDialog.getValue() == CommuniqueSendDialog.SEND) send();
+			// Process in the case that the button currently says stop
+			if (sendingThread.isAlive() && btnParse.getText().equalsIgnoreCase("Stop")) {
+				// kill the thread
+				sendingThread.interrupt();
+				client.setKillThread(true);
+				return;
 			}
+			
+			Communique7Parser parser = new Communique7Parser();
+			List<CommuniqueRecipient> tokens = config.getcRecipients();
+			
+			// Check if a recruit-flag has been used.
+			boolean rfPresent = tokens.stream()
+					.filter(t -> t.getRecipientType() == RecipientType.FLAG)
+					.anyMatch(t -> t.getName().equals("recruit"));
+			if (rfPresent) {
+				showRecruiter();
+				return;
+			}
+			
+			// Call and do the parsing
+			LOGGER.info("Called parser");
+			try {
+				parsedRecipients = parser.apply(tokens).getRecipients();
+				
+				// if an invalid processing action is selected
+				if (!Arrays.asList(CommuniqueProcessingAction.values()).contains(config.processingAction)) {
+					this.showMessageDialog("Invalid processing action.\n"
+							+ "Select a valid processing action", CommuniqueMessages.ERROR);
+					return;
+				}
+				
+				parsedRecipients = config.processingAction.apply(parsedRecipients);
+			} catch (JTelegramException jte) {
+				this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+				return;
+			}
+			LOGGER.info("Recipients Parsed");
+			
+			// Change GUI elements
+			progressLabel.setText("0 / " + parsedRecipients.size());
+			
+			// Run checks
+			if (parsedRecipients.size() == 0) {
+				Communique.this.showMessageDialog("No recipients specified, cannot send", CommuniqueMessages.ERROR);
+				return;
+			}
+			
+			// Ask for confirmation
+			CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients,
+					config.isRecruitment);
+			LOGGER.info("Displayed CommuniqueSendDialog");
+			LOGGER.info("CommuniqueSendDialog " + (sendDialog.getValue() == 0
+					? "cancelled"
+					: "accepted with " + sendDialog.getValue()));
+			if (sendDialog.getValue() == CommuniqueSendDialog.SEND) send();
 			
 		});
 		
@@ -320,36 +345,68 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		JLabel lblSecretKey = new JLabel("Secret key");
 		JLabel lblTelegramId = new JLabel("Telegram ID");
 		
-		chckbxRandomiseRecipients = new JCheckBox("Randomise recipient order");
+		chckbxRecruitment = new JCheckBox("Recruitment ratelimit");
+		chckbxRecruitment.setToolTipText("The recruitment ratelimit is 180 seconds per telegram. The ratelimit "
+				+ "for all other telegrams is 30 seconds. Communiqué puts in an extra 0.05 seconds as a buffer "
+				+ "against latency.");
+		chckbxRecruitment.addActionListener(evt -> {
+			config.isRecruitment = chckbxRecruitment.isSelected();
+			LOGGER.info(String.format("Set config recruitment to %s",
+					String.valueOf(chckbxRecruitment.isSelected())));
+		});
+		
+		specialAction = new JComboBox<>();
+		for (CommuniqueProcessingAction action : CommuniqueProcessingAction.values()) // populate enum selector
+			specialAction.addItem(action);
+		specialAction.setToolTipText("Processing actions can be applied to the list of recipients after they "
+				+ "are parsed. Select a processing action here");
+		specialAction.addActionListener(evt -> {
+			config.processingAction = specialAction.getItemAt(specialAction.getSelectedIndex());
+			LOGGER.info(String.format("Set config processing action to %s",
+					specialAction.getItemAt(specialAction.getSelectedIndex())));
+		});
+		
+		JLabel lblProcessingAction = new JLabel("Processing action");
+		
 		GroupLayout gl_dataPanel = new GroupLayout(dataPanel);
 		gl_dataPanel.setHorizontalGroup(
 				gl_dataPanel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_dataPanel.createSequentialGroup()
 								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
-								.addPreferredGap(ComponentPlacement.RELATED)
 								.addGroup(gl_dataPanel.createParallelGroup(Alignment.TRAILING)
-										.addGroup(gl_dataPanel.createSequentialGroup()
-												.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+										.addGroup(Alignment.LEADING, gl_dataPanel.createSequentialGroup()
 												.addPreferredGap(ComponentPlacement.RELATED)
-												.addComponent(progressLabel)
-												.addGap(6))
-										.addGroup(gl_dataPanel.createSequentialGroup()
-												.addGroup(gl_dataPanel.createParallelGroup(Alignment.LEADING)
-														.addComponent(lblSecretKey)
-														.addComponent(lblTelegramId)
-														.addComponent(lblClientKey))
-												.addGap(12)
-												.addGroup(gl_dataPanel.createParallelGroup(Alignment.LEADING)
-														.addComponent(txtClientKey, GroupLayout.DEFAULT_SIZE, 173,
+												.addGroup(gl_dataPanel.createParallelGroup(Alignment.TRAILING)
+														.addGroup(gl_dataPanel.createSequentialGroup()
+																.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 224,
+																		Short.MAX_VALUE)
+																.addPreferredGap(ComponentPlacement.RELATED)
+																.addComponent(progressLabel)
+																.addGap(6))
+														.addGroup(gl_dataPanel.createSequentialGroup()
+																.addGroup(gl_dataPanel.createParallelGroup(Alignment.LEADING)
+																		.addComponent(lblSecretKey)
+																		.addComponent(lblTelegramId)
+																		.addComponent(lblClientKey))
+																.addGap(12)
+																.addGroup(gl_dataPanel.createParallelGroup(Alignment.LEADING)
+																		.addComponent(txtClientKey, GroupLayout.DEFAULT_SIZE,
+																				173, Short.MAX_VALUE)
+																		.addComponent(txtSecretKey, Alignment.TRAILING,
+																				GroupLayout.DEFAULT_SIZE, 173,
+																				Short.MAX_VALUE)
+																		.addComponent(txtTelegramId,
+																				GroupLayout.DEFAULT_SIZE, 173,
+																				Short.MAX_VALUE)))
+														.addComponent(btnParse, GroupLayout.DEFAULT_SIZE, 261,
 																Short.MAX_VALUE)
-														.addComponent(txtSecretKey, Alignment.TRAILING,
-																GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-														.addComponent(txtTelegramId, GroupLayout.DEFAULT_SIZE, 173,
+														.addComponent(chckbxRecruitment, GroupLayout.DEFAULT_SIZE, 261,
 																Short.MAX_VALUE)))
-										.addComponent(btnParse, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-										.addComponent(chckbxRandomiseRecipients, GroupLayout.DEFAULT_SIZE, 261,
-												Short.MAX_VALUE)
-										.addComponent(chckbxRecruitment, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
+										.addGroup(Alignment.LEADING, gl_dataPanel.createSequentialGroup()
+												.addGap(14)
+												.addComponent(lblProcessingAction)
+												.addPreferredGap(ComponentPlacement.RELATED)
+												.addComponent(specialAction, 0, 161, Short.MAX_VALUE)))
 								.addContainerGap()));
 		gl_dataPanel.setVerticalGroup(
 				gl_dataPanel.createParallelGroup(Alignment.TRAILING)
@@ -369,11 +426,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 										.addComponent(lblTelegramId)
 										.addComponent(txtTelegramId, GroupLayout.PREFERRED_SIZE, 29,
 												GroupLayout.PREFERRED_SIZE))
-								.addPreferredGap(ComponentPlacement.RELATED, 317, Short.MAX_VALUE)
+								.addPreferredGap(ComponentPlacement.RELATED, 313, Short.MAX_VALUE)
 								.addComponent(chckbxRecruitment, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
 								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(chckbxRandomiseRecipients, GroupLayout.PREFERRED_SIZE, 23,
-										GroupLayout.PREFERRED_SIZE)
+								.addGroup(gl_dataPanel.createParallelGroup(Alignment.BASELINE)
+										.addComponent(specialAction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+												GroupLayout.PREFERRED_SIZE)
+										.addComponent(lblProcessingAction))
 								.addPreferredGap(ComponentPlacement.RELATED)
 								.addComponent(btnParse)
 								.addPreferredGap(ComponentPlacement.RELATED)
@@ -438,7 +497,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnFile.addSeparator();
 		
 		JMenuItem mntmShowDirectory = new JMenuItem("Show Directory");
-		mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, COMMAND_KEY | InputEvent.SHIFT_MASK));
+		mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
 		mntmShowDirectory.addActionListener(e -> {
 			try {
 				Desktop.getDesktop().open(appSupport.toFile());
@@ -457,8 +516,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			mnFile.add(mntmExit);
 		}
 		
-		JMenu mnData = new JMenu("Data");
-		menuBar.add(mnData);
+		JMenu mnEdit = new JMenu("Edit");
+		menuBar.add(mnEdit);
 		
 		// Create undo manager to get that dope functionality
 		UndoManager undoManager = new UndoManager();
@@ -468,44 +527,43 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mntmUndo.addActionListener(e -> {
 			if (undoManager.canUndo()) undoManager.undo();
 		});
-		mnData.add(mntmUndo);
+		mnEdit.add(mntmUndo);
 		
 		JMenuItem mntmRedo = new JMenuItem("Redo");
-		mntmRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, COMMAND_KEY | InputEvent.SHIFT_MASK));
+		mntmRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
 		mntmRedo.addActionListener(e -> {
 			if (undoManager.canRedo()) undoManager.redo();
 		});
-		mnData.add(mntmRedo);
+		mnEdit.add(mntmRedo);
 		
 		JMenuItem mntmImportKeysFrom = new JMenuItem("Import Keys from Telegram URL");
 		mntmImportKeysFrom.addActionListener(e -> {
 			
-			String rawURL = this.showTextInputDialog("Paste in keys from the URL provided by receipt by the Telegrams API",
-					CommuniqueMessages.TITLE);
+			String rawURL = this.showTextInputDialog("Paste in keys from the URL provided by receipt by the "
+					+ "Telegrams API", CommuniqueMessages.TITLE);
 			
 			// Verify that it is a valid NationStates URL
-			String rawUrlStart = "https://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
-			if (rawURL.startsWith(rawUrlStart)) {
+			String raw1 = "https://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
+			String raw2 = "http://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
+			if (rawURL.startsWith(raw1) || rawURL.startsWith(raw2)) {
 				
-				rawURL = rawURL.replace(rawUrlStart, "");
+				rawURL = rawURL.substring(rawURL.indexOf("a=sendTG&client=YOUR_API_CLIENT_KEY&") +
+						"a=sendTG&client=YOUR_API_CLIENT_KEY&".length()); // use substring
 				rawURL = rawURL.replace("&to=NATION_NAME", "");
 				
 				String[] shards = rawURL.split("&");
 				if (shards.length == 2) {
-					txtTelegramId.setText(shards[0].substring(shards[0].indexOf("=") + 1, shards[0].length()));
-					txtSecretKey.setText(shards[1].substring(shards[1].indexOf("=") + 1, shards[1].length()));
+					txtTelegramId.setText(shards[0].substring(shards[0].indexOf("=") + "=".length()));
+					txtSecretKey.setText(shards[1].substring(shards[1].indexOf("=") + "=".length()));
 				}
 				
-			} else {
-				String message = "Please input a properly formatted NationStates URL\nin the form displayed when a "
-						+ "telegram is sent to 'tag:api'";
-				this.showMessageDialog(message, CommuniqueMessages.ERROR);
-			}
+			} else this.showMessageDialog("Input a properly formatted NationStates URL in the form displayed "
+					+ "when a telegram is sent to 'tag:api'", CommuniqueMessages.ERROR);
 		});
-		mnData.add(mntmImportKeysFrom);
+		mnEdit.add(mntmImportKeysFrom);
 		
 		JMenu mnImportRecipients = new JMenu("Import Recipients");
-		mnData.add(mnImportRecipients);
+		mnEdit.add(mnImportRecipients);
 		
 		JMenuItem mntmFromWaDelegate = new JMenuItem("From WA Delegate List");
 		mntmFromWaDelegate.addActionListener(e -> appendCode(CommuniqueRecipient.DELEGATES));
@@ -516,9 +574,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 					+ "NationStates World Assembly pages:";
 			String input = this.showTextInputDialog(message, CommuniqueMessages.TITLE);
 			if (input != null) {
-				input = input.replaceAll("\\(.+?\\)", "");
+				input = input.replaceAll("\\(.+?\\)", ""); // get rid of brackets and anything in them
 				Stream.of(input.split(","))
-						.map(CommuniqueRecipients::createNation)
+						.map(CommuniqueRecipients::createNation) // createNation auto-trims
 						.map(CommuniqueRecipient::toString)
 						.forEach(this::appendCode);
 			}
@@ -545,7 +603,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 							.map(CommuniqueRecipient::toString)
 							.forEach(this::appendCode);
 				} catch (NoResolutionException nre) {
-					this.showMessageDialog("No resolution at vote in that chamber, cannot import data",
+					this.showMessageDialog("No resolution is at vote in that chamber, cannot import data",
 							CommuniqueMessages.ERROR);
 				} catch (RuntimeException exc) {
 					this.showMessageDialog("Cannot import data from NationStates website", CommuniqueMessages.ERROR);
@@ -558,30 +616,20 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnImportRecipients.add(mntmFromAtVote);
 		
 		JMenuItem mntmFromTextFile = new JMenuItem("From Text File");
+		mntmFromAtVote.setToolTipText("This file should be of the same syntax as that used by the NationStates "
+				+ "telegram API or Communique");
 		mntmFromTextFile.addActionListener(e -> {
 			Path path = showFileChooser(frame, FileDialog.LOAD);
 			try {
-				
-				// load data
-				List<String> fileContents = Files.lines(path)
+				Files.lines(path) // attempt load data
 						.filter(s -> !s.startsWith("#") || !CommuniqueUtils.isEmpty(s))
-						.collect(Collectors.toList());
-				
-				// collate the data
-				List<String> recipients = new ArrayList<>();
-				for (String element : fileContents) {
-					// If there are commas in there, split them out
-					String[] elements = element.split(",");
-					for (String recipient : elements)
-						recipients.add(recipient.toLowerCase().trim().replaceAll(" ", "_"));
-				}
-				
-				// add it to the list
-				Communique7Parser.translateTokens(recipients).forEach(this::appendCode);
-				
+						.map(s -> s.split(",")) // split
+						.flatMap(Arrays::stream) // map to single stream
+						.map(s -> s.toLowerCase().trim().replaceAll(" ", "_")) // process
+						.forEach(this::appendCode); // append to text area
 			} catch (IOException e1) {
-				// throw an error message
-				this.showMessageDialog("Cannot load file at " + path.toString(), CommuniqueMessages.ERROR);
+				this.showMessageDialog("Cannot read file at " + path.toString(), CommuniqueMessages.ERROR);
+				e1.printStackTrace();
 			}
 		});
 		mnImportRecipients.add(mntmFromTextFile);
@@ -659,7 +707,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			}
 		}));
 		LOGGER.info("Shutdown hook added");
-		
 		LOGGER.info("Communiqué loaded");
 		
 		// If there is an auto-save, load it
@@ -672,20 +719,17 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				// do nothing if it fails to load
 			}
 		}
-		
 		LOGGER.info("Autosave loaded");
 		
 	}
 	
 	private List<CommuniqueRecipient> exportRecipients() {
-		List<CommuniqueRecipient> tokens = new ArrayList<>();
-		Stream.of(txtrCode.getText().split("\n"))
+		return Stream.of(txtrCode.getText().split("\n"))
 				.filter(s -> !(s.isEmpty() || s.trim().isEmpty()))
 				.filter(s -> !s.startsWith("#"))
-				.forEach(s -> Stream.of(s.split(","))      // decompose and parse
-						.map(CommuniqueRecipient::parseRecipient)
-						.forEach(tokens::add));
-		return tokens;
+				.flatMap(s -> Stream.of(s.split(",")))    // flat map the splits
+				.map(CommuniqueRecipient::parseRecipient)
+				.collect(Collectors.toList());
 	}
 	
 	private void showMessageDialog(String text, String title) {
@@ -698,26 +742,20 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	
 	@Override public CommuniqueConfig exportState() {
 		
-		CommuniqueConfig config = new CommuniqueConfig();
-		
-		config.isRecruitment = chckbxRecruitment.isSelected();
-		config.isRandomised = chckbxRandomiseRecipients.isSelected();
-		config.keys = new JTelegramKeys(txtClientKey.getText(), txtSecretKey.getText(), txtTelegramId.getText());
-		
-		config.setcRecipients(exportRecipients());
-		// exclude update of the old String[]'s
-		
 		config.defaultVersion();
 		
 		LOGGER.info("Communiqué config exported");
-		return config;
+		return this.config;
 		
 	}
 	
 	@Override public void importState(CommuniqueConfig config) {
 		
+		this.config = config;   // import to state config object
+		
+		// manually sync them up
 		chckbxRecruitment.setSelected(config.isRecruitment);
-		chckbxRandomiseRecipients.setSelected(config.isRandomised);
+		specialAction.setSelectedItem(config.processingAction);
 		
 		txtClientKey.setText(config.keys.getClientKey());   // set keys
 		txtSecretKey.setText(config.keys.getSecretKey());
@@ -727,6 +765,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				.collect(Collectors.joining("\n")));
 		
 		LOGGER.info("Communique info imported");
+		
 	}
 	
 	private void appendCode(Object input) {
@@ -829,7 +868,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 				parsedRecipients.forEach(r -> rSuccessTracker.put(r, false));
 				if (rSuccessTracker == null) LOGGER.severe("Success tracker is null");
 				
-				client.connect();
+				try {
+					client.connect();
+				} catch (JTelegramException jte) {  // JTE occurring during send?
+					Communique.this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+					return;
+				}
+				
 				completeSend();
 				
 			};
@@ -859,7 +904,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			progressBar.setValue(0);    // reset progress bar
 		}
 		
-		final int ups = 60;    // ups = updates per second
+		final int ups = 20;    // ups = updates per second
 		int totalTime = ups * (chckbxRecruitment.isSelected() ? 180 : 30);    // est delay
 		progressBar.setMaximum(totalTime);    // max = est delay
 		

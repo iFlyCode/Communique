@@ -1,9 +1,5 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
-
-import com.git.ifly6.communique.CommuniqueUtils;
-import com.git.ifly6.communique.ngui.Communique;
-import com.git.ifly6.javatelegram.JTelegramException;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,11 +7,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 
-/** <code>CLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying the
- * process of reading and writing to that data. It uses the <code>{@link CommuniqueReader}</code> and
+import com.git.ifly6.communique.CommuniqueUtils;
+import com.git.ifly6.communique.ngui.Communique;
+import com.git.ifly6.javatelegram.JTelegramException;
+
+/** <code>CommuniqueLoader</code> is a class allowing the easy abstraction of access to a single point and simplifying
+ * the process of reading and writing to that data. It uses the <code>{@link CommuniqueReader}</code> and
  * <code>{@link CommuniqueWriter}</code> classes to access that data. They are based on reading and writing via use of
- * Google's Gson library, which then allow for reading, writing, and manipulation of a
- * {@link com.git.ifly6.communique.io.CommuniqueConfig CConfig} object. */
+ * Google's <code>Gson</code> library, which then allow for reading, writing, and manipulation of a
+ * {@link com.git.ifly6.communique.io.CommuniqueConfig CommuniqueConfig} object. */
 public class CommuniqueLoader {
 	
 	private Path path;
@@ -49,7 +49,7 @@ public class CommuniqueLoader {
 	}
 	
 	/** Writes the standard configuration file for the currently used client key. Properties writing here has been
-	 * localised for this setup using this method.*/
+	 * localised for this setup using this method. */
 	public static void writeProperties(String clientKey) {
 		try {
 			Properties prop = new Properties();
@@ -71,7 +71,7 @@ public class CommuniqueLoader {
 			String clientKey = prop.getProperty("clientKey");
 			return CommuniqueUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
 		} catch (IOException e) {
-			return "Client Key";
+			return "";
 		}
 	}
 }

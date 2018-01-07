@@ -1,9 +1,12 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
@@ -17,6 +20,7 @@ import com.git.ifly6.javatelegram.JavaTelegram;
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	
 	private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
+	private static FileHandler handler;
 	
 	private JavaTelegram client = new JavaTelegram(this);
 	private CommuniqueConfig config;
@@ -27,6 +31,15 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	public Marconi(boolean skipChecks, boolean recruiting) {
 		this.skipChecks = skipChecks;
 		this.recruiting = recruiting;
+		
+		try {
+			handler = new FileHandler(Paths.get("marconi-last-session.log").toString()); // save: default directory
+			handler.setFormatter(new SimpleFormatter());
+			Logger.getGlobal().addHandler(handler);
+			
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void send() {
@@ -35,8 +48,8 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		Communique7Parser parser = new Communique7Parser();
 		List<String> expandedRecipients = parser.apply(config.getcRecipients()).getRecipients();
 		
-		// If it needs to be randomised, do so.
-		if (config.isRandomised) Collections.shuffle(expandedRecipients);
+		// Apply processing action
+		expandedRecipients = config.processingAction.apply(expandedRecipients);
 		
 		// Show the recipients in the order we are to send the telegrams.
 		System.out.println();
@@ -75,7 +88,6 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	public void manualFlagCheck() {
 		
 		if (!skipChecks) {
-			
 			// Give a chance to check the keys.
 			String keysResponse = MarconiUtilities.promptYN(String
 					.format("Are these keys correct? %s, %s, %s [Yes] or [No]", config.keys.getClientKey(),
@@ -95,12 +107,13 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 				// Confirm the randomisation flag.
 				while (true) {
 					String randomResponse = MarconiUtilities.promptYN(String
-							.format("Is the randomisation flag (%s) set correctly? [Yes] or [No]?",
-									String.valueOf(config.isRandomised)));
-					if (randomResponse.startsWith("n")) config.isRandomised = !config.isRandomised;
+							.format("Do you want to apply the %s processing action?",
+									String.valueOf(config.processingAction)));
+					if (randomResponse.startsWith("n")) return;
 					else if (randomResponse.startsWith("y")) break;
 				}
 			}
+			
 		}
 	}
 	

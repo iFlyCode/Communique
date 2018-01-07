@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
 import java.awt.BorderLayout;
@@ -21,8 +21,8 @@ import javax.swing.JTextArea;
 
 import com.git.ifly6.communique.data.Communique7Parser;
 
-/** When constructed, <code>CTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text
- * in that area and a close button. */
+/** <code>CommuniqueTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text in that
+ * area and a close button. */
 class CommuniqueTextDialog extends JDialog {
 	
 	private static final Logger log = Logger.getLogger(CommuniqueTextDialog.class.getName());

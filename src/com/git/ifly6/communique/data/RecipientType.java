@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
 import java.util.ArrayList;
@@ -20,6 +20,10 @@ public enum RecipientType {
 			// return singleton list
 			return new ArrayList<>(Arrays.asList(cr));
 		}
+		
+		@Override public String toString() {
+			return this.name().toLowerCase();
+		}
 	},
 	
 	/** Declares the recipient is a region, allowing for decomposition into a list of {@link CommuniqueRecipient}
@@ -27,6 +31,10 @@ public enum RecipientType {
 	REGION {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			return newRecipients(JInfoFetcher.instance().getRegion(cr.getName()), cr);
+		}
+		
+		@Override public String toString() {
+			return this.name().toLowerCase();
 		}
 	},
 	
@@ -41,6 +49,10 @@ public enum RecipientType {
 			if (tag.equals("all")) return newRecipients(JInfoFetcher.instance().getAll(), cr);
 			throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
 		}
+		
+		@Override public String toString() {
+			return this.name().toLowerCase();
+		}
 	},
 	
 	/** Declares that the recipient is an internal Commmunique flag. It does not return any real recipients when calling
@@ -49,21 +61,20 @@ public enum RecipientType {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 			return new ArrayList<>();
 		}
+		
+		@Override public String toString() {
+			return this.name().toLowerCase();
+		}
 	};
 	
 	/** Allows for the recipient type to be compatible with the NationStates telegram system by providing the same tag
 	 * nomenclature. */
-	@Override public String toString() {
-		return super.toString().toLowerCase();
-	}
+	@Override public abstract String toString();
 	
 	/** Decomposes a tag into a list of <code>CommuniqueRecipient</code> which can then be more easily used.
 	 * @param cr to be decomposed
 	 * @return a list of <code>CommuniqueRecipient</code> */
-	public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-		// this is the default kind
-		return NATION.decompose(cr);
-	}
+	public abstract List<CommuniqueRecipient> decompose(CommuniqueRecipient cr);
 	
 	/** Translates a list of nation reference names into a list of valid <code>CommuniqueRecipient</code>s.
 	 * @param list of nation reference names

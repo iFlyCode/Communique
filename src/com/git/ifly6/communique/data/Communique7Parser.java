@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ import com.git.ifly6.javatelegram.JTelegramException;
  * recipient declaration system in older versions of Communique.
  * <p>
  * <code>Communique7Parser</code> also provides methods to translate between the old and new Communique address tokens,
- * allowing for a seam-less transition between the old and new token systems.
+ * allowing for a seamless transition between the old and new token systems.
  * </p>
  * @author ifly6 */
 public class Communique7Parser {
 	
 	/** Declares the version of the parser, which is based on two values: (1) the syntax of the Communique recipients
 	 * language and (2) the file syntax in which that information is held. */
-	public static final int version = 7;
+	public static final int version = 8;
 	
 	/** List of recipients changed by various actions and applications called by the parser. */
 	private Set<CommuniqueRecipient> recipients;

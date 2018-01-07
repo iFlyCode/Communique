@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong. All Rights Reserved. */
+/* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.javatelegram.JTelegramKeys;
 
-/** <code>CConfig</code> creates a unified object for the storage and retrieval of the entire state of a Communiqué
- * application. */
+/** <code>CommuniqueConfig</code> creates a unified object for the storage and retrieval of configuration information
+ * necessary to have persistent states between Communiqué or Marconi instances. */
 public class CommuniqueConfig implements java.io.Serializable {
 	
 	// For backwards compatibility, these names cannot be changed
@@ -26,15 +26,13 @@ public class CommuniqueConfig implements java.io.Serializable {
 	public int version;
 	
 	public boolean isRecruitment;
-	public boolean isRandomised;
-	public boolean isDelegatePrioritised;
+	public CommuniqueProcessingAction processingAction = CommuniqueProcessingAction.NONE;
 	
 	public JTelegramKeys keys;
 	
 	/** Holds all of the Communique recipients in <code>String</code>s so that it can be edited by hand and not as
 	 * {@link CommuniqueRecipient}. */
 	private ArrayList<String> cRecipients; // must be mutable
-	
 	// Deprecating the old String-based system, keeping for backward compatibility
 	@Deprecated public String[] recipients;
 	@Deprecated public String[] sentList;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 ifly6
+/* Copyright (c) 2018 ifly6
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -40,7 +40,8 @@ import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
-/** @author ifly6 */
+/** <code>CommuniqueSendDialog</code> shows the user the results of the parsing of the recipients and an estimate of how
+ * much time it will take to send. It then returns a Send or Cancel option from the user. */
 public class CommuniqueSendDialog extends JDialog {
 	
 	private static final long serialVersionUID = Communique7Parser.version;
@@ -137,10 +138,10 @@ public class CommuniqueSendDialog extends JDialog {
 			buttonPane.add(cancelButton, gbc_cancelButton);
 		}
 		
-		this.addKeyListener(new KeyListener() {
+		contentPanel.addKeyListener(new KeyListener() {
 			@Override public void keyTyped(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-					CommuniqueSendDialog.this.getRootPane().getDefaultButton().doClick();
+					sendButton.doClick();
 			}
 			
 			@Override public void keyReleased(KeyEvent e) {

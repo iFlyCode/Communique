@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Kevin Wong
+/* Copyright (c) 2018 Kevin Wong
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -14,6 +14,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package com.git.ifly6.communique.ngui;
 
+/** <code>CommuniqueMessages</code> holds <code>String</code>s for various Communique messages. */
 public class CommuniqueMessages {
 	
 	public static final String TITLE = "Communiqué";
@@ -28,10 +29,10 @@ public class CommuniqueMessages {
 	public static final String acknowledgement =
 			"Developed by Kevin Wong (username: ifly6), contributing to the repository at "
 					+ "[github.com/iflycode/communique], also known as the nation Imperium Anglorum on "
-					+ "NationStates.\n\nMy thanks to bug-testers Tinfect, Krypton Nova, and Wallenburg.";
+					+ "NationStates.\n\nMy thanks to bug-testers Tinfect, Krypton Nova, Separatist Peoples, and Wallenburg.";
 	
 	public static final String licence =
-			"Copyright (c) 2017 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "
+			"Copyright (c) 2018 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "
 					+ "OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
 					+ "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT "
 					+ "HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, "

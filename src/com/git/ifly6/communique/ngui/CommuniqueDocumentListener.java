@@ -12,10 +12,36 @@
  * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
-package com.git.ifly6.communique.io;
+package com.git.ifly6.communique.ngui;
 
-/** Thrown by {@link CommuniqueScraper} if there is no resolution in the WA chamber selected.
+import java.util.function.Consumer;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/** This is a document listener which is constructed around a single <code>Consumer</code> which implements
+ * <code>DocumentListener</code> with all methods having the same effect. It means that specific anonymous
+ * implementations of <code>DocumentListener</code> are not necessary except so far as a consumer is written, which is
+ * easy.
  * @author ifly6 */
-public class NoResolutionException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+public class CommuniqueDocumentListener implements DocumentListener {
+	
+	private Consumer<DocumentEvent> consumer;
+	
+	public CommuniqueDocumentListener(Consumer<DocumentEvent> consumer) {
+		this.consumer = consumer;
+	}
+	
+	@Override public void changedUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
+	@Override public void insertUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
+	@Override public void removeUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
 }
