@@ -14,6 +14,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package com.git.ifly6.communique.ngui;
 
+import java.util.Scanner;
+
 /** <code>CommuniqueMessages</code> holds <code>String</code>s for various Communique messages. */
 public class CommuniqueMessages {
 	
@@ -21,6 +23,8 @@ public class CommuniqueMessages {
 	public static final String ERROR = "Communiqué Error";
 	public static final String UPDATER = "Communiqué Updater";
 	public static final String RECRUITER = "Communiqué Recruiter";
+	
+	private static String licence;
 	
 	// Prevent initialisation
 	private CommuniqueMessages() {
@@ -31,18 +35,14 @@ public class CommuniqueMessages {
 					+ "[github.com/iflycode/communique], also known as the nation Imperium Anglorum on "
 					+ "NationStates.\n\nMy thanks to bug-testers Tinfect, Krypton Nova, Separatist Peoples, and Wallenburg.";
 	
-	public static final String licence =
-			"Copyright (c) 2018 Kevin Wong. All Rights Reserved.\n\nCOMMUNIQUE IS PROVIDED \"AS IS\", WITHOUT WARRANTY "
-					+ "OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
-					+ "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT "
-					+ "HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, "
-					+ "TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER "
-					+ "DEALINGS IN THE SOFTWARE.\n\nThe author or authors assume no responsibility for errors or "
-					+ "omissions in the contents of Communique. In no event shall the author or authors be liable for "
-					+ "any special, direct, indirect, consequential, or incidental damages or any damages whatsoever, "
-					+ "whether in an action of contract, negligence or other tort, arising out of or in connection with "
-					+ "the use or the contents of Communique. The author or authors reserve the right to make additions, "
-					+ "deletions, or modification to Communique at any time without prior notice.\n\nRefer to "
-					+ "https://github.com/iFlyCode/Communique for more licence information.";
+	/** Gives the licence information that is saved in the file 'licences' in this source directory.
+	 * @return licence information */
+	public static String getLicence() {
+		if (licence == null) try (Scanner s =
+				new Scanner(CommuniqueMessages.class.getResourceAsStream("licences"))) {
+			licence = s.useDelimiter("\\A").hasNext() ? s.next() : "";
+		}
+		return licence;
+	}
 	
 }

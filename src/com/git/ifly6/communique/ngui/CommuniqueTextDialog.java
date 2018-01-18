@@ -9,6 +9,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -30,19 +31,21 @@ class CommuniqueTextDialog extends JDialog {
 	private static final long serialVersionUID = Communique7Parser.version;
 	
 	static void createDialog(JFrame parent, String title, String message) {
-		new CommuniqueTextDialog(parent, title, message, Font.getFont(Font.SANS_SERIF));
+		new CommuniqueTextDialog(parent, title, message, new Font(Font.SANS_SERIF, Font.PLAIN, 11), true);
 	}
 	
-	static void createMonospacedDialog(JFrame parent, String title, String message) {
-		new CommuniqueTextDialog(parent, title, message, Font.getFont(Font.MONOSPACED));
+	static void createMonospacedDialog(JFrame parent, String title, String message, boolean lineWrap) {
+		new CommuniqueTextDialog(parent, title, message, new Font(Font.MONOSPACED, Font.PLAIN, 11), lineWrap);
 	}
 	
-	private CommuniqueTextDialog(JFrame parent, String title, String message, Font font) {
+	private CommuniqueTextDialog(JFrame parent, String title, String message, Font font, boolean lineWrap) {
 		
-		super(parent, true); // all of these will be modal
+		super(parent, true); // true for modal
 		setTitle(title);
 		
-		int width = 400;
+		int width = lineWrap
+				? 400
+				: 10 + Stream.of(message.split("\n")).mapToInt(String::length).max().orElse(50) * 8;
 		int height = 450;
 		this.setSize(width, height);
 		this.setMinimumSize(new Dimension(300, 350));
@@ -62,8 +65,7 @@ class CommuniqueTextDialog extends JDialog {
 		textArea.setFont(font);
 		textArea.setEditable(false);
 		textArea.setWrapStyleWord(true);
-		textArea.setLineWrap(true);
-		
+		textArea.setLineWrap(lineWrap);
 		panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
 		
 		// Button Panel

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -56,6 +57,8 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.undo.UndoManager;
 
 import org.apache.commons.io.FilenameUtils;
@@ -88,7 +91,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	
 	private CommuniqueConfig config = new CommuniqueConfig();
 	private JavaTelegram client; // Sending client
-	private Thread sendingThread = new Thread(); // Sending thread
+	private Thread sendingThread = new Thread(); // The one sending thread
 	
 	private JFrame frame;
 	private JTextArea txtrCode;
@@ -693,8 +696,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		mnHelp.addSeparator();
 		
 		JMenuItem mntmLicence = new JMenuItem("Licence");
-		mntmLicence.addActionListener(e -> CommuniqueTextDialog.createDialog(frame, "Licence",
-				CommuniqueMessages.licence));
+		mntmLicence.addActionListener(e -> CommuniqueTextDialog.createMonospacedDialog(frame, "Licence",
+				CommuniqueMessages.getLicence(), false));
 		mnHelp.add(mntmLicence);
 		
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -944,7 +947,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		
 		// display that data in a CommuniqueTextDialog
 		CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
-				messages.stream().collect(Collectors.joining("\n")));
+				messages.stream().collect(Collectors.joining("\n")), true);
 		
 		// Graphical reset
 		EventQueue.invokeLater(() -> {
@@ -955,4 +958,26 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			btnParse.setText("Parse"); // reset parse button
 		});
 	}
+}
+
+class CommuniqueDocumentListener implements DocumentListener {
+	
+	private Consumer<DocumentEvent> consumer;
+	
+	public CommuniqueDocumentListener(Consumer<DocumentEvent> consumer) {
+		this.consumer = consumer;
+	}
+	
+	@Override public void changedUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
+	@Override public void insertUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
+	@Override public void removeUpdate(DocumentEvent event) {
+		consumer.accept(event);
+	}
+	
 }
