@@ -25,9 +25,11 @@ Communique.eml
 # IDEA files
 Communique.iml
 /.idea/
-/Marconi/
 
 # used for IDEA artefact export
 /marconi-meta/
 /communique-meta/
 
+# used for possible last session logs
+communique-last-session.log
+marconi-last-session.log
