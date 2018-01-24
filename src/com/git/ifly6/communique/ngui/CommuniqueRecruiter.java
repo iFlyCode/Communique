@@ -1,6 +1,39 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
+import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.CommuniqueUtils;
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.io.CommuniqueConfig;
+import com.git.ifly6.communique.io.CommuniqueLoader;
+import com.git.ifly6.communique.io.CommuniqueProcessingAction;
+import com.git.ifly6.javatelegram.JTelegramKeys;
+import com.git.ifly6.javatelegram.JTelegramLogger;
+import com.git.ifly6.javatelegram.JavaTelegram;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -25,40 +58,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
-
-import com.git.ifly6.communique.CommuniqueUtilities;
-import com.git.ifly6.communique.CommuniqueUtils;
-import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.FilterType;
-import com.git.ifly6.communique.data.RecipientType;
-import com.git.ifly6.communique.io.CommuniqueConfig;
-import com.git.ifly6.communique.io.CommuniqueLoader;
-import com.git.ifly6.communique.io.CommuniqueProcessingAction;
-import com.git.ifly6.javatelegram.JTelegramKeys;
-import com.git.ifly6.javatelegram.JTelegramLogger;
-import com.git.ifly6.javatelegram.JavaTelegram;
-
 /** Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
  * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned
  * to {@link Communique} for possible saving. */
@@ -67,7 +66,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	private static final String[] protectedRegions = new String[] { "the Pacific", "the North Pacific", "the South Pacific",
 			"the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms" };
 	private static final Logger LOGGER = Logger.getLogger(CommuniqueRecruiter.class.getName());
-	{
+	static {
 		LOGGER.addHandler(Communique.loggerFileHandler);
 	}
 	

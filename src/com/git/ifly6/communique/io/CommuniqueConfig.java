@@ -33,6 +33,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	/** Holds all of the Communique recipients in <code>String</code>s so that it can be edited by hand and not as
 	 * {@link CommuniqueRecipient}. */
 	private ArrayList<String> cRecipients; // must be mutable
+
 	// Deprecating the old String-based system, keeping for backward compatibility
 	@Deprecated public String[] recipients;
 	@Deprecated public String[] sentList;
@@ -48,7 +49,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 * @return {@link cRecipients} converted to <code>List&lt;CommuniqueRecipient&gt;</code> */
 	public List<CommuniqueRecipient> getcRecipients() {
 		// use imperative for speed
-		ArrayList<CommuniqueRecipient> list = new ArrayList<>(cRecipients.size());
+		List<CommuniqueRecipient> list = new ArrayList<>(cRecipients.size());
 		for (String s : cRecipients)
 			list.add(CommuniqueRecipient.parseRecipient(s));
 		return list;

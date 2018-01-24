@@ -1,14 +1,6 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.stream.Collectors;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -16,6 +8,14 @@ import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.stream.Collectors;
 
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	
@@ -57,7 +57,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 			try {
 				System.out.printf("%-30.30s  %-30.30s%n", expandedRecipients.get(x), expandedRecipients.get(x + 1));
 			} catch (IndexOutOfBoundsException e) {
-				System.out.printf(expandedRecipients.get(x) + "\n");
+				System.out.print(expandedRecipients.get(x) + "\n");
 			}
 		
 		System.out.println();

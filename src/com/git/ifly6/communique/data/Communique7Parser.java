@@ -1,16 +1,17 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
+import com.git.ifly6.javatelegram.JTelegramException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.git.ifly6.javatelegram.JTelegramException;
 
 /** <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
  * recipients as used in NationStates. It supersedes the old parser, {@link CommuniqueParser}, which used the custom
@@ -154,7 +155,8 @@ public class Communique7Parser {
 			
 			System.out.println();
 			
-			System.out.println(Communique7Parser.translateTokens(Arrays.asList("region:Europe -> wa:members")));
+			System.out.println(Communique7Parser
+					.translateTokens(Collections.singletonList("region:Europe -> wa:members")));
 			
 		} else if ("parser".equals(input)) {
 			

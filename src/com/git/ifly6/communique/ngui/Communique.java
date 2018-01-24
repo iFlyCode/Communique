@@ -1,6 +1,51 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
+import com.git.ifly6.communique.CommuniqueUtils;
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
+import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.io.CommuniqueConfig;
+import com.git.ifly6.communique.io.CommuniqueLoader;
+import com.git.ifly6.communique.io.CommuniqueProcessingAction;
+import com.git.ifly6.communique.io.CommuniqueScraper;
+import com.git.ifly6.communique.io.CommuniqueUpdater;
+import com.git.ifly6.communique.io.NoResolutionException;
+import com.git.ifly6.javatelegram.JTelegramException;
+import com.git.ifly6.javatelegram.JTelegramKeys;
+import com.git.ifly6.javatelegram.JTelegramLogger;
+import com.git.ifly6.javatelegram.JavaTelegram;
+import org.apache.commons.io.FilenameUtils;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.undo.UndoManager;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -31,53 +76,6 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.undo.UndoManager;
-
-import org.apache.commons.io.FilenameUtils;
-
-import com.git.ifly6.communique.CommuniqueUtils;
-import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.CommuniqueRecipients;
-import com.git.ifly6.communique.data.RecipientType;
-import com.git.ifly6.communique.io.CommuniqueConfig;
-import com.git.ifly6.communique.io.CommuniqueLoader;
-import com.git.ifly6.communique.io.CommuniqueProcessingAction;
-import com.git.ifly6.communique.io.CommuniqueScraper;
-import com.git.ifly6.communique.io.CommuniqueUpdater;
-import com.git.ifly6.communique.io.NoResolutionException;
-import com.git.ifly6.javatelegram.JTelegramException;
-import com.git.ifly6.javatelegram.JTelegramKeys;
-import com.git.ifly6.javatelegram.JTelegramLogger;
-import com.git.ifly6.javatelegram.JavaTelegram;
 
 /** <code>Communiqué</code> is the main class of the Communiqué system. It handles the GUI aspect of the entire program
  * and other actions. */
@@ -538,6 +536,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			if (undoManager.canRedo()) undoManager.redo();
 		});
 		mnEdit.add(mntmRedo);
+
+		mnEdit.addSeparator();
 		
 		JMenuItem mntmImportKeysFrom = new JMenuItem("Import Keys from Telegram URL");
 		mntmImportKeysFrom.addActionListener(e -> {
@@ -964,7 +964,7 @@ class CommuniqueDocumentListener implements DocumentListener {
 	
 	private Consumer<DocumentEvent> consumer;
 	
-	public CommuniqueDocumentListener(Consumer<DocumentEvent> consumer) {
+	CommuniqueDocumentListener(Consumer<DocumentEvent> consumer) {
 		this.consumer = consumer;
 	}
 	

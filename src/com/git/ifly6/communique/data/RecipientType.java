@@ -1,13 +1,13 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.git.ifly6.javatelegram.JTelegramException;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Defines a number of recipient types and provides methods to decompose those types into lists of
  * <code>CommuniqueRecipient</code>.
@@ -18,7 +18,7 @@ public enum RecipientType {
 	NATION {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 			// return singleton list
-			return new ArrayList<>(Arrays.asList(cr));
+			return new ArrayList<>(Collections.singletonList(cr));
 		}
 		
 		@Override public String toString() {
@@ -42,7 +42,7 @@ public enum RecipientType {
 	 * delegates thereof, or new nations. */
 	TAG {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
-			String tag = cr.getName();    // TODO create tag enums for this
+			String tag = cr.getName();
 			if (tag.equals("wa")) return newRecipients(JInfoFetcher.instance().getWAMembers(), cr);
 			if (tag.equals("delegates")) return newRecipients(JInfoFetcher.instance().getDelegates(), cr);
 			if (tag.equals("new")) return newRecipients(JInfoFetcher.instance().getNew(), cr);

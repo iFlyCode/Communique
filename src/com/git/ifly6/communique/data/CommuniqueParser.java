@@ -1,6 +1,9 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.data;
 
+import com.git.ifly6.communique.CommuniqueUtils;
+import com.git.ifly6.javatelegram.util.JInfoFetcher;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,9 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.git.ifly6.communique.CommuniqueUtils;
-import com.git.ifly6.javatelegram.util.JInfoFetcher;
 
 /** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
  * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used,
@@ -84,9 +84,8 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 		if (token.startsWith("region:")) return true;
 		else if (token.equalsIgnoreCase("wa:delegates")) return true;
 		else if (token.equalsIgnoreCase("wa:nations") || token.equalsIgnoreCase("wa:members")) return true;
-		else if (token.equalsIgnoreCase("world:new")) return true;
-		
-		return false;
+		else return token.equalsIgnoreCase("world:new");
+
 	}
 	
 	/** Expands a single Communique tag into a list of nations represented by that tag. For example, something like
@@ -157,8 +156,7 @@ import com.git.ifly6.javatelegram.util.JInfoFetcher;
 		}
 		
 		// Remove duplicates & return
-		LinkedHashSet<String> tagsSet = new LinkedHashSet<>();
-		tagsSet.addAll(expandedList);
+		LinkedHashSet<String> tagsSet = new LinkedHashSet<>(expandedList);
 		return tagsSet;
 	}
 	
