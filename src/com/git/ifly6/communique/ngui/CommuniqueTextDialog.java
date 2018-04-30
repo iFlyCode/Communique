@@ -1,15 +1,7 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
+import com.git.ifly6.communique.data.Communique7Parser;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,8 +11,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
-import com.git.ifly6.communique.data.Communique7Parser;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 /** <code>CommuniqueTextDialog</code> shows a JTextArea in the centre of the frame. It then displays some text in that
  * area and a close button. */
@@ -45,7 +44,7 @@ class CommuniqueTextDialog extends JDialog {
 		
 		int width = lineWrap
 				? 400
-				: 10 + Stream.of(message.split("\n")).mapToInt(String::length).max().orElse(50) * 8;
+				: 10 + Arrays.stream(message.split("\n")).mapToInt(String::length).max().orElse(50) * 8;
 		int height = 450;
 		this.setSize(width, height);
 		this.setMinimumSize(new Dimension(300, 350));

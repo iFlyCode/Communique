@@ -1,12 +1,6 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.ngui;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
 import com.git.ifly6.communique.CommuniqueUtilities;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -17,8 +11,14 @@ import com.git.ifly6.javatelegram.JTelegramException;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.util.JInfoFetcher;
 import com.git.ifly6.marconi.MarconiRecruiter;
-import com.git.ifly6.nsapi.NSApiException;
+import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSNation;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /** Provides the outline for the recruiter classes. Also provides recipient search functionality shared between
  * {@link CommuniqueRecruiter} and {@link MarconiRecruiter}.
@@ -69,7 +69,7 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 					if (!prNation.isRecruitable()) continue;
 					if (isProscribed(prNation)) continue;
 					
-				} catch (NSApiException e) {
+				} catch (NSException e) {
 					// if it doesn't exist, ignore it
 					continue;
 				}

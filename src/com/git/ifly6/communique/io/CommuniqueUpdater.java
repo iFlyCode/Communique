@@ -1,6 +1,12 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
+import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.ngui.Communique;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,13 +19,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.logging.Logger;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.ngui.Communique;
 
 /** @author ifly6 */
 public class CommuniqueUpdater {
@@ -45,6 +44,7 @@ public class CommuniqueUpdater {
 			
 		} catch (NoSuchFileException | FileNotFoundException e) {
 			LOGGER.info(String.format("Updater file not found, %s", updatePath.toString()));
+
 		} catch (RuntimeException | IOException | ClassNotFoundException e) {
 			LOGGER.info("Runtime exception in getting updater properties");
 			e.printStackTrace();
@@ -124,9 +124,7 @@ public class CommuniqueUpdater {
  * and whether Communique should continue checking. In {@link CommuniqueUpdater#updatePath}, it is saved to an invisible
  * file in the application support director. */
 class CommuniqueUpdaterProperties implements Serializable {
-	
 	private static final long serialVersionUID = Communique7Parser.version;
 	Instant lastChecked = Instant.MIN;
 	boolean continueChecking = true;	// default values
-	
 }

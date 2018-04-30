@@ -1,6 +1,13 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.marconi;
 
+import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter;
+import com.git.ifly6.javatelegram.JTelegramLogger;
+import com.git.ifly6.javatelegram.JavaTelegram;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
@@ -9,13 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.FilterType;
-import com.git.ifly6.communique.data.RecipientType;
-import com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter;
-import com.git.ifly6.javatelegram.JTelegramLogger;
-import com.git.ifly6.javatelegram.JavaTelegram;
 
 /** @author Kevin */
 public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
@@ -66,7 +66,6 @@ public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTe
 					
 				} catch (RuntimeException e) {    // Catch, if error between recipient retrieval and telegram dispatch
 					// this catch block allows for that extra bit of fault tolerance
-					
 					marconi.log("Failed to dispatch telegram to " + nextRecipient.get());
 					marconi.log(e.toString());
 					
