@@ -169,7 +169,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			Files.createDirectories(logFile.getParent()); // make directory
 			loggerFileHandler = new FileHandler(logFile.toString());
 			loggerFileHandler.setFormatter(new SimpleFormatter());
-			Logger.getGlobal().addHandler(loggerFileHandler);
+			Logger.getLogger("").addHandler(loggerFileHandler);
 
 		} catch (SecurityException | IOException e) {
 			e.printStackTrace();

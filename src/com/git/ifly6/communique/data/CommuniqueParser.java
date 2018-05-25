@@ -156,8 +156,7 @@ import java.util.stream.Collectors;
 		}
 		
 		// Remove duplicates & return
-		LinkedHashSet<String> tagsSet = new LinkedHashSet<>(expandedList);
-		return tagsSet;
+		return new LinkedHashSet<>(expandedList);
 	}
 	
 	public String[] filterAndParse(List<String> input) {
@@ -195,7 +194,7 @@ import java.util.stream.Collectors;
 				.collect(Collectors.toList());
 		
 		List<String> list = recipientsParse(recipients, sentList);
-		return list.toArray(new String[list.size()]);
+		return list.toArray(new String[0]);
 	}
 	
 	/** This method parses the recipients based on the list of recipients and the list of nations to which a telegram

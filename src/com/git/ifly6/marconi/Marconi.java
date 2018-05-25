@@ -9,12 +9,9 @@ import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.javatelegram.JTelegramLogger;
 import com.git.ifly6.javatelegram.JavaTelegram;
 
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 public class Marconi extends AbstractCommunique implements JTelegramLogger {
@@ -25,21 +22,12 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	private JavaTelegram client = new JavaTelegram(this);
 	private CommuniqueConfig config;
 	
-	private boolean skipChecks = false;
-	private boolean recruiting = false;
+	private boolean skipChecks;
+	private boolean recruiting;
 	
 	public Marconi(boolean skipChecks, boolean recruiting) {
 		this.skipChecks = skipChecks;
 		this.recruiting = recruiting;
-		
-		try {
-			handler = new FileHandler(Paths.get("marconi-last-session.log").toString()); // save: default directory
-			handler.setFormatter(new SimpleFormatter());
-			Logger.getGlobal().addHandler(handler);
-			
-		} catch (SecurityException | IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	public void send() {
@@ -122,7 +110,9 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 	 * @see com.git.ifly6.communique.ngui.AbstractCommunique#exportState() */
 	@Override public CommuniqueConfig exportState() {
 		// Remove duplicates from the sentList as part of save action
-		config.setcRecipients(config.getcRecipients().stream().distinct().collect(Collectors.toList()));
+		config.setcRecipients(config.getcRecipients().stream()
+				.distinct()
+				.collect(Collectors.toList()));
 		return config;
 		
 	}

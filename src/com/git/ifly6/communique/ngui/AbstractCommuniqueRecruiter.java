@@ -40,7 +40,7 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 	
 	public abstract void send();
 	
-	@Override public void sentTo(String recipient, int x, int length) {
+	@Override public void sentTo(String recipient, int recipientNum, int length) {
 		sentList.add(CommuniqueRecipients.createExcludedNation(recipient));
 	}
 	

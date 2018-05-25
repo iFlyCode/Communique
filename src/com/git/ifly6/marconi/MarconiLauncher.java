@@ -17,16 +17,20 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
-/** @author Kevin */
+/**
+ * @author Kevin
+ */
 public class MarconiLauncher {
 
 	private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
 
 	// Deal with command line options
-	public static final Options COMMAND_LINE_OPTIONS;
+	private static final Options COMMAND_LINE_OPTIONS;
 
 	private static boolean skipChecks = false;
 	private static boolean recruiting = false;
@@ -47,13 +51,24 @@ public class MarconiLauncher {
 		// Get us a reasonable-looking log format
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tF %1$tT %4$s %2$s %5$s%6$s%n");
 
+		// Add in a logging file handler
+		try {
+			// Directory is defined as the same directory in which Marconi is run
+			FileHandler handler = new FileHandler(Paths.get("marconi-last-session.log").toString());
+			handler.setFormatter(new SimpleFormatter());
+			Logger.getLogger("").addHandler(handler); // gets the root logger
+
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
+
 		// Get the file name
 		String fileName;
 		try {
 			URI u = MarconiLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 			fileName = new File(u).getName();
 		} catch (URISyntaxException | RuntimeException e1) {
-			fileName = "Marconi_" + Communique7Parser.version; // default to standard naming format.
+			fileName = "Marconi_" + Communique7Parser.version + ".jar"; // default to standard naming format.
 		}
 
 		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
@@ -110,10 +125,10 @@ public class MarconiLauncher {
 		// Add shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
-				LOGGER.info("Attempting to save to:" + configPath.toAbsolutePath().toString());	// save config
+				LOGGER.info("Attempting to save to:" + configPath.toAbsolutePath().toString());    // save config
 				marconi.save(configPath);
 				if (Files.deleteIfExists(MarconiUtilities.lockFile))
-					LOGGER.info("Removed file lock");	// remove file lock, if it exists
+					LOGGER.info("Removed file lock");    // remove file lock, if it exists
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

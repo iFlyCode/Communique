@@ -58,48 +58,55 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-/** Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
+/**
+ * Implements the sending functions required in {@link AbstractCommuniqueRecruiter} and the window objects and
  * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned
- * to {@link Communique} for possible saving. */
+ * to {@link Communique} for possible saving.
+ */
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
-	
-	private static final String[] protectedRegions = new String[] { "the Pacific", "the North Pacific", "the South Pacific",
-			"the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms" };
+
+	private static final String[] protectedRegions = new String[]{"the Pacific", "the North Pacific", "the South Pacific",
+			"the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms"};
 	private static final Logger LOGGER = Logger.getLogger(CommuniqueRecruiter.class.getName());
+
 	static {
 		LOGGER.addHandler(Communique.loggerFileHandler);
 	}
-	
+
 	private Communique communique;
-	
+
 	private JFrame frame;
 	private JTextField clientKeyField;
 	private JTextField secretKeyField;
 	private JTextField telegramIdField;
 	private JTextArea sentListArea;
-	
+
 	private Thread thread;
-	
+
 	// To keep track of the nations to whom we have sent a telegram
 	private JLabel lblNationsCount;
 	private JProgressBar progressBar;
-	
+
 	// To keep track of the feeders
 	private JList<String> excludeList;
-	
-	/** Create the application, if necessary. */
+
+	/**
+	 * Create the application, if necessary.
+	 */
 	CommuniqueRecruiter(Communique comm) {
 		initialize();
 		frame.setVisible(true);
 		this.communique = comm;
 	}
-	
-	/** Initialise the contents of the frame. */
+
+	/**
+	 * Initialise the contents of the frame.
+	 */
 	private void initialize() {
-		
+
 		frame = new JFrame("Communiqué Recruiter " + Communique7Parser.version);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		
+
 		{
 			Dimension screenDimensions = Toolkit.getDefaultToolkit().getScreenSize();
 			double sWidth = screenDimensions.getWidth();
@@ -110,92 +117,94 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 					windowHeight);
 			frame.setMinimumSize(new Dimension(600, 400));
 		}
-		
+
 		JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		frame.setContentPane(panel);
 		panel.setLayout(new GridLayout(0, 2, 5, 5));
-		
+
 		JPanel leftPanel = new JPanel();
 		leftPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		panel.add(leftPanel);
-		
+
 		JLabel lblClientKey = new JLabel("Client Key");
-		
+
 		clientKeyField = new JTextField();
 		clientKeyField.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		clientKeyField.setColumns(10);
-		
+
 		JLabel lblSecretKey = new JLabel("Secret Key");
-		
+
 		secretKeyField = new JTextField();
 		secretKeyField.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		secretKeyField.setColumns(10);
-		
+
 		JLabel lblTelegramId = new JLabel("Telegram ID");
-		
+
 		telegramIdField = new JTextField();
 		telegramIdField.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		telegramIdField.setColumns(10);
-		
+
 		JLabel lblExclude = new JLabel("Exclude:");
-		
+
 		JButton btnSendButton = new JButton("Send");
 		btnSendButton.addActionListener(e -> {
-			
+
 			if (btnSendButton.getText().equals("Send")) {        // STARTING UP
 				btnSendButton.setText("Stop");
 				send();
-				
+
 			} else {    // SHUTTING DOWN
-				
+
 				thread.interrupt();
 				Path savePath = communique.showFileChooser(frame, FileDialog.SAVE);
-				
+
 				// Cancel saving if null
 				if (savePath == null) return;
 				save(savePath);
-				
+
 				// Dispose the components
 				frame.setVisible(false);
 				frame.dispose();
 			}
 		});
-		
+
 		DefaultListModel<String> exListModel = new DefaultListModel<>();
 		Stream.of(protectedRegions).forEach(exListModel::addElement);
-		
+
 		excludeList = new JList<>(exListModel);
 		excludeList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		excludeList.setSelectionModel(new DefaultListSelectionModel() {
 			private static final long serialVersionUID = 1L;
 			boolean gestureStarted = false;
-			
-			@Override public void setSelectionInterval(int index0, int index1) {
+
+			@Override
+			public void setSelectionInterval(int index0, int index1) {
 				if (!gestureStarted) if (isSelectedIndex(index0)) super.removeSelectionInterval(index0, index1);
 				else super.addSelectionInterval(index0, index1);
 				gestureStarted = true;
 			}
-			
-			@Override public void setValueIsAdjusting(boolean isAdjusting) {
+
+			@Override
+			public void setValueIsAdjusting(boolean isAdjusting) {
 				if (!isAdjusting) gestureStarted = false;
 			}
 		});
 		JScrollPane scrollPane = new JScrollPane(excludeList);
-		
+
 		JPanel buttonsPane = new JPanel();
 		buttonsPane.setLayout(new GridLayout(1, 3, 0, 0));
 		buttonsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-		
+
 		JLabel lblSentTo = new JLabel("Sent to");
 		lblNationsCount = new JLabel("0 nations");
-		
+
 		progressBar = new JProgressBar();
 		progressBar.setMaximum(180);
 		if (CommuniqueUtils.IS_OS_MAC) // Mac, make progress bar around the same length as the button
 			progressBar.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
 		else if (CommuniqueUtils.IS_OS_WINDOWS) progressBar.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-		
+
 		JButton btnAdd = new JButton("+");
 		btnAdd.setPreferredSize(new Dimension(25, 20));
 		btnAdd.addActionListener(al -> {
@@ -204,7 +213,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 							"Exclude region", JOptionPane.PLAIN_MESSAGE, null, null, "");
 			if (!CommuniqueUtils.isEmpty(rName)) exListModel.addElement(rName);
 		});
-		
+
 		JButton btnRemove = new JButton("—");
 		btnRemove.setPreferredSize(new Dimension(25, 20));
 		btnRemove.addActionListener(al -> {
@@ -214,7 +223,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 					exListModel.remove(selectedIndices[i]);
 			this.sync();
 		});
-		
+
 		GroupLayout gl_leftPanel = new GroupLayout(leftPanel);
 		gl_leftPanel.setHorizontalGroup(
 				gl_leftPanel.createParallelGroup(Alignment.LEADING)
@@ -304,29 +313,29 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 								.addComponent(btnSendButton)
 								.addGap(4)));
 		leftPanel.setLayout(gl_leftPanel);
-		
+
 		JPanel rightPanel = new JPanel();
 		panel.add(rightPanel);
 		rightPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		sentListArea = new JTextArea("");
 		sentListArea.setEditable(false);
 		sentListArea.setLineWrap(true);
 		sentListArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		sentListArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 		rightPanel.add(new JScrollPane(sentListArea));
-		
+
 		JLabel lblListOfNations = new JLabel(
 				"<html>List of nations to which a recruitment telegram has been sent in the current session.</html>");
 		lblListOfNations.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
 		rightPanel.add(lblListOfNations, BorderLayout.NORTH);
-		
+
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
-		
+
 		JMenu mnWindow = new JMenu("Window");
 		menuBar.add(mnWindow);
-		
+
 		JMenuItem mntmClose = new JMenuItem("Close");
 		mntmClose.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Communique.COMMAND_KEY));
 		mntmClose.addActionListener(e -> {
@@ -335,7 +344,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 			frame.dispose();
 		});
 		mnWindow.add(mntmClose);
-		
+
 		JMenuItem mntmMinimise = new JMenuItem("Minimise");
 		mntmClose.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Communique.COMMAND_KEY));
 		mntmMinimise.addActionListener(e -> {
@@ -343,91 +352,98 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		});
 		mnWindow.add(mntmMinimise);
 	}
-	
-	@Override public void log(String input) {
+
+	@Override
+	public void log(String input) {
 		// Filter out the stuff we don't care about
 		if (!input.equals("API Queries Complete.")) LOGGER.info(input);
 	}
-	
-	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-	@Override public void sentTo(String recipient, int x, int length) {
-		super.sentTo(recipient, x, length);
+
+	/**
+	 * @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int)
+	 */
+	@Override
+	public void sentTo(String recipient, int recipientNum, int length) {
+		super.sentTo(recipient, recipientNum, length);
 		lblNationsCount.setText(sentList.size() + (sentList.size() == 1 ? " nation" : " nations"));
 		if (!CommuniqueUtils.isEmpty(sentListArea.getText())) sentListArea.append("\n" + recipient);
 		else sentListArea.setText(recipient);
 	}
-	
-	/** @return returns the proscribed regions as defined by the regions selected in the <code>excludeList</code>,
-	 *         mapped to <code>CommuniqueRecipient</code> */
+
+	/**
+	 * @return returns the proscribed regions as defined by the regions selected in the <code>excludeList</code>,
+	 * mapped to <code>CommuniqueRecipient</code>
+	 */
 	private Set<CommuniqueRecipient> listProscribedRegions() {
 		return IntStream.of(excludeList.getSelectedIndices())
 				.mapToObj(x -> excludeList.getModel().getElementAt(x))
 				.map(s -> new CommuniqueRecipient(FilterType.EXCLUDE, RecipientType.REGION, s))
 				.collect(Collectors.toCollection(HashSet::new));
 	}
-	
-	/** @param savePath */
+
+	/**
+	 * @param savePath is the path on which to save
+	 */
 	private void save(Path savePath) {
-		
+
 		// Prepare to save by:
 		// * Creating a configuration file up to specifications
 		// * Importing that configuration into Communique
 		// * Have Communique save that file
 		sync();
-		
+
 		// Save
 		try {
 			if (!savePath.toAbsolutePath().toString().endsWith(".txt"))
 				savePath = Paths.get(savePath.toAbsolutePath().toString() + ".txt");
 			CommuniqueLoader loader = new CommuniqueLoader(savePath);
 			loader.save(communique.exportState());
-			
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	private void sync() {
-		
-		CommuniqueConfig config = new CommuniqueConfig();
-		config.processingAction = CommuniqueProcessingAction.NONE;
-		config.isRecruitment = true;
-		config.defaultVersion();
-		
-		config.keys = new JTelegramKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
-		
+
+		JTelegramKeys keys = new JTelegramKeys(clientKeyField.getText(),
+				secretKeyField.getText(),
+				telegramIdField.getText());
+		CommuniqueConfig config = new CommuniqueConfig(true, CommuniqueProcessingAction.NONE, keys);
+
 		// Create and set recipients and sent-lists
-		List<CommuniqueRecipient> rList = new ArrayList<>(0);
+		List<CommuniqueRecipient> rList = new ArrayList<>(1 + listProscribedRegions().size() + sentList.size());
 		rList.add(new CommuniqueRecipient(FilterType.NORMAL, RecipientType.FLAG, "recruit"));
 		rList.addAll(listProscribedRegions());
 		rList.addAll(sentList);
-		config.setcRecipients(rList);
-		
+
 		// Sync up with Communique
+		config.setcRecipients(rList);
 		communique.importState(config);
 	}
-	
+
 	boolean isDisplayable() {
 		return frame.isDisplayable();
 	}
-	
+
 	void toFront() {
 		frame.setVisible(true);
 		frame.toFront();
 	}
-	
-	@Override public void setWithCConfig(CommuniqueConfig config) {
+
+	@Override
+	public void setWithCConfig(CommuniqueConfig config) {
 		super.setWithCConfig(config);
 		LOGGER.info("Imported configuration from Communique");
-		
+
 		// Client, Secret, and Telegram Keys
 		clientKeyField.setText(config.keys.getClientKey());
 		secretKeyField.setText(config.keys.getSecretKey());
 		telegramIdField.setText(config.keys.getTelegramId());
-		
+
 		// Update graphical component
 		lblNationsCount.setText(sentList.size() + (sentList.size() == 1 ? " nation" : " nations"));
-		
+
 		// Update list
 		excludeList.clearSelection();
 		DefaultListModel<String> model = (DefaultListModel<String>) excludeList.getModel();
@@ -436,7 +452,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 				.filter(r -> r.getFilterType() == FilterType.EXCLUDE)
 				.map(CommuniqueRecipient::getName)
 				.collect(Collectors.toList());
-		
+
 		for (String element : excludeRegions) {
 			boolean found = false;
 			for (int i = 0; i < model.getSize(); i++) {
@@ -453,39 +469,42 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 			}
 		}
 	}
-	
-	/** @see com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter#send() */
-	@Override public void send() {
-		
+
+	/**
+	 * @see com.git.ifly6.communique.ngui.AbstractCommuniqueRecruiter#send()
+	 */
+	@Override
+	public void send() {
+
 		proscribedRegions = listProscribedRegions();
-		
+
 		Runnable runner = () -> {
 			AtomicReference<String> nextRecipient = new AtomicReference<>(this.getRecipient().getName());
 			AtomicBoolean foundNext = new AtomicBoolean(false);
-			
+
 			while (true) {
-				
+
 				JavaTelegram client = new JavaTelegram(CommuniqueRecruiter.this);
 				client.setKeys(clientKeyField.getText(), secretKeyField.getText(), telegramIdField.getText());
 				client.setRecipient(nextRecipient.get());
 				client.connect();
-				
+
 				Calendar now = Calendar.getInstance();
 				now.add(Calendar.SECOND, 180);
 				String nextTelegramTime = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 				LOGGER.info("Next recruitment telegram probably in 180 seconds at " + nextTelegramTime);
-				
+
 				foundNext.set(false);
-				
-				for (int x = 0;; x++) {
-					
+
+				for (int x = 0; ; x++) {
+
 					try {
 						progressBar.setValue(x);
 						Thread.sleep(1000);    // 1-second intervals, wake to update the progressBar
 					} catch (InterruptedException e) {
 						return; // also breaks
 					}
-					
+
 					if (x == 170) {
 						Runnable runnable1 = () -> {
 							nextRecipient.set(getRecipient().getName());
@@ -494,16 +513,16 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 						};
 						new Thread(runnable1).start();
 					}
-					
+
 					if (x > 180 && foundNext.get()) {
 						LOGGER.info(String.format("Starting next loop at %d s for telegram %d", x, sentList.size()));
 						break;  // break and send the next telegram
 					}
-					
+
 				}
 			}
 		};
-		
+
 		thread = new Thread(runner);
 		thread.start();    // thread#run does not work
 	}

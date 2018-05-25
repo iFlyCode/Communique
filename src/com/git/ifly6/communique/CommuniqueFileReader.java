@@ -124,7 +124,7 @@ import java.util.stream.Stream;
 			}
 		}
 		
-		return new Object[] { keys, recipientsList.toArray(new String[recipientsList.size()]) };
+		return new Object[] { keys, recipientsList.toArray(new String[0]) };
 	}
 	
 	/** Queries the file for an integer version to determine whether it is compatible with this parser. If so, it
@@ -171,7 +171,7 @@ import java.util.stream.Stream;
 			}
 		}
 		
-		return header.toArray(new String[header.size()]);
+		return header.toArray(new String[0]);
 	}
 	
 	/** Gets the footer sections of the file (that is, all comments after the last real entry) and returns it in a
@@ -179,7 +179,7 @@ import java.util.stream.Stream;
 	 * @return the footer of the file in <code>String[]</code> format */
 	public String[] getFooter() {
 		ArrayList<String> header = new ArrayList<>();
-		String[] tempContents = fileContents.toArray(new String[fileContents.size()]);
+		String[] tempContents = fileContents.toArray(new String[0]);
 		String[] filteredContents = Stream.of(tempContents)
 				.filter(s -> s.trim().length() != 0)
 				.toArray(String[]::new);
@@ -197,6 +197,6 @@ import java.util.stream.Stream;
 		
 		Collections.reverse(header);
 		
-		return header.toArray(new String[header.size()]);
+		return header.toArray(new String[0]);
 	}
 }

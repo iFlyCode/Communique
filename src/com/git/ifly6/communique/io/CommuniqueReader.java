@@ -82,8 +82,8 @@ import com.google.gson.JsonSyntaxException;
 			
 			config.version = reader.getFileVersion();
 			
-			config.recipients = recipients.toArray(new String[recipients.size()]);
-			config.sentList = sentList.toArray(new String[sentList.size()]);
+			config.recipients = recipients.toArray(new String[0]);
+			config.sentList = sentList.toArray(new String[0]);
 			config.setcRecipients(unifySendList(config));
 			
 		}

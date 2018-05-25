@@ -10,6 +10,7 @@ import com.git.ifly6.javatelegram.JavaTelegram;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -119,7 +120,7 @@ public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTe
 			return marconi.exportState().getcRecipients().stream()
 					.filter(r -> r.getRecipientType() == RecipientType.REGION)
 					.filter(r -> r.getFilterType() == FilterType.EXCLUDE)
-					.collect(Collectors.toSet());
+					.collect(Collectors.toCollection(HashSet::new));
 		return proscribedRegions;
 	}
 	
@@ -131,9 +132,9 @@ public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTe
 	}
 	
 	/** @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-	@Override public void sentTo(String r, int x, int i) {
-		super.sentTo(r, x, i);
-		marconi.sentTo(r, x, i);
+	@Override public void sentTo(String recipient, int recipientNum, int length) {
+		super.sentTo(recipient, recipientNum, length);
+		marconi.sentTo(recipient, recipientNum, length);
 	}
 	
 }
