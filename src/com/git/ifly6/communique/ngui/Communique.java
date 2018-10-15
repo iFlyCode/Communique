@@ -66,6 +66,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -165,7 +167,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		// Make sure we can also log to file, apply this to the root logger
 		try {
-			Path logFile = appSupport.resolve("log").resolve("communique-last-session.log");
+			Path logFile = appSupport
+					.resolve("log")
+					.resolve(String.format("communique-session-%s.log",
+							DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(Instant.now())));
 			Files.createDirectories(logFile.getParent()); // make directory
 			loggerFileHandler = new FileHandler(logFile.toString());
 			loggerFileHandler.setFormatter(new SimpleFormatter());
@@ -187,7 +192,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	/**
 	 * Create the application.
-	 *
 	 * @wbp.parser.entryPoint
 	 */
 	public Communique() {
@@ -318,7 +322,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			// Call and do the parsing
 			LOGGER.info("Called parser");
 			try {
-				parsedRecipients = parser.apply(tokens).getRecipients();
+				parsedRecipients = parser.apply(tokens).listRecipients();
 				if (!Arrays.asList(CommuniqueProcessingAction.values()).contains(config.processingAction)) {
 					// deal with invalid processing action
 					this.showMessageDialog("Invalid processing action.\n"
@@ -810,7 +814,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	/**
 	 * Shows and initialises the Communique Recruiter.
-	 *
 	 * @see com.git.ifly6.communique.ngui.CommuniqueRecruiter
 	 * @since 6
 	 */
@@ -823,7 +826,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	/**
 	 * Creates an file chooser (in an OS specific manner) and shows it to the user.
-	 *
 	 * @param parent <code>Frame</code> to show the chooser from
 	 * @param type   either <code>FileDialog.SAVE</code> or <code>FileDialog.LOAD</code>
 	 * @return the <code>Path</code> selected by the user
@@ -869,19 +871,19 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		}
 
 		// Make it end in txt if saving
-		if (type == FileDialog.SAVE) if (!FilenameUtils.getExtension(savePath.toString()).equals("txt")) {
+		if (type == FileDialog.SAVE && !FilenameUtils.getExtension(savePath.toString()).equals("txt")) {
 			LOGGER.info("Append txt to savePath");
 			savePath = savePath.resolveSibling(savePath.getFileName() + ".txt");
 		}
 
-		LOGGER.info("User elected to " + (type == FileDialog.SAVE ? "save" : "load") + " file at "
-				+ savePath.toAbsolutePath().toString());
+		LOGGER.info(String.format("%s file at %s", type == FileDialog.SAVE ? "Saved" : "Loaded",
+				savePath.toAbsolutePath().toString()));
 		return savePath;
 	}
 
 	/**
-	 * Sending thread. It executes all of these commands in the <code>Runner</code> thread and then calls the
-	 * completion method.
+	 * Sending thread. It executes all of these commands in the <code>Runner</code> thread and then calls the completion
+	 * method.
 	 */
 	private void send() {
 

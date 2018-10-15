@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class CommuniqueConfig implements java.io.Serializable {
 
-	// For backwards compatibility, these names cannot be changed
+	// For backwards compatibility, almost all field names cannot be changed
 	private static final long serialVersionUID = Communique7Parser.version;
 
 	public static final String HEADER = "Communiqué Configuration File. Do not edit by hand. Produced at: "
@@ -32,12 +32,15 @@ public class CommuniqueConfig implements java.io.Serializable {
 	public JTelegramKeys keys;
 
 	/**
-	 * Holds all of the Communique recipients in <code>String</code>s so that it can be edited by hand and not as
-	 * {@link CommuniqueRecipient}.
+	 * Holds all of the Communique recipients in <code>String</code>s so that it can be edited by hand and not as {@link
+	 * CommuniqueRecipient}.
+	 * <p>To keep this editable by hand, the configuration system uses getters and setters to translate to and from the
+	 * string state representations to present to the programmer a {@link CommuniqueRecipient} API but actually store
+	 * everything in strings.</p>
 	 */
-	private ArrayList<String> cRecipients; // must be mutable
+	private ArrayList<String> cRecipients; // must be mutable, use ArrayList
 
-	// Deprecating the old String-based system, keeping for backward compatibility
+	// Deprecating the old String-based system, kept for backward compatibility
 	@Deprecated
 	public String[] recipients;
 	@Deprecated
@@ -54,7 +57,6 @@ public class CommuniqueConfig implements java.io.Serializable {
 	/**
 	 * Constructor for <code>{@link CommuniqueConfig}</code>s. All the
 	 * <code>{@link CommuniqueRecipient}</code>s should be specified after the fact.
-	 *
 	 * @param isRecruitment    is whether this is a recruitment configuration
 	 * @param processingAction is the applicable processing action
 	 * @param keys             are the keys
@@ -69,7 +71,6 @@ public class CommuniqueConfig implements java.io.Serializable {
 
 	/**
 	 * Sets the default version to the version in {@link Communique7Parser}.
-	 *
 	 * @return the version in <code>Communique7Parser</code>
 	 */
 	public int defaultVersion() {
@@ -79,10 +80,11 @@ public class CommuniqueConfig implements java.io.Serializable {
 
 	/**
 	 * Returns converted <code>cRecipients</code> to <code>List&lt;CommuniqueRecipient&gt;</code>
-	 *
 	 * @return <code>cRecipients</code> converted to <code>List&lt;CommuniqueRecipient&gt;</code>
 	 */
 	public List<CommuniqueRecipient> getcRecipients() {
+		if (cRecipients == null) return null; // deal with null case
+
 		// use imperative for speed
 		List<CommuniqueRecipient> list = new ArrayList<>(cRecipients.size());
 		for (String s : cRecipients)
@@ -92,7 +94,6 @@ public class CommuniqueConfig implements java.io.Serializable {
 
 	/**
 	 * Returns raw <code>cRecipients</code>, which is <code>List&lt;String&gt;</code>
-	 *
 	 * @return <code>cRecipients</code>
 	 */
 	public List<String> getcRecipientsString() {
@@ -102,7 +103,6 @@ public class CommuniqueConfig implements java.io.Serializable {
 	/**
 	 * Sets <code>cRecipients</code> with <code>List&lt;CommuniqueRecipient&gt;</code>, translates to
 	 * <code>String</code> on the fly.
-	 *
 	 * @param crs {@link CommuniqueRecipient}s to set
 	 */
 	public void setcRecipients(List<CommuniqueRecipient> crs) {
@@ -124,7 +124,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 * and the <code>sentList</code>. It also updates the <code>CommuniqueConfig</code> version <i>field</i>, not the
 	 * one in the header, to the version of the program on which it was saved.
 	 */
-	void checkData() {
+	void clean() {
 
 		version = this.defaultVersion(); // updates version
 
@@ -147,18 +147,19 @@ public class CommuniqueConfig implements java.io.Serializable {
 	}
 
 	/**
-	 * Cleans nation names that were prefixed accidentally due
-	 *
-	 * @param nationName is the string-name of the nation
-	 * @return all the extra 'nation:'s removed.
+	 * Cleans nation names that could have been prefixed accidentally in a previous version of Communique
+	 * @param recipientString is the string-name of the nation
+	 * @return the same with all the extra 'nation:'s removed.
 	 */
-	private static String cleanNation(String nationName) {
-		int lastColon = nationName.lastIndexOf(":");
+	static String cleanNation(String recipientString) {
+		int lastColon = recipientString.lastIndexOf(":");
 		if (lastColon > 1)
 			// nation:nation:blah
 			// >>> ^ ^-------^ ^ (where '-' means it is removed)
-			return nationName.substring(0, nationName.indexOf(":") + 1) + nationName.substring(lastColon + 1, nationName.length());
-		return nationName;
+			return recipientString.substring(0,
+					recipientString.indexOf(":") + 1) + recipientString.substring(lastColon + 1,
+					recipientString.length());
+		return recipientString;
 	}
 
 

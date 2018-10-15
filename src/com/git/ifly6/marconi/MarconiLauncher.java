@@ -2,7 +2,7 @@
 package com.git.ifly6.marconi;
 
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -17,6 +17,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +56,9 @@ public class MarconiLauncher {
 		// Add in a logging file handler
 		try {
 			// Directory is defined as the same directory in which Marconi is run
-			FileHandler handler = new FileHandler(Paths.get("marconi-last-session.log").toString());
+			Path logLocation = Paths.get(String.format("marconi-session-%s.log",
+					DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(Instant.now())));
+			FileHandler handler = new FileHandler(logLocation.toString());
 			handler.setFormatter(new SimpleFormatter());
 			Logger.getLogger("").addHandler(handler); // gets the root logger
 
@@ -84,11 +88,12 @@ public class MarconiLauncher {
 			// Deal with options
 			if (commandLine.hasOption("h") || commandLine.getArgs().length != 1) {
 				HelpFormatter formatter = new HelpFormatter();
-				String header = "Send telegrams on NationStates from the command line";
-				String footer = "Please report issues to the NationStates nation Imperium Anglorum via telegram or to "
-						+ "http://forum.nationstates.net/viewtopic.php?f=15&t=352065.";
-				formatter.printHelp("java -jar " + fileName + " COMMUNIQUE_CONFIGURATION_FILE", header,
-						COMMAND_LINE_OPTIONS, footer, true);
+				formatter.printHelp(String.format("java -jar %s COMMUNIQUE_CONFIGURATION_FILE", fileName),
+						"Send telegrams on NationStates from the command line",
+						COMMAND_LINE_OPTIONS,
+						"Please report issues to the NationStates nation Imperium Anglorum via telegram or to "
+								+ "http://forum.nationstates.net/viewtopic.php?f=15&t=352065.",
+						true);
 				System.out.println();
 				return;
 			}
@@ -119,8 +124,8 @@ public class MarconiLauncher {
 		marconi.load(configPath);
 
 		// If there is a recruit flag, set it to true
-		boolean recruiting = marconi.exportState().getcRecipients().stream()
-				.anyMatch(r -> r.getRecipientType() == RecipientType.FLAG && r.getName().equals("recruit"));
+		boolean recruiting = marconi.exportState().getcRecipients()
+				.contains(CommuniqueRecipients.createFlag("recruit"));
 
 		// Add shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -135,14 +140,12 @@ public class MarconiLauncher {
 		}));
 
 		if (recruiting) {
-
 			MarconiRecruiter recruiter = new MarconiRecruiter(marconi);
 			recruiter.setWithCConfig(marconi.exportState());
 			recruiter.send();
-			// Indefinite ending point, so use ShutdownHook to save
+			// Indefinite ending point, use ShutdownHook to save
 
 		} else {
-
 			marconi.send();
 			marconi.save(configPath);
 

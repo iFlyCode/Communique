@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
+/**
+ * <code>CommuniqueParser</code> has been superseded by {@link Communique7Parser}, which implements a recipient address
  * language compliant with the standard system used by NationStates. This parser is deprecated and should not be used,
  * as translation methods have been built into the new {@link Communique7Parser}.
+ *
  * <p>
  * <strike>This class is the central hub of the Communiqué system. It parses the <code>String</code> given to it with
  * all the recipients (and tags which stand in for multiple recipients) into a <code>String[]</code> which has every
@@ -32,7 +34,8 @@ import java.util.stream.Collectors;
  * </tr>
  * <tr>
  * <td><code>wa:members</code></td>
- * <td>this tag inserts every World Assembly member into the recipients list. It is best to use this on a regional basis
+ * <td>this tag inserts every World Assembly member into the recipients list. It is best to use this on a regional
+ * basis
  * with the <code>-></code> operator to filter out the World Assembly members inside a certain region or to use the
  * <code>--</code> operator to remove WA members as necessary.</td>
  * </tr>
@@ -58,7 +61,8 @@ import java.util.stream.Collectors;
  * <tr>
  * <td>--</td>
  * <td>tells the parser to remove any nations listed in the second tag from the first tag, for example,
- * <code>region:europe -- wa:members</code> would leave all nations of Europe who are not WA members. This tag functions
+ * <code>region:europe -- wa:members</code> would leave all nations of Europe who are not WA members. This tag
+ * functions
  * much like the <code>/</code> tag, but this negation is not a global negation, as the slash uses, but rather, a local
  * negation for that tag only.</td>
  * </tr>
@@ -66,104 +70,114 @@ import java.util.stream.Collectors;
  * </strike>
  * </p>
  */
-@Deprecated public class CommuniqueParser {
-	
-	/** This <code>int</code> determines what version of the parser is currently being used. The entire program is build
+@Deprecated
+public class CommuniqueParser {
+
+	/**
+	 * This <code>int</code> determines what version of the parser is currently being used. The entire program is build
 	 * around this string for extended compatibility purposes. However, due to the separation between the parser itself
 	 * and the IO system, either of them can trigger a change in the version number. See {@link Communique7Parser} for
-	 * the version declaration. */
+	 * the version declaration.
+	 */
 	public static final int version = Communique7Parser.version;
 	private static JInfoFetcher fetcher = JInfoFetcher.instance();
-	
-	/** Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
+
+	/**
+	 * Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
 	 * documentation on the grammar of the Communiqué syntax.
 	 * @param token to check
-	 * @return <code>boolean</code> on whether it is a tag */
+	 * @return <code>boolean</code> on whether it is a tag
+	 */
 	private static boolean isTag(String token) {
-		
+
 		if (token.startsWith("region:")) return true;
 		else if (token.equalsIgnoreCase("wa:delegates")) return true;
 		else if (token.equalsIgnoreCase("wa:nations") || token.equalsIgnoreCase("wa:members")) return true;
 		else return token.equalsIgnoreCase("world:new");
 
 	}
-	
-	/** Expands a single Communique tag into a list of nations represented by that tag. For example, something like
+
+	/**
+	 * Expands a single Communique tag into a list of nations represented by that tag. For example, something like
 	 * <code>region:Europe</code> would result in a <code>List&lt;String&gt;</code> of all nations in Europe. Other
 	 * elements, like <code>wa:delegates</code> would yield all the delegates in the World Assembly.
 	 * @param tag to be expanded
-	 * @return a <code>List&lt;String&gt;</code> of nations represented */
+	 * @return a <code>List&lt;String&gt;</code> of nations represented
+	 */
 	private List<String> expandTag(String tag) {
-		
+
 		if (tag.startsWith("region:")) return fetcher.getRegion(tag.replace("region:", ""));
 		else if (tag.startsWith("wa:delegate")) return fetcher.getDelegates();
 		else if (tag.equals("wa:nations") || tag.equals("wa:members")) return fetcher.getWAMembers();
 		else if (tag.equals("world:new")) return fetcher.getNew();
-		
+
 		// If all else fails...
 		return new ArrayList<>(0);
 	}
-	
-	/** Expands the <code>List&lt;String&gt;</code> into a list of nations based on the tags, operators, etc. If you
-	 * give it something like <code>region:europe</code>, then you'll get back the entire list of nations in Europe. It
-	 * is provided as a list of tags, each on a list. This processes the operators.
-	 * @param tagsList a <code>List&lt;String&gt;</code> of tags */
+
+	/**
+	 * Expands the <code>List&lt;String&gt;</code> into a list of nations based on the tags, operators, etc. If you give
+	 * it something like <code>region:europe</code>, then you'll get back the entire list of nations in Europe. It is
+	 * provided as a list of tags, each on a list. This processes the operators.
+	 * @param tagsList a <code>List&lt;String&gt;</code> of tags
+	 */
 	private LinkedHashSet<String> expandList(List<String> tagsList) {
 		List<String> expandedList = new ArrayList<>();
-		
+
 		for (String aTagsList : tagsList) {
 			String element = aTagsList.toLowerCase();
-			
+
 			// Operator meaning 'region:europe->wa:nations' would be 'those in Europe in (who are) WA nations'
 			if (element.contains("->") || element.contains("--")) {
-				
+
 				String[] bothArr = new String[2];
 				if (element.contains("->")) bothArr = element.split("->");
 				else if (element.contains("--")) bothArr = element.split("--");
-				
+
 				// Remove leading and trailing underscores.
 				for (int i = 0; i < bothArr.length; i++) {
 					bothArr[i] = bothArr[i].trim();
 					if (bothArr[i].startsWith("_")) bothArr[i] = bothArr[i].substring(1, bothArr[i].length());
 					if (bothArr[i].endsWith("_")) bothArr[i] = bothArr[i].substring(0, bothArr[i].length() - 1);
 				}
-				
+
 				// Split into the two lists
 				// firsts and seconds refer to the elements on either side of the '->' or '--' operator
 				Set<String> firsts = new HashSet<>(expandTag(bothArr[0]));
 				Set<String> seconds = new HashSet<>(expandTag(bothArr[1]));
-				
+
 				List<String> both = new ArrayList<>(0);
-				
+
 				// This section is for the addition and subtraction operators
 				if (element.contains("->")) {
-					
+
 					// If it appears in both lists, add it. Use the new 'contains' algorithm instead of the old 'nested
 					// for loops' algorithm. This gives significant speed advantages.
 					for (String second : seconds)
 						if (firsts.contains(second)) both.add(second);
-					
+
 				} else if (element.contains("--")) // If an element in the first list is also contained in the second
-													 // list, do not add it to the 'both'
+					// list, do not add it to the 'both'
 					// list. This basically removes it from the firsts list as output is concerned.
 					for (String first : firsts)
-					if (!seconds.contains(first)) both.add(first);
-				
+						if (!seconds.contains(first)) both.add(first);
+
 				expandedList.addAll(both);
-				
+
 			} else if (isTag(element)) expandedList.addAll(expandTag(element));
 			else expandedList.add(element);
 		}
-		
+
 		// Remove duplicates & return
 		return new LinkedHashSet<>(expandedList);
 	}
-	
+
 	public String[] filterAndParse(List<String> input) {
 		return filterAndParse(input.stream().toArray(String[]::new));
 	}
-	
-	/** This parses the entire contents of the recipients and allows us to actually make the tag system work through
+
+	/**
+	 * This parses the entire contents of the recipients and allows us to actually make the tag system work through
 	 * interfacing with the expansion system above. Note that this method automatically handles the removal of commented
 	 * lines with <code>#</code> as the comment. This method calls all other methods to process all of the recipients.
 	 * <p>
@@ -173,48 +187,51 @@ import java.util.stream.Collectors;
 	 * automatically processes this data.
 	 * </p>
 	 * @param input an array of the recipients, each one on an individual index, which can include commented lines
-	 * @return a final array of the recipients, compatible with JavaTelegram */
+	 * @return a final array of the recipients, compatible with JavaTelegram
+	 */
 	public String[] filterAndParse(String[] input) {
-		
+
 		// Filter out comments and empty lines
 		input = Arrays.stream(input)
 				.filter(s -> !s.startsWith("#") && !CommuniqueUtils.isEmpty(s))
 				.toArray(String[]::new);
-		
+
 		// Form a list of all the nation we want in this list.
 		List<String> recipients = Arrays.stream(input)
 				.filter(s -> !s.startsWith("/"))
 				.map(s -> s.toLowerCase().trim().replace(" ", "_"))
 				.collect(Collectors.toList());
-		
+
 		// Form a list of all nations we can't have in this list.
 		List<String> sentList = Arrays.stream(input)
 				.filter(s -> s.startsWith("/"))
 				.map(s -> s.replaceFirst("/", "").toLowerCase().trim().replace(" ", "_"))
 				.collect(Collectors.toList());
-		
+
 		List<String> list = recipientsParse(recipients, sentList);
 		return list.toArray(new String[0]);
 	}
-	
-	/** This method parses the recipients based on the list of recipients and the list of nations to which a telegram
-	 * has already been sent. Recipients and sent-s are in tag-form when provided, they are automatically expanded. This
+
+	/**
+	 * This method parses the recipients based on the list of recipients and the list of nations to which a telegram has
+	 * already been sent. Recipients and sent-s are in tag-form when provided, they are automatically expanded. This
 	 * method requires that they are separated individually into two lists.
 	 * @param recipients to send to
-	 * @param sentList to exclude
-	 * @return a <code>List</code> containing the recipients in <code>String</code> format. */
+	 * @param sentList   to exclude
+	 * @return a <code>List</code> containing the recipients in <code>String</code> format.
+	 */
 	public List<String> recipientsParse(List<String> recipients, List<String> sentList) {
-		
+
 		// Expand the lists.
 		LinkedHashSet<String> recipientsExpanded = expandList(recipients);
 		LinkedHashSet<String> sentlistExpanded = expandList(sentList);
-		
+
 		// Filter using new algorithm
 		List<String> finalRecipients = new ArrayList<>();
 		for (String element : recipientsExpanded)
 			if (!sentlistExpanded.contains(element)) finalRecipients.add(element);
-		
+
 		return finalRecipients;
 	}
-	
+
 }

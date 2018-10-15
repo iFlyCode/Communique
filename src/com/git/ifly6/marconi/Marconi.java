@@ -34,7 +34,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		
 		// Process the Recipients list into a string with two columns.
 		Communique7Parser parser = new Communique7Parser();
-		List<String> expandedRecipients = parser.apply(config.getcRecipients()).getRecipients();
+		List<String> expandedRecipients = parser.apply(config.getcRecipients()).listRecipients();
 		
 		// Apply processing action
 		expandedRecipients = config.processingAction.apply(expandedRecipients);
@@ -69,6 +69,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger {
 		// Check for file lock
 		if (!MarconiUtilities.isFileLocked()) client.connect();
 		else throw new RuntimeException("Cannot send, as another instance of Marconi is already sending.");
+
 	}
 	
 	/** Should the problem be prompted to manually check all flags, this method does so, retrieving the flags and asking

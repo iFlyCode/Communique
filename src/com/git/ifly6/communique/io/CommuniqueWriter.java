@@ -1,13 +1,13 @@
 /* Copyright (c) 2018 Kevin Wong. All Rights Reserved. */
 package com.git.ifly6.communique.io;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 class CommuniqueWriter {
 	
@@ -26,14 +26,13 @@ class CommuniqueWriter {
 	 * @throws IOException if there is an error in writing the file */
 	void write() throws IOException {
 		
-		// Data-checking on writing
-		config.checkData();
+		// Have configuration clean itself
+		config.clean();
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String response = gson.toJson(config);
 		
 		Files.write(path, Arrays.asList(response.split("\n")));
-		
 	}
 	
 }
