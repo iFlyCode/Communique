@@ -125,3 +125,7 @@ Communiqué.
 list, prioritisation of the Delegates in the recipients, and reversing the order of the recipients. Due to changes in
 the way this is implemented, this requires a new file version; it also means that it can easily be extended. Please make
 any requests for new post-processing options via GitHub.
+
+9. Version 9 adds the ability to scan nations mentioned in the NS API Happenings for activity and (about 88) and 
+return their names for possible telegram despatch. Implementation of this new command requires a new version number as
+it is not backwards compatible with older versions.
