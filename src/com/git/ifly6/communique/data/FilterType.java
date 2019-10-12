@@ -77,7 +77,7 @@ public enum FilterType {
 		return recipient
 				.decompose().stream() // turn it into the raw recipients
 				.map(CommuniqueRecipient::getName) // get strings for matching
-				.collect(Collectors.toCollection(HashSet::new)); // for fast Set.contains()
+				.collect(Collectors.toCollection(HashSet::new)); // for fast Set#contains()
 	}
 	
 }

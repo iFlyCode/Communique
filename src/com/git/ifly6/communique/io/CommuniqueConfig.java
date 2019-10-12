@@ -40,18 +40,15 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 */
 	private ArrayList<String> cRecipients; // must be mutable, use ArrayList
 
-	// Deprecating the old String-based system, kept for backward compatibility
-	@Deprecated
-	public String[] recipients;
-	@Deprecated
-	public String[] sentList;
+	// These should be deprecated, but are kept for backward compatibility
+	public String[] recipients; // consider removing
+	public String[] sentList;   // consider removing
 
 	/**
 	 * Empty constructor for {@link CommuniqueConfig}
 	 */
-	@Deprecated
 	public CommuniqueConfig() {
-
+		this.version = defaultVersion(); // default version to current version
 	}
 
 	/**
@@ -63,7 +60,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 */
 	public CommuniqueConfig(boolean isRecruitment, CommuniqueProcessingAction processingAction,
 	                        JTelegramKeys keys) {
-		this.version = defaultVersion(); // default version to current version
+		this();
 		this.isRecruitment = isRecruitment;
 		this.processingAction = processingAction;
 		this.keys = keys;
@@ -151,14 +148,13 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 * @param recipientString is the string-name of the nation
 	 * @return the same with all the extra 'nation:'s removed.
 	 */
-	static String cleanNation(String recipientString) {
+	private static String cleanNation(String recipientString) {
 		int lastColon = recipientString.lastIndexOf(":");
 		if (lastColon > 1)
 			// nation:nation:blah
 			// >>> ^ ^-------^ ^ (where '-' means it is removed)
 			return recipientString.substring(0,
-					recipientString.indexOf(":") + 1) + recipientString.substring(lastColon + 1,
-					recipientString.length());
+					recipientString.indexOf(":") + 1) + recipientString.substring(lastColon + 1);
 		return recipientString;
 	}
 

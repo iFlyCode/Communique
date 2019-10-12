@@ -67,6 +67,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -170,7 +171,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 			Path logFile = appSupport
 					.resolve("log")
 					.resolve(String.format("communique-session-%s.log",
-							DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(Instant.now())));
+							DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+									.format(Instant.now())));
 			Files.createDirectories(logFile.getParent()); // make directory
 			loggerFileHandler = new FileHandler(logFile.toString());
 			loggerFileHandler.setFormatter(new SimpleFormatter());
@@ -801,8 +803,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		txtSecretKey.setText(config.keys.getSecretKey());
 		txtTelegramId.setText(config.keys.getTelegramId());
 
-		txtrCode.setText(codeHeader + config.getcRecipientsString().stream()   // set text from cRecipients
-				.collect(Collectors.joining("\n")));
+		// set text from cRecipients
+		txtrCode.setText(codeHeader + String.join("\n", config.getcRecipientsString()));
 
 		LOGGER.info("Communique info imported");
 
@@ -944,9 +946,9 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 	 * @see com.git.ifly6.javatelegram.JTelegramLogger#sentTo(java.lang.String, int, int)
 	 */
 	@Override
-	public void sentTo(String recipient, int x, int length) {
+	public void sentTo(String recipientName, int x, int length) {
 
-		recipient = CommuniqueRecipients.createExcludedNation(recipient).toString();
+		String recipient = CommuniqueRecipients.createExcludedNation(recipientName).toString();
 		txtrCode.append(x == 0 ? "\n\n" + recipient : "\n" + recipient);
 
 		// Progress bar reset code
@@ -972,7 +974,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		// Update the label and log successes as relevant
 		progressLabel.setText(String.format("%d / %d", x + 1, length));
-		rSuccessTracker.put(recipient, true);
+		rSuccessTracker.put(recipientName, true);
 
 	}
 
@@ -986,6 +988,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		messages.add(String.format("Successful queries to %d of %d nations.\n",
 				rSuccessTracker.entrySet().stream().filter(e -> e.getValue() == Boolean.TRUE).count(),  // # successes
 				parsedRecipients.size()));
+
 		if (rSuccessTracker.containsValue(Boolean.FALSE)) { // if there was a failure to connect,
 			messages.add("Failure to dispatch to the following nations, not auto-excluded:\n");  // add formatting,
 			rSuccessTracker.entrySet().stream() // and then list the relevant nations to which there was a failure
@@ -998,7 +1001,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		// display that data in a CommuniqueTextDialog
 		CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
-				messages.stream().collect(Collectors.joining("\n")), true);
+				String.join("\n", messages), true);
 
 		// Graphical reset
 		EventQueue.invokeLater(() -> {
