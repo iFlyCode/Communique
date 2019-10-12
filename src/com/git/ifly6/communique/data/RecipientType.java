@@ -18,7 +18,7 @@ public enum RecipientType {
 	NATION {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 			// return singleton list
-			return new ArrayList<>(Collections.singletonList(cr));
+			return Collections.singletonList(cr);
 		}
 
 		@Override public String toString() {
@@ -30,7 +30,7 @@ public enum RecipientType {
 	 * nations in the region. */
 	REGION {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
-			return newRecipients(JInfoFetcher.instance().getRegion(cr.getName()), cr);
+			return newRecipients(JInfoFetcher.instance().getRegion(cr.getName()), cr.getFilterType());
 		}
 
 		@Override public String toString() {
@@ -43,10 +43,10 @@ public enum RecipientType {
 	TAG {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			String tag = cr.getName();
-			if (tag.equals("wa")) return newRecipients(JInfoFetcher.instance().getWAMembers(), cr);
-			if (tag.equals("delegates")) return newRecipients(JInfoFetcher.instance().getDelegates(), cr);
-			if (tag.equals("new")) return newRecipients(JInfoFetcher.instance().getNew(), cr);
-			if (tag.equals("all")) return newRecipients(JInfoFetcher.instance().getAll(), cr);
+			if (tag.equals("wa")) return newRecipients(JInfoFetcher.instance().getWAMembers(), cr.getFilterType());
+			if (tag.equals("delegates")) return newRecipients(JInfoFetcher.instance().getDelegates(), cr.getFilterType());
+			if (tag.equals("new")) return newRecipients(JInfoFetcher.instance().getNew(), cr.getFilterType());
+			if (tag.equals("all")) return newRecipients(JInfoFetcher.instance().getAll(), cr.getFilterType());
 			throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
 		}
 
@@ -55,14 +55,13 @@ public enum RecipientType {
 		}
 	},
 
-	/** Declares that the recipient is an internal Commmunique flag. It does not return any real recipients when calling
-	 * its decompose method. */
+	/** Declares that the recipient is an internal Commmunique flag. */
 	FLAG {
 		@Override public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
 			String tag = cr.getName();
-			if (tag.equals("recruit")) return new ArrayList<>(); // recruit is handled by Communique logic, not here
+			if (tag.equals("recruit")) return Collections.emptyList(); // recruit is handled by Communique logic, not here
 			if (tag.equals("active")) return HappeningsParser.getActiveNations();  // active
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 
 		@Override public String toString() {
@@ -81,13 +80,13 @@ public enum RecipientType {
 
 	/** Translates a list of nation reference names into a list of valid <code>CommuniqueRecipient</code>s.
 	 * @param list of nation reference names
-	 * @param cr from which to extract type data
+	 * @param filterType from which to extract type data
 	 * @return list of CommuniqueRecipients */
-	private static List<CommuniqueRecipient> newRecipients(List<String> list, CommuniqueRecipient cr) {
+	private static List<CommuniqueRecipient> newRecipients(List<String> list, FilterType filterType) {
 		// we use this a lot, probably better to use a loop for speed
 		List<CommuniqueRecipient> result = new ArrayList<>();
 		for (String s : list)
-			result.add(CommuniqueRecipients.createNation(cr.getFilterType(), s));
+			result.add(CommuniqueRecipients.createNation(filterType, s));
 		return result;
 	}
 }
