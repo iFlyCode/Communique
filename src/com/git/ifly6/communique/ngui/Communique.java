@@ -168,11 +168,15 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 		// Make sure we can also log to file, apply this to the root logger
 		try {
+			// must avoid colons in file names because windows doesn't like it apparently
+			String timeString = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
+					.format(Instant.now())
+					.replace(':', '-'); // this is the cheapest way to fix this problem
+
 			Path logFile = appSupport
 					.resolve("log")
-					.resolve(String.format("communique-session-%s.log",
-							DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-									.format(Instant.now())));
+					.resolve(String.format("communique-session-%s.log", timeString));
+
 			Files.createDirectories(logFile.getParent()); // make directory
 			loggerFileHandler = new FileHandler(logFile.toString());
 			loggerFileHandler.setFormatter(new SimpleFormatter());
