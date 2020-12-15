@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi;
 
 import com.git.ifly6.nsapi.telegram.JTelegramException;
@@ -9,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +38,8 @@ import java.util.stream.Collectors;
  * </p>
  */
 public class NSConnection {
+
+	private static final Logger LOGGER = Logger.getLogger(NSConnection.class.getName());
 
 	/**
 	 * This is the API delay timer, in milliseconds.
@@ -83,10 +103,11 @@ public class NSConnection {
 				throw new NSIOException("Api ratelimit exceeded");
 
 			if (xml_raw.contains("Unknown nation"))
-				throw new NSException("Nation does not exist");
+				throw new NSException(String.format("Nation does not exist at url: ", url.toString()));
 
-			System.err.println(String.format("API called URL:\t%s", url.toString()));
-			throw new JTelegramException(String.format("Cannot get data from the API,\nHTTP response code %d",
+			throw new JTelegramException(String.format("Cannot get data from the API at url %s"
+							+ "\nHTTP response code %d",
+					url.toString(),
 					apiConnection.getResponseCode()));
 		}
 
