@@ -103,7 +103,7 @@ public class CommSender {
     }
 
     /**
-     * Sets feed limit, ie number of recipients taken from montior in each feed step. Because sender sends until queue
+     * Sets feed limit, ie number of recipients taken from monitor in each feed step. Because sender sends until queue
      * is empty before feeding the queue, a high feed limit may force long inter-feed intervals. It also may force
      * longer delays if the queue is exhausted when encountering a long series of recipients which refuse telegrams.
      * @param feedLimit to apply
