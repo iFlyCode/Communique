@@ -17,47 +17,37 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.NSIOException;
-import com.git.ifly6.nsapi.NSWorld;
-
-import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-/**
- * Provides up-to-date view of the list of NationStates delegates. Updates every 30 minutes, per {@link
- * #DELEGATE_UPDATE_INTERVAL}.
- */
-public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMonitor {
+public enum CommMovementDirection {
 
-    public static final Duration DELEGATE_UPDATE_INTERVAL = Duration.ofMinutes(30);
-
-    private int repeatedFailures = 0;
-    private List<String> delegates;
-
-    public CommDelegateMonitor() {
-        super();
-        setUpdateInterval(DELEGATE_UPDATE_INTERVAL);
-        start();
-    }
-
-    @Override
-    protected void updateAction() {
-        try {
-            delegates = NSWorld.getDelegates();
-            repeatedFailures = 0;
-        } catch (IOException e) {
-            repeatedFailures++;
-            if (repeatedFailures > 10)
-                throw new NSIOException("failed to get delegates", e);
+    ENTER {
+        /** {@inheritDoc} Something that enters present after but not present before. */
+        @Override
+        public List<String> apply(Set<String> before, Set<String> after) {
+            return after.stream()
+                    .filter(s -> !before.contains(s))
+                    .collect(Collectors.toList());
         }
-    }
+    },
+
+    EXIT {
+        /** {@inheritDoc} Something that exits is present before, but not after. */
+        @Override
+        public List<String> apply(Set<String> before, Set<String> after) {
+            return before.stream()
+                    .filter(s -> !after.contains(s))
+                    .collect(Collectors.toList());
+        }
+    };
 
     /**
-     * {@inheritDoc} Provides an up-to-date list of NationStates delegates.
+     * Applies differencing algorithm based on enumerated description
+     * @param before elements present before
+     * @param after  elements present after
+     * @return appropriate difference
      */
-    @Override
-    public List<String> getRecipients() {
-        return delegates;
-    }
+    public abstract List<String> apply(Set<String> before, Set<String> after);
 }

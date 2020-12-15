@@ -21,75 +21,80 @@ import com.git.ifly6.nsapi.NSRegion;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Monitors movement in or out, see {@link Direction}, of a specified region.
+ * Monitors movement in or out, see {@link CommMovementDirection}, of a specified region.
  */
 public class CommMovementMonitor extends CommUpdatingMonitor implements CommMonitor {
 
-    public enum Direction {
-        ENTER, EXIT,
-    }
-
     private List<String> regions;
-    private Direction direction;
+    private CommMovementDirection direction;
 
     private Set<String> inhabitantsBefore;
     private Set<String> inhabitantsNow;
 
     /**
-     * Creates a movement monitor.
-     * @param regions   to monitor
-     * @param direction of travel to monitor
+     * Creates a movement monitor. Monitor starts immediately.
+     * @param r regions to monitor
+     * @param d direction of travel to check for
      */
-    public CommMovementMonitor(List<String> regions, Direction direction) {
+    public CommMovementMonitor(List<String> r, CommMovementDirection d) {
+        this(r, d, true);
+    }
+
+    /**
+     * Creates a movement monitor.
+     * @param regions          to monitor
+     * @param direction        of travel to monitor
+     * @param startImmediately if true
+     */
+    public CommMovementMonitor(List<String> regions, CommMovementDirection direction, boolean startImmediately) {
         super();
         this.regions = regions;
         this.direction = direction;
-        start();
+        if (startImmediately)
+            start();
     }
 
     @Override
     protected void updateAction() {
         if (Objects.isNull(regions) || regions.isEmpty())
             throw new NullPointerException("timer started without specifying region");
+
         inhabitantsBefore = inhabitantsNow;
-        inhabitantsNow = regions.stream()
-                .map(name -> new NSRegion(name).populateData().getRegionMembers())
-                .flatMap(Collection::stream)
-                .collect(Collectors.toCollection(HashSet::new));
+        Set<String> newInhabitants = new HashSet<>();
+        for (final String regionName : regions)
+            newInhabitants.addAll(
+                    new NSRegion(regionName).populateData().getRegionMembers()
+            );
+
+        inhabitantsNow = newInhabitants;
         lastUpdate = Instant.now();
     }
 
     /**
      * {@inheritDoc} Recipients can only be found after {@link #DEFAULT_UPDATE_INTERVAL} or update interval established
-     * by {@link #setUpdateInterval(int)}. If not enough time has elapsed, returns an empty list; otherwise, returns
-     * nations depending on {@link Direction}.
+     * by {@link #setUpdateInterval(Duration)}. If not enough time has elapsed, returns an empty list; otherwise,
+     * returns nations depending on {@link CommMovementDirection}.
+     * <p>Note that recipients returned for multiple regions are movements in and out of those regions taken together.
+     * If monitoring Europe and the North Pacific, someone who moves from the North Pacific <b>to</b> Europe will not be
+     * marked.</p>
      */
     @Override
     public List<String> getRecipients() {
-        if (direction == null) throw new NullPointerException("movement information queried without direction");
-        if (inhabitantsNow == null || inhabitantsBefore == null)
+        if (direction == null)
+            throw new NullPointerException("movement information queried without direction");
+
+        if (inhabitantsNow == null || inhabitantsBefore == null) {
+            LOGGER.info("Not enough information to find any changes.");
             return new ArrayList<>();
+        }
 
-        if (direction == Direction.EXIT) // if exiting, look at ones who WERE present and NOW are not
-            return inhabitantsBefore.stream()
-                    .filter(s -> !inhabitantsNow.contains(s))
-                    .collect(Collectors.toList());
-
-        if (direction == Direction.ENTER) // if entering, look at ones who ARE present and WERE not
-            return inhabitantsNow.stream()
-                    .filter(s -> !inhabitantsBefore.contains(s))
-                    .collect(Collectors.toList());
-
-        throw new UnsupportedOperationException(
-                String.format("no operation available for direction <%s>", direction));
+        return direction.apply(inhabitantsBefore, inhabitantsNow);
     }
 
     /** @return regions at which the movement monitor is pointed. */

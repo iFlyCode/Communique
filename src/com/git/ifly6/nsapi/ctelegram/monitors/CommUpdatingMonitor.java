@@ -17,9 +17,13 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * Monitors <a href="https://www.nationstates.net/cgi-bin/api.cgi?q=newnations">new nations</a> API call to provide a
@@ -29,16 +33,22 @@ import java.util.TimerTask;
  */
 public abstract class CommUpdatingMonitor implements CommMonitor {
 
-    public static final int DEFAULT_UPDATE_INTERVAL = 120 * 1000;
-    private Integer updateInterval = null;
+    public static final Logger LOGGER = Logger.getLogger(CommUpdatingMonitor.class.getName());
+
+    public static final Duration DEFAULT_UPDATE_INTERVAL = Duration.ofSeconds(120);
+    private Duration updateInterval = null;
 
     protected Instant lastUpdate;
 
-    private Timer timer;
-    private TimerTask updateAction = new TimerTask() {
-        @Override
-        public void run() {
+    private ScheduledExecutorService ex;
+    private ScheduledFuture<?> sf;
+    private Runnable runnableAction = () -> {
+        try {
+            LOGGER.info("update called");
             updateAction();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw new CommUpdateException("encountered error in update", e);
         }
     };
 
@@ -48,7 +58,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      * assignment of needed variables.
      */
     public CommUpdatingMonitor() {
-        timer = new Timer(true);
+        ex = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
@@ -58,15 +68,22 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      */
     protected abstract void updateAction();
 
-    /** Starts the monitor. */
+    /** Starts the monitor. Most implementations should start on instantiation. */
     public void start() {
-        timer.schedule(updateAction, 0,
-                updateInterval == null ? DEFAULT_UPDATE_INTERVAL : updateInterval);
+        if (ex.isShutdown()) // if it is shut down, create a new thread and restart
+            LOGGER.info("update action executor service was shut down; allocating new...");
+        ex = Executors.newSingleThreadScheduledExecutor();
+
+        if (sf == null || sf.isDone()) {
+            sf = ex.scheduleWithFixedDelay(runnableAction, 0,
+                    updateInterval == null ? DEFAULT_UPDATE_INTERVAL.toMillis() : updateInterval.toMillis(),
+                    TimeUnit.MILLISECONDS);
+        }
     }
 
     /** Stops the monitor. */
     public void stop() {
-        timer.cancel();
+        sf.cancel(false); // allow completion of tasks
     }
 
     /** @return {@link Instant} of last update. */
@@ -74,21 +91,42 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
         return lastUpdate;
     }
 
-    /**
-     * Sets the monitor's update interval
-     * @param seconds to wait between updating
-     */
-    public void setUpdateInterval(int seconds) {
-        updateInterval = seconds;
+    /** @return {@link Instant} of predicted next update. */
+    public Instant getNextUpdate() {
+        if (sf == null) {
+            // there is no next update
+            LOGGER.info("Asked for next update time, but there is no scheduled future update");
+            return null;
+        }
+
+        // last update + delay, with higher resolution
+        return lastUpdate.plusMillis(sf.getDelay(TimeUnit.MILLISECONDS));
     }
 
     /**
-     * Gets current update interval
-     * @return timer update interval
+     * Sets the monitor's update interval; if task is already running, creates task to wait until end of current task
+     * before restarting with the new delay interval.
+     * @param d duration to wait between updating
      */
-    public int getUpdateInterval() {
-        int delay = updateInterval == null ? DEFAULT_UPDATE_INTERVAL : updateInterval;
-        return (int) Math.round((double) delay / 1000);
+    public void setUpdateInterval(Duration d) {
+        updateInterval = d;
+        if (sf != null) {
+            LOGGER.info(String.format("updating delay interval from %d ms to %d ms",
+                    sf.getDelay(TimeUnit.MILLISECONDS),
+                    updateInterval.toMillis()));
+        }
     }
 
+    /**
+     * Gets current update interval in seconds
+     * @return timer update interval in integer seconds
+     */
+    public Duration getUpdateInterval() {
+        return updateInterval == null ? DEFAULT_UPDATE_INTERVAL : updateInterval;
+    }
+
+    /** Thrown on exception in update thread. */
+    private static class CommUpdateException extends RuntimeException {
+        public CommUpdateException(String message, Throwable e) {}
+    }
 }

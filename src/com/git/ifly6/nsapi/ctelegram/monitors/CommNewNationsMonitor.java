@@ -20,7 +20,9 @@ package com.git.ifly6.nsapi.ctelegram.monitors;
 import com.git.ifly6.nsapi.NSWorld;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Monitors <a href="https://www.nationstates.net/cgi-bin/api.cgi?q=newnations">new nations</a> API call to provide a
@@ -29,6 +31,8 @@ import java.util.List;
  * updated after the update interval elapses.
  */
 public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMonitor {
+
+    private static Logger LOGGER = Logger.getLogger(CommNewNationsMonitor.class.getName());
 
     private static CommNewNationsMonitor instance;
     private List<String> newNations;
@@ -64,6 +68,10 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
      */
     @Override
     public List<String> getRecipients() {
+        if (newNations == null || newNations.isEmpty()) {
+            LOGGER.info("New nations data not yet populated or empty; returning empty set");
+            return new ArrayList<>();
+        }
         return newNations;
     }
 }
