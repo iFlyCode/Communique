@@ -79,7 +79,7 @@ public class NSWorld {
 	/**
 	 * Queries the NS API for list of regions declaring the provided tag.
 	 * @param regionTag to query
-	 * @return {@code List<String>} of regions with names
+	 * @return {@code List<String>} of regions by names
 	 * @throws IOException          from {@link java.net.URLConnection}
 	 * @throws NSNoSuchTagException if tag specified does not exist
 	 */

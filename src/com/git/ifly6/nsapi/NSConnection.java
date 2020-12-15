@@ -17,8 +17,6 @@
 
 package com.git.ifly6.nsapi;
 
-import com.git.ifly6.nsapi.telegram.JTelegramException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -39,106 +37,112 @@ import java.util.stream.Collectors;
  */
 public class NSConnection {
 
-	private static final Logger LOGGER = Logger.getLogger(NSConnection.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NSConnection.class.getName());
 
-	/**
-	 * This is the API delay timer, in milliseconds.
-	 */
-	public final static int WAIT_TIME = 610;
+    /** API delay in milliseconds. */
+    public final static int WAIT_TIME = 610;
 
-	/**
-	 * The NationStates API call prefix, "<code>https://www.nationstates.net/cgi-bin/api.cgi?</code>".
-	 */
-	public static final String API_PREFIX = "https://www.nationstates.net/cgi-bin/api.cgi?";
+    /** NationStates API call prefix, {@code https://www.nationstates.net/cgi-bin/api.cgi?}. */
+    public static final String API_PREFIX = "https://www.nationstates.net/cgi-bin/api.cgi?";
 
-	/**
-	 * The NationStates API query prefix, "<code>&q=</code>".
-	 */
-	public static final String QUERY_PREFIX = "&q=";
+    /** NationStates API query prefix, {@code &q=}. */
+    public static final String QUERY_PREFIX = "&q=";
 
-	private URL url;
-	private String xml_raw;
-	private boolean hasConnected;
+    private URL url;
+    private String xml_raw;
+    private boolean hasConnected;
 
-	private Map<String, String> entries;
+    private Map<String, String> entries;
 
-	/**
-	 * Creates an unconnected <code>NSConnection</code> which will query the specified URL.
-	 * @param urlString to query
-	 */
-	public NSConnection(String urlString) {
-		try {
-			this.url = new URL(urlString);
-		} catch (MalformedURLException e) {
-			throw new NSException(String.format("URL string '%s' invalid URL", urlString), e);
-		}
-	}
+    /**
+     * Creates an unconnected {@code NSConnection} to query the specified URL.
+     * @param urlString to query
+     * @throws MalformedURLException if {@code urlString} is invalid URL
+     */
+    public NSConnection(String urlString) {
+        try {
+            this.url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            throw new NSException(String.format("Input URL <%s> malformed", urlString), e);
+        }
+    }
 
-	public NSConnection connect() throws IOException {
-		// Implement the rate limit
-		rateLimit();
+    /**
+     * Connects instantiated {@code NSConnection}.
+     * @return this
+     * @throws IOException   if connection fails
+     * @throws NSIOException if rate limit exceeded
+     * @throws NSException   if nation does not exist or no data can be got
+     */
+    public NSConnection connect() throws IOException {
+        // Implement the rate limit
+        rateLimit();
 
-		// Create connection, add request properties
-		HttpURLConnection apiConnection = (HttpURLConnection) url.openConnection();
-		apiConnection.addRequestProperty("User-Agent",
-				"NS API request; maintained by Imperium Anglorum, email: cyrilparsons.london@gmail.com; see IP");
-		if (entries != null && !entries.isEmpty())
-			for (Map.Entry<String, String> entry : entries.entrySet())
-				apiConnection.addRequestProperty(entry.getKey(), entry.getValue());
+        // Create connection, add request properties
+        HttpURLConnection apiConnection = (HttpURLConnection) url.openConnection();
+        apiConnection.addRequestProperty("User-Agent",
+                "NS API request; maintained by Imperium Anglorum, email: cyrilparsons.london@gmail.com; see IP");
+        if (entries != null && !entries.isEmpty())
+            for (Map.Entry<String, String> entry : entries.entrySet())
+                apiConnection.addRequestProperty(entry.getKey(), entry.getValue());
 
-		apiConnection.connect(); // do connection
-		hasConnected = true; // update API
+        apiConnection.connect(); // do connection
+        hasConnected = true; // update API
 
-		if (apiConnection.getResponseCode() == 200) { // if normal
-			BufferedReader reader = new BufferedReader(new InputStreamReader(apiConnection.getInputStream()));
-			xml_raw = reader.lines().collect(Collectors.joining("\n"));
-			reader.close();
+        if (apiConnection.getResponseCode() == 200) { // if normal
+            BufferedReader reader = new BufferedReader(new InputStreamReader(apiConnection.getInputStream()));
+            xml_raw = reader.lines().collect(Collectors.joining("\n"));
+            reader.close();
 
-		} else { // otherwise, read error stream
-			BufferedReader reader = new BufferedReader(new InputStreamReader(apiConnection.getErrorStream()));
-			xml_raw = reader.lines().collect(Collectors.joining("\n"));
-			reader.close();
+        } else { // otherwise, read error stream
+            BufferedReader reader = new BufferedReader(new InputStreamReader(apiConnection.getErrorStream()));
+            xml_raw = reader.lines().collect(Collectors.joining("\n"));
+            reader.close();
 
-			if (apiConnection.getResponseCode() == 429)
-				throw new NSIOException("Api ratelimit exceeded");
+            if (apiConnection.getResponseCode() == 429)
+                throw new NSIOException("Api ratelimit exceeded");
 
-			if (xml_raw.contains("Unknown nation"))
-				throw new NSException(String.format("Nation does not exist at url: ", url.toString()));
+            if (xml_raw.contains("Unknown nation"))
+                throw new NSException(String.format("Nation does not exist at url: %s", url.toString()));
 
-			throw new JTelegramException(String.format("Cannot get data from the API at url %s"
-							+ "\nHTTP response code %d",
-					url.toString(),
-					apiConnection.getResponseCode()));
-		}
+            throw new NSException(String.format("Cannot get data from the API at url %s"
+                            + "\nHTTP response code %d",
+                    url.toString(),
+                    apiConnection.getResponseCode()));
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	public NSConnection setHeaders(Map<String, String> entries) {
-		this.entries = entries;
-		return this;
-	}
+    /**
+     * Sets HTML POST headers
+     * @param entries of keys and values to pass
+     * @return self, after setting
+     */
+    public NSConnection setHeaders(Map<String, String> entries) {
+        this.entries = entries;
+        return this;
+    }
 
-	/**
-	 * Makes sure that the many different instances have to compete for a single API call which is regulated to at least
-	 * the number of milliseconds defined in {@link NSConnection#WAIT_TIME}.
-	 */
-	private synchronized void rateLimit() {
-		try {
-			Thread.sleep(WAIT_TIME);
-		} catch (InterruptedException e) {
-			System.err.println("Rate limit was interrupted.");
-		}
-	}
+    /**
+     * Prevents different instances from calling all at once. Each is delayed by {@link NSConnection#WAIT_TIME}.
+     */
+    private synchronized void rateLimit() {
+        try {
+            Thread.sleep(WAIT_TIME);
+        } catch (InterruptedException e) {
+            System.err.println("Rate limit was interrupted.");
+        }
+    }
 
-	/**
-	 * Gets response from server as a <code>String</code>.
-	 * @return response in a String form
-	 * @throws JTelegramException if thrown from connect method
-	 * @throws IOException        from {@link java.net.URLConnection}
-	 */
-	public String getResponse() throws JTelegramException, IOException {
-		// if it has connected, get response. otherwise, connect and return response
-		return hasConnected ? xml_raw : connect().xml_raw;
-	}
+    /**
+     * Delivers response as {@code String}. If {@code NSConnection} has already connected, ie is spent, returns result
+     * thereof. If not yet connected, invokes {@link #connect()} automatically.
+     * @return response
+     * @throws IOException if connection fails
+     */
+    public String getResponse() throws IOException {
+        // if it has connected, get response. otherwise, connect and return response
+        return hasConnected ? xml_raw : connect().xml_raw;
+    }
 }

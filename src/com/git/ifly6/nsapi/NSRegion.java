@@ -186,6 +186,7 @@ public class NSRegion {
 		return updateTime;
 	}
 
+	/** Thrown if no such region exists. */
 	public static class NoSuchRegionException extends NSException {
 		public NoSuchRegionException(String message, Throwable throwable) {
 			super(message, throwable);
