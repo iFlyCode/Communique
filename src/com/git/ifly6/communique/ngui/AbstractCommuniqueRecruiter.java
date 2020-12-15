@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.communique.ngui;
 
 import com.git.ifly6.communique.data.Communique7Parser;
@@ -11,9 +28,10 @@ import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.NSNation;
+import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramLogger;
-import com.git.ifly6.nsapi.telegram.util.JInfoFetcher;
+import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -29,7 +47,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 
-	private static final JInfoFetcher fetcher = JInfoFetcher.instance();
+	private static final JInfoCache fetcher = JInfoCache.getInstance();
 	private static final Logger LOGGER = Logger.getLogger(AbstractCommuniqueRecruiter.class.getName());
 
 	protected List<CommuniqueRecipient> filterList;
@@ -68,7 +86,7 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 	public CommuniqueRecipient getRecipient() {
 		try {
 			try {
-				List<String> possibleRecipients = ApiUtils.ref(fetcher.getNew());
+				List<String> possibleRecipients = ApiUtils.ref(NSWorld.getNew());
 				for (String element : possibleRecipients) {
 
 					// if in sent list, next

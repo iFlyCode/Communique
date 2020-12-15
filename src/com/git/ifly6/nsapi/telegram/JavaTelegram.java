@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.NSConnection;
 import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.NSNation;
+import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class JavaTelegram {
 	 * Note that checks are made in this method ({@link JavaTelegram#predicates}) to make sure that telegrams are sent
 	 * to nations which do not opt-out of those telegrams. All output is logged using {@link JTelegramLogger}.
 	 * @see JTelegramConnection
-	 * @see com.git.ifly6.nsapi.telegram.util.JInfoFetcher JInfoFetcher
+	 * @see JInfoCache JInfoFetcher
 	 */
 	public void connect() {
 

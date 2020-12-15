@@ -1,5 +1,23 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi;
 
+import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.jcabi.xml.XMLDocument;
 
 import java.io.IOException;
@@ -11,6 +29,22 @@ import java.util.stream.Stream;
 public class NSWorld {
 
 	private NSWorld() {
+	}
+
+	/**
+	 * Queries the NationStates API for a listing of 50 new nations.
+	 * @return <code>List&lt;String&gt;</code> with the recipients inside
+	 * @throws JTelegramException in case the NationStates API is unreachable for some reason
+	 */
+	public static List<String> getNew() throws JTelegramException {
+		try {
+			final NSConnection connection = new NSConnection(NSConnection.API_PREFIX + "q=newnations");
+			final String response = connection.connect().getResponse();
+			final String newNations = new XMLDocument(response).xpath("/WORLD/NEWNATIONS/text()").get(0);
+			return processArray(newNations.split(","));
+		} catch (IOException e) {
+			throw new JTelegramException("Failed to get new nations", e);
+		}
 	}
 
 	/**
@@ -57,8 +91,7 @@ public class NSWorld {
 	}
 
 	/**
-	 * Processes input array by trimming all elements, removing empty elements, forcing lower-case, replacing spaces
-	 * with an underscore, and then collecting to a list.
+	 * Cleans input array
 	 * @param input array to be processed
 	 * @return list of strings in NationStates reference name form
 	 */
@@ -68,5 +101,4 @@ public class NSWorld {
 				.map(ApiUtils::ref)
 				.collect(Collectors.toList());
 	}
-
 }

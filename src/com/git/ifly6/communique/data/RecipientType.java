@@ -1,8 +1,26 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.communique.data;
 
 import com.git.ifly6.communique.io.HappeningsParser;
+import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
-import com.git.ifly6.nsapi.telegram.util.JInfoFetcher;
+import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +58,7 @@ public enum RecipientType {
 		@Override
 		public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			// new 2020-04-04
-			List<String> regions = JInfoFetcher.instance().getRegionTag(cr.getName());
+			List<String> regions = JInfoCache.getInstance().getRegionTag(cr.getName());
 			LOGGER.info(String.format("Tag %s: %d regions", cr.getName(), regions.size()));
 			return regions.stream()
 					.map(s -> new CommuniqueRecipient(cr.getFilterType(), RecipientType.REGION, s))
@@ -62,7 +80,7 @@ public enum RecipientType {
 	REGION {
 		@Override
 		public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
-			List<String> regionMembers = JInfoFetcher.instance().getRegion(cr.getName());
+			List<String> regionMembers = JInfoCache.getInstance().getRegion(cr.getName());
 			LOGGER.info(String.format("Region %s: %d nations", cr.getName(), regionMembers.size()));
 			return newRecipients(regionMembers, cr.getFilterType());
 		}
@@ -81,11 +99,11 @@ public enum RecipientType {
 		@Override
 		public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
 			String tag = cr.getName();
-			if (tag.equals("wa")) return newRecipients(JInfoFetcher.instance().getWAMembers(), cr.getFilterType());
+			if (tag.equals("wa")) return newRecipients(JInfoCache.getInstance().getWAMembers(), cr.getFilterType());
 			if (tag.equals("delegates"))
-				return newRecipients(JInfoFetcher.instance().getDelegates(), cr.getFilterType());
-			if (tag.equals("new")) return newRecipients(JInfoFetcher.instance().getNew(), cr.getFilterType());
-			if (tag.equals("all")) return newRecipients(JInfoFetcher.instance().getAll(), cr.getFilterType());
+				return newRecipients(JInfoCache.getInstance().getDelegates(), cr.getFilterType());
+			if (tag.equals("new")) return newRecipients(NSWorld.getNew(), cr.getFilterType());
+			if (tag.equals("all")) return newRecipients(JInfoCache.getInstance().getAll(), cr.getFilterType());
 			throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
 		}
 

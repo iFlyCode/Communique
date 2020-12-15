@@ -1,19 +1,31 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi.telegram.util;
 
-import com.git.ifly6.nsapi.ApiUtils;
-import com.git.ifly6.nsapi.NSConnection;
 import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
-import com.jcabi.xml.XMLDocument;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The class <code>JTelegramFetcher</code> is a collection of methods of use when querying data from the NationStates
@@ -27,9 +39,9 @@ import java.util.stream.Stream;
  * the NationStates API.
  * </p>
  */
-public class JInfoFetcher {
+public class JInfoCache {
 
-	private static JInfoFetcher singleton;
+	public static JInfoCache singleton;
 
 	private Map<String, List<String>> regionList = new HashMap<>();
 	private Map<String, List<String>> regionTags = new HashMap<>();
@@ -38,11 +50,11 @@ public class JInfoFetcher {
 	private List<String> delegates;
 	private List<String> waMembers;
 
-	private JInfoFetcher() {
+	private JInfoCache() {
 	}
 
-	public static JInfoFetcher instance() {
-		if (singleton == null) singleton = new JInfoFetcher();
+	public static JInfoCache getInstance() {
+		if (singleton == null) singleton = new JInfoCache();
 		return singleton;
 	}
 
@@ -58,25 +70,6 @@ public class JInfoFetcher {
 			throw new JTelegramException("Failed to get list of delegates", e);
 		}
 		return delegates;
-	}
-
-	/**
-	 * Queries the NationStates API for a listing of 50 new nations.
-	 * @return <code>List&lt;String&gt;</code> with the recipients inside
-	 * @throws JTelegramException in case the NationStates API is unreachable for some reason
-	 */
-	public List<String> getNew() throws JTelegramException {
-		try {
-			NSConnection connection = new NSConnection(NSConnection.API_PREFIX + "q=newnations");
-			String response = connection.connect().getResponse();
-			String newNations = new XMLDocument(response).xpath("/WORLD/NEWNATIONS/text()").get(0);
-			return Stream.of(newNations.split(","))
-					.map(String::trim)
-					.filter(ApiUtils::isNotEmpty)
-					.collect(Collectors.toList());
-		} catch (IOException e) {
-			throw new JTelegramException("Failed to get new nations", e);
-		}
 	}
 
 	/**
@@ -143,4 +136,5 @@ public class JInfoFetcher {
 		}
 		return allNations;
 	}
+
 }

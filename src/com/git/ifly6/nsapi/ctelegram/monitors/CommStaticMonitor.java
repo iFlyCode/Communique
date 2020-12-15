@@ -15,16 +15,31 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package com.git.ifly6.nsapi.ctelegram.monitors;
+
+import java.util.Collections;
+import java.util.List;
+
 /**
- * Classes in this package manage the loading of information for Communique. This falls into two general categories,
- * loading information from disc and from the Internet. Most of the classes have to do with loading information from
- * disc, the most important of which is the {@link com.git.ifly6.communique.io.CommuniqueLoader} class, which should be
- * the only way to load or save Communique files, kept in the form defined by {@link
- * com.git.ifly6.communique.io.CommuniqueConfig}. Some of the other classes provide functionality to scrape data from
- * Internet pages.
- * <p>Note that the majority of data retrieval is done via the API, which is accessed throgh the {@link
- * com.git.ifly6.nsapi.telegram.util.JInfoCache} class and the classes contained in {@link com.git.ifly6.nsapi}
- * package.</p>
- * @see com.git.ifly6.nsapi
+ * A static monitor does not update or monitor much of anything. After instantiation, it contains the data it contains
+ * without any changes. The contents of the class are immutable.
  */
-package com.git.ifly6.communique.io;
+public class CommStaticMonitor implements CommMonitor {
+    private final List<String> recipients;
+
+    /**
+     * Creates a static monitor
+     * @param recipients to contain
+     */
+    public CommStaticMonitor(List<String> recipients) {
+        this.recipients = Collections.unmodifiableList(recipients);
+    }
+
+    /**
+     * {@inheritDoc}. Recipients in a static monitor are immutable and do not change.
+     */
+    @Override
+    public List<String> getRecipients() {
+        return recipients;
+    }
+}

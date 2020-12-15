@@ -110,6 +110,10 @@ public enum JTelegramType {
 
 	public static final int DEFAULT_TIMING = (int) (30.05 * 1000);
 
+	/**
+	 * Wait time defined by the telegram type; in milliseconds.
+	 * @return wait time in milliseconds
+	 */
 	public abstract int getWaitTime();
 
 	public abstract void setDefaultTime(int i);

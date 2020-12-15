@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi.telegram;
 
 import com.git.ifly6.nsapi.NSConnection;
@@ -24,19 +41,19 @@ import java.util.stream.Collectors;
  */
 public class JTelegramConnection {
 
-	static final int QUEUED = 0;
-	static final int UNKNOWN_ERROR = 1;
-	static final int REGION_MISMATCH = 2;
-	static final int CLIENT_NOT_REGISTERED = 3;
-	static final int RATE_LIMIT_EXCEEDED = 4;
-	static final int SECRET_KEY_MISMATCH = 5;
-	static final int NO_SUCH_TELEGRAM = 6;
+	public static final int QUEUED = 0;
+	public static final int UNKNOWN_ERROR = 1;
+	public static final int REGION_MISMATCH = 2;
+	public static final int CLIENT_NOT_REGISTERED = 3;
+	public static final int RATE_LIMIT_EXCEEDED = 4;
+	public static final int SECRET_KEY_MISMATCH = 5;
+	public static final int NO_SUCH_TELEGRAM = 6;
 
 	private HttpURLConnection apiConnection;
 
 	/**
 	 * Creates and establishes a <code>JTelegramConenction</code> with the relevant codes and keys (Death Cab for
-	 * Cutie?). It automatically connects when established.
+	 * Cutie?). Automatically connects when established.
 	 * @param clientKey  is a <code>String</code> which contains the client key
 	 * @param secretKey  is a <code>String</code> which contains the secret key
 	 * @param telegramId is a <code>String</code> which contains the telegram ID
@@ -74,7 +91,7 @@ public class JTelegramConnection {
 	 * @return an <code>int</code> which contains an error code.
 	 * @throws IOException if error in queuing the telegram
 	 */
-	int verify() throws IOException {
+	public int verify() throws IOException {
 
 		BufferedReader webReader = apiConnection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST
 				? new BufferedReader(new InputStreamReader(apiConnection.getInputStream()))

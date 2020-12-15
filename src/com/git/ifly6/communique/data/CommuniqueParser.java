@@ -1,7 +1,25 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.communique.data;
 
 import com.git.ifly6.nsapi.ApiUtils;
-import com.git.ifly6.nsapi.telegram.util.JInfoFetcher;
+import com.git.ifly6.nsapi.NSWorld;
+import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +97,7 @@ public class CommuniqueParser {
 	 * the version declaration.
 	 */
 	public static final int version = Communique7Parser.version;
-	private static JInfoFetcher fetcher = JInfoFetcher.instance();
+	private static JInfoCache fetcher = JInfoCache.getInstance();
 
 	/**
 	 * Determine whether a <code>String</code> is a special tag or not. What strings are tags is determined in the
@@ -103,12 +121,12 @@ public class CommuniqueParser {
 	 * @param tag to be expanded
 	 * @return a <code>List&lt;String&gt;</code> of nations represented
 	 */
-	private List<String> expandTag(String tag) {
+	private static List<String> expandTag(String tag) {
 
 		if (tag.startsWith("region:")) return fetcher.getRegion(tag.replace("region:", ""));
 		else if (tag.startsWith("wa:delegate")) return fetcher.getDelegates();
 		else if (tag.equals("wa:nations") || tag.equals("wa:members")) return fetcher.getWAMembers();
-		else if (tag.equals("world:new")) return fetcher.getNew();
+		else if (tag.equals("world:new")) return NSWorld.getNew();
 
 		// If all else fails...
 		return new ArrayList<>(0);
