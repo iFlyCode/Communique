@@ -1,4 +1,5 @@
-/* Copyright (c) 2020 ifly6
+/*
+ * Copyright (c) 2020 ifly6
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -11,7 +12,8 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
  * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.git.ifly6.nsapi;
 
 import java.util.ArrayList;
@@ -28,18 +30,22 @@ public class ApiUtils {
 	 * @return reference name form of the input name
 	 */
 	public static String ref(String input) {
-		if (input == null) throw new NullPointerException("Cannot convert null string to reference format");
+		if (input == null)
+			throw new NullPointerException("Cannot convert null string to reference format");
 		return input.trim().toLowerCase().replace("\\s", "_");
 	}
 
 	/**
-	 * Applies the {@link ApiUtils#ref(String)} to all elements in a <code>List</code>
-	 * @param list of strings to convert to reference format
-	 * @return a <code>List</code> with all elements having ref applied
+	 * Applies the {@link ApiUtils#ref(String)}; removes empty (or all-white-space) elements.
+	 * @param list to convert to reference format
+	 * @return elements in reference form
 	 */
 	public static List<String> ref(List<String> list) {
 		List<String> refs = new ArrayList<>(list.size());
-		for (String s : list) refs.add(ApiUtils.ref(s));
+		for (String s : list)
+			if (!s.trim().isEmpty())
+				refs.add(ApiUtils.ref(s));
+
 		return refs;
 	}
 
@@ -49,7 +55,8 @@ public class ApiUtils {
 	 * @return empty if nothing but input contains nothing but whitespace
 	 */
 	public static boolean isEmpty(String s) {
-		if (s == null) return true;
+		if (s == null)
+			return true;
 		return s.trim().isEmpty(); // isEmpty : value.length == 0
 	}
 

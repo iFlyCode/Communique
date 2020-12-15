@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.NSRegion;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -36,35 +37,33 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
         ENTER, EXIT,
     }
 
-    private String region;
+    private List<String> regions;
     private Direction direction;
 
     private Set<String> inhabitantsBefore;
     private Set<String> inhabitantsNow;
 
     /**
-     * Refuse instantiation without providing region and direction.
-     */
-    private CommMovementMonitor() {
-    }
-
-    /**
      * Creates a movement monitor.
-     * @param region    to monitor
+     * @param regions   to monitor
      * @param direction of travel to monitor
      */
-    public CommMovementMonitor(String region, Direction direction) {
+    public CommMovementMonitor(List<String> regions, Direction direction) {
         super();
-        this.region = region;
+        this.regions = regions;
         this.direction = direction;
         start();
     }
 
     @Override
     protected void updateAction() {
-        if (Objects.isNull(region)) throw new NullPointerException("timer started without specifying region");
+        if (Objects.isNull(regions) || regions.isEmpty())
+            throw new NullPointerException("timer started without specifying region");
         inhabitantsBefore = inhabitantsNow;
-        inhabitantsNow = new HashSet<>(new NSRegion(region).populateData().getRegionMembers());
+        inhabitantsNow = regions.stream()
+                .map(name -> new NSRegion(name).populateData().getRegionMembers())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toCollection(HashSet::new));
         lastUpdate = Instant.now();
     }
 
@@ -77,7 +76,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     public List<String> getRecipients() {
         if (direction == null) throw new NullPointerException("movement information queried without direction");
         if (inhabitantsNow == null || inhabitantsBefore == null)
-            return new ArrayList<String>();
+            return new ArrayList<>();
 
         if (direction == Direction.EXIT) // if exiting, look at ones who WERE present and NOW are not
             return inhabitantsBefore.stream()
@@ -93,9 +92,9 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
                 String.format("no operation available for direction <%s>", direction));
     }
 
-    /** @return region at which the movement monitor is pointed. */
-    public String getRegion() {
-        return region;
+    /** @return regions at which the movement monitor is pointed. */
+    public List<String> getRegions() {
+        return regions;
     }
 }
 

@@ -41,7 +41,8 @@ import java.util.logging.Logger;
  */
 public class CommSender {
 
-    public static class NoRecipientException extends IndexOutOfBoundsException {
+    /** Thrown if no recipient is found in the queue */
+    public static class NoQueuedRecipientsException extends IndexOutOfBoundsException {
     }
 
     public static final Logger LOGGER = Logger.getLogger(CommSender.class.getName());
@@ -125,7 +126,7 @@ public class CommSender {
     private void executeSend() {
         String recipient = sendQueue.poll();
         if (recipient == null)
-            throw new NoRecipientException();
+            throw new NoQueuedRecipientsException();
 
         // if we have a recipient...
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
@@ -174,7 +175,7 @@ public class CommSender {
                 // execute send
                 try {
                     executeSend();
-                } catch (NoRecipientException e) {
+                } catch (NoQueuedRecipientsException e) {
                     /* Should not catch NSTGSettingsException, as if settings are wrong, you should know immediately.
                      * Otherwise, log no recipient exception, though it shouldn't happen due to filtering above. */
                     LOGGER.warning("Exhausted loaded queue; were all recipients invalid?");

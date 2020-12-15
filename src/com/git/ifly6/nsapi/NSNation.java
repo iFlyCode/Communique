@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi;
 
 import com.git.ifly6.nsapi.builders.NSNationQueryBuilder;
@@ -7,10 +24,9 @@ import com.jcabi.xml.XMLDocument;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,8 +34,8 @@ import java.util.List;
  * This class is an object to hold information on a NS nation. It also provides methods to retrieve relevant information
  * directly from the NationStates API to get things such as endorsement counts or influence counts.
  * <p>
- * <code>NSNation</code> currently only deals with endorsement counts and infulence. It does not deal with the other
- * census scores. Implementation of those other scores is certainly possible, especially given the fact that such
+ * {@link NSNation} currently only deals with endorsement counts and influence. It does not deal with the other census
+ * scores. Implementation of those other scores is certainly possible, especially given the fact that such
  * implementation was attempted before. However, due to the network delays and the API's slow speed, you will be locked
  * out if you attempt mass information gathering of every single census score.
  * </p>
@@ -48,7 +64,7 @@ public class NSNation {
 	// Nation identifiers
 	private String nationName;
 	private boolean isPopulated;
-	private Date datePopulated;
+	private Instant updateTime;
 
 	// State of nation
 	private String properName;
@@ -72,10 +88,11 @@ public class NSNation {
 	}
 
 	/**
-	 * Fetches the endorsement and influence counts at the same time. Calling the <code>getInfluenceCount()</code> or
-	 * <code>getEndoCount()</code> only provides information already loaded. This method also updates the influence
-	 * count and information.
-	 * @return <code>boolean</code> referring to whether the nation in question exists
+	 * Queries and fetches information for {@link NSNation}.
+	 * <p>Note that {@link #getInfluenceCount()} and {@link #getEndoCount()} etc only provide information already
+	 * loaded. Calling populate data after it already is populated will update influence count.</p>
+	 * @return self, with populated data
+	 * @throws NSNoSuchNationException if nation does not exist
 	 */
 	public NSNation populateData() {
 		try {
@@ -96,7 +113,7 @@ public class NSNation {
 			try {
 				// Split endorsements string
 				String endorsements = xml.xpath("/NATION/ENDORSEMENTS/text()").get(0);
-				endorsingNations = Arrays.asList(endorsements.split(","));
+				endorsingNations = ApiUtils.ref(Arrays.asList(endorsements.split(",")));
 				endoCount = endorsingNations.size();
 
 			} catch (RuntimeException e) {
@@ -113,16 +130,16 @@ public class NSNation {
 			region = xml.xpath("/NATION/REGION/text()").get(0);
 			category = xml.xpath("/NATION/CATEGORY/text()").get(0);
 
-			// Get the populated date
-			datePopulated = new GregorianCalendar().getTime();
-			isPopulated = true;
-
 			// Get recruitment and campaign flags
 			canRecruit = xml.xpath("/NATION/TGCANRECRUIT/text()").get(0).equals("1");
 			canCampaign = xml.xpath("/NATION/TGCANCAMPAIGN/text()").get(0).equals("1");
 
+			// Get the populated date
+			updateTime = Instant.now();
+			isPopulated = true;
+
 		} catch (FileNotFoundException e) {
-			throw new NSException("Nation " + nationName + " does not exist.");
+			throw new NSNoSuchNationException("Nation " + nationName + " does not exist.", e);
 
 		} catch (IOException e) {
 			throw new NSIOException("Cannot connect to Internet to query " + nationName);
@@ -143,22 +160,19 @@ public class NSNation {
 	 * Returns the date at which the data in the nation was populated. Returns null if it was never populated.
 	 * @return the timestamp of the data contained in this object, if it was ever retrieved automatically
 	 */
-	public Date dataTimestamp() {
-		return datePopulated;
+	public Instant dataTimestamp() {
+		return updateTime;
 	}
 
 	/**
-	 * Gets the endorsement count for the nation.
+	 * Gets the endorsement count.
 	 * @return the nation's number of endorsements
 	 */
 	public int getEndoCount() {
 		return endoCount;
 	}
 
-	/**
-	 * Gets the list of nations have endorsed that nation.
-	 * @return a list of nations in a <code>List&lt;String&gt;</code> which have endorsed the nation
-	 */
+	/** @return {@link List<String>} of nations that endorsed the nation */
 	public List<String> getEndoList() {
 		return endorsingNations;
 	}
@@ -175,7 +189,7 @@ public class NSNation {
 
 	/**
 	 * Gets the proper name of the nation. If the nation data has not yet been populated (and therefore, the proper name
-	 * queried from the NationStates servers), it will return <code>null</code>.
+	 * queried from the NationStates servers), it will return {@code null}.
 	 * @return the proper name of the nation
 	 */
 	public String getNationName() {
@@ -191,26 +205,16 @@ public class NSNation {
 	}
 
 	/**
-	 * Gets the government category of the region. There are quite a few.
+	 * Gets the government category of the region.
 	 * <ul>
-	 * <p>
-	 * Balanced: Anarchy, Capitalizt, New York Times Democracy, Benevolent Dictatorship, Inoffensive Centrist Democracy,
-	 * Tyranny By Majority, Father Knows Best State, Authoritarian Democracy, Psychotic Dictatorship
-	 * </p>
-	 * <p>
-	 * Right-leaning: Corporate Bordello, Capitalist Paradise, Conservative Democracy, Compulsory Consumerist State,
-	 * Moralistic Democracy, Iron Fist Consumerists
-	 * </p>
-	 * <p>
-	 * Left-leaning: Civil Rights Lovefest, Left Leaning College State, Liberal Democratic Socialists, Libertarian
-	 * Police State, Democratic Socialists, Corrupt Dictatorship
-	 * </p>
-	 * <p>
-	 * Right wing: Free Market Paradise, Right Wing Utopia, Corporate Police State
-	 * </p>
-	 * <p>
-	 * Left wing: Left Wing Utopia, Scandinavian Liberal Paradise, Iron Fist Socialists
-	 * </p>
+	 * <li>Balanced: Anarchy, Capitalizt, New York Times Democracy, Benevolent Dictatorship, Inoffensive Centrist
+	 * Democracy, Tyranny by Majority, Father Knows Best State, Authoritarian Democracy, Psychotic Dictatorship</li>
+	 * <li>Right-leaning: Corporate Bordello, Capitalist Paradise, Conservative Democracy, Compulsory Consumerist State,
+	 * Moralistic Democracy, Iron Fist Consumerists</li>
+	 * <li>Left-leaning: Civil Rights Lovefest, Left Leaning College State, Liberal Democratic Socialists, Libertarian
+	 * Police State, Democratic Socialists, Corrupt Dictatorship</li>
+	 * <li>Right wing: Free Market Paradise, Right Wing Utopia, Corporate Police State</li>
+	 * <li>Left wing: Left Wing Utopia, Scandinavian Liberal Paradise, Iron Fist Socialists</li>
 	 * </ul>
 	 * @return the nation category
 	 */
@@ -248,5 +252,11 @@ public class NSNation {
 	 */
 	public boolean hasEndoList() {
 		return endorsingNations.size() > 0;
+	}
+
+	public static class NSNoSuchNationException extends NSException {
+		public NSNoSuchNationException(String message, Throwable throwable) {
+			super(message, throwable);
+		}
 	}
 }

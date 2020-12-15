@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020 ifly6
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.git.ifly6.nsapi;
 
 import com.git.ifly6.nsapi.builders.NSRegionQueryBuilder;
@@ -7,12 +24,13 @@ import com.jcabi.xml.XMLDocument;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class NSRegion {
 
@@ -23,6 +41,8 @@ public class NSRegion {
 	private String regionOfficialName;
 	private String founderName;
 	private String delegateName;
+
+	private Instant updateTime;
 
 	private List<String> regionMembers = new ArrayList<>();
 	private List<String> waMembers = new ArrayList<>();
@@ -52,13 +72,13 @@ public class NSRegion {
 			NSConnection apiConnect = new NSConnection(builder.toString());
 
 			// check existence
-			String retInfo = apiConnect.connect().getResponse();
+			String response = apiConnect.connect().getResponse();
 
 			// populate relevant fields
-			XML xml = new XMLDocument(retInfo);
+			XML xml = new XMLDocument(response);
 			regionOfficialName = xml.xpath("/REGION/NAME/text()").get(0);
-			founderName = xml.xpath("/REGION/FOUNDER/text()").get(0);
-			delegateName = xml.xpath("/REGION/DELEGATE/text()").get(0);
+			founderName = ApiUtils.ref(xml.xpath("/REGION/FOUNDER/text()").get(0));
+			delegateName = ApiUtils.ref(xml.xpath("/REGION/DELEGATE/text()").get(0));
 
 			// get populace
 			String regionMemberString = "";
@@ -68,18 +88,17 @@ public class NSRegion {
 				// catches com.jcabi.xml.ListWrapper$NodeNotFoundException
 				// pass, do nothing and keep default
 			}
-			regionMembers = Stream.of(regionMemberString.split(":"))
-					.filter(ApiUtils::isNotEmpty)
-					.map(ApiUtils::ref)
-					.collect(Collectors.toList());
+			regionMembers = ApiUtils.ref(Arrays.asList(regionMemberString.split(":")));
 
 		} catch (FileNotFoundException e) {
-			throw new NSException("Region '" + this.regionName + "' does not exist.");    // no region -> 404
+			throw new NoSuchRegionException(
+					String.format("Region <%s> does not exist.", this.regionName), e); // no region -> 404
 
 		} catch (IOException e) {
-			throw new NSException("Check your Internet connection.");    // otherwise, internet
+			throw new NSException("Check your Internet connection."); // otherwise, internet
 		}
 
+		updateTime = Instant.now();
 		return this;
 	}
 
@@ -111,16 +130,16 @@ public class NSRegion {
 
 	/**
 	 * Queries the NationStates API for a the reference name of the Delegate.
-	 * @return a <code>String</code> with the name of the Delegate
+	 * @return {@code String} with delegate nation
 	 */
 	public String getDelegateName() {
 		return delegateName;
 	}
 
 	/**
-	 * Queries the NationStates API for the Delegate, loads that into a <code>NSNation</code> and populates the data for
+	 * Queries the NationStates API for the Delegate, loads that into a {@link NSNation} and populates the data for
 	 * that nation.
-	 * @return a <code>NSNation</code> with the name of the Delegate and populated data.
+	 * @return a {@code NSNation} with the name of the Delegate and populated data.
 	 */
 	public NSNation getDelegate() {
 		return new NSNation(delegateName).populateData();
@@ -158,4 +177,19 @@ public class NSRegion {
 	public String getName() {
 		return regionOfficialName;
 	}
+
+	/**
+	 * Returns time when data was acquired.
+	 * @return {@link Instant} of data acqisition
+	 */
+	public Instant getUpdateTime() {
+		return updateTime;
+	}
+
+	public static class NoSuchRegionException extends NSException {
+		public NoSuchRegionException(String message, Throwable throwable) {
+			super(message, throwable);
+		}
+	}
+
 }

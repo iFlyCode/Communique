@@ -21,9 +21,8 @@ import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.jcabi.xml.XMLDocument;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /* There is only one World, so this is going to be static. */
 public class NSWorld {
@@ -33,7 +32,7 @@ public class NSWorld {
 
 	/**
 	 * Queries the NationStates API for a listing of 50 new nations.
-	 * @return {@code List<String>} with the recipients inside
+	 * @return {@code List<String>} with the recipients inside, in {@code ref} form
 	 * @throws JTelegramException in case the NationStates API is unreachable for some reason
 	 */
 	public static List<String> getNew() throws JTelegramException {
@@ -49,7 +48,7 @@ public class NSWorld {
 
 	/**
 	 * Queries the NationStates API for a listing of all nations in the game.
-	 * @return {@code List<String>} with the reference name of every NS nation
+	 * @return {@code List<String>} of every NS nation in {@code ref} form
 	 * @throws IOException from {@link java.net.URLConnection}
 	 */
 	public static List<String> getAllNations() throws IOException {
@@ -100,23 +99,14 @@ public class NSWorld {
 	}
 
 	/**
-	 * Cleans input array. Forces all entries to {@code ref} form. See {@link ApiUtils#ref(String)}.
-	 * @param input array to be processed
-	 * @return {@code List<String>} with array contents as ref
+	 * Wraps {@link ApiUtils#ref} for {@code String[]}.
 	 */
 	private static List<String> arrayRef(String[] input) {
-		return Stream.of(input)
-				.filter(ApiUtils::isNotEmpty)
-				.map(ApiUtils::ref)
-				.collect(Collectors.toList());
+		return ApiUtils.ref(Arrays.asList(input));
 	}
 
 	/** Thrown if the specified region tag does not exist. */
-	public static class NSNoSuchTagException extends RuntimeException {
-		public NSNoSuchTagException(String message) {
-			super(message);
-		}
-
+	public static class NSNoSuchTagException extends NSException {
 		public NSNoSuchTagException(String message, Throwable cause) {
 			super(message, cause);
 		}

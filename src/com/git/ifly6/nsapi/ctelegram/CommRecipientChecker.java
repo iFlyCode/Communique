@@ -24,6 +24,7 @@ import org.javatuples.Pair;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Checks whether recipient accepts telegrams based on telegram type. */
 public class CommRecipientChecker {
 
     private static Map<Pair<String, JTelegramType>, Boolean> tgValidityCache = new HashMap<>();
@@ -43,14 +44,14 @@ public class CommRecipientChecker {
     /**
      * Does the recipient accept our telegram? If we are recruiting and nation is not recruitable, return false. If
      * campaigning and nation is not campaign-able, return false. Otherwise, return true. Values are cached.
-     * @param recipient    to check
-     * @param telegramType to check against
+     * @param r recipient to check
+     * @param t type to check against
      * @return true if recipient accepts telegram
      */
-    public static boolean doesRecipientAccept(String recipient, JTelegramType telegramType) {
-        Pair<String, JTelegramType> ourKey = new Pair<>(recipient, telegramType);
+    public static boolean doesRecipientAccept(String r, JTelegramType t) {
+        Pair<String, JTelegramType> ourKey = new Pair<>(r, t);
         if (!tgValidityCache.containsKey(ourKey))
-            tgValidityCache.put(ourKey, doesRecipientAccept1(recipient, telegramType));
+            tgValidityCache.put(ourKey, doesRecipientAccept1(r, t));
 
         return tgValidityCache.get(ourKey);
     }

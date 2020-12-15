@@ -84,7 +84,7 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 	public CommuniqueRecipient getRecipient() {
 		try {
 			try {
-				List<String> possibleRecipients = ApiUtils.ref(NSWorld.getNew());
+				List<String> possibleRecipients = NSWorld.getNew();
 				for (String element : possibleRecipients) {
 
 					// if in sent list, next
@@ -149,7 +149,6 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 	 * @return <code>boolean</code> on whether it is proscribed
 	 */
 	private boolean isProscribed(NSNation nation) {
-
 		if (!nation.hasData()) nation.populateData();
 
 		// API gives region names, can only do this by converting to ref names and then comparing
@@ -158,7 +157,6 @@ public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 				.map(CommuniqueRecipient::getName)
 				.map(ApiUtils::ref)
 				.anyMatch(regionName -> regionName.equals(nRegion));
-
 	}
 
 }

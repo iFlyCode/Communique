@@ -20,7 +20,6 @@ package com.git.ifly6.nsapi.ctelegram.io;
 import com.git.ifly6.nsapi.NSNation;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -77,11 +76,11 @@ public class CommNationCache {
      */
     public NSNation getNation(String s) {
         NSNation n = getOrCacheNation(s);
-        Date minutesAgo = Date.from(Instant.now().minusSeconds(TEN_MINUTES));
+        Instant minutesAgo = Instant.now().minusSeconds(TEN_MINUTES);
 
-        /* If the date timestamp (NSNation predates Instant) is before the date minutes ago, then it is older than that
-         * date. Correspondingly, if true, the cached information has expired. */
-        boolean expired = n.dataTimestamp().before(minutesAgo);
+        /* If the timestamp is before the stamp minutes ago, then it is older. Correspondingly, if true, the cached
+         * information has expired. */
+        boolean expired = n.dataTimestamp().isBefore(minutesAgo);
         if (expired)
             cacheNation(s); // update cache
 
