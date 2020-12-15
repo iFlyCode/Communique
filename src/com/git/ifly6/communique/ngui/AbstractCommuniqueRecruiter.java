@@ -31,7 +31,6 @@ import com.git.ifly6.nsapi.NSNation;
 import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramLogger;
-import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -47,7 +46,6 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 
-	private static final JInfoCache fetcher = JInfoCache.getInstance();
 	private static final Logger LOGGER = Logger.getLogger(AbstractCommuniqueRecruiter.class.getName());
 
 	protected List<CommuniqueRecipient> filterList;

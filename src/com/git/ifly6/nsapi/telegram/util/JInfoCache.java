@@ -28,20 +28,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The class <code>JTelegramFetcher</code> is a collection of methods of use when querying data from the NationStates
- * API for the easy location of relevant recipients. It uses lazy loading.
- * <p>
- * <code>JTelegramFetcher</code> allows the fetching of <code>List&lt;String&gt;</code>s full of the list of World
- * Assembly delegates, World Assembly members, new players, or all of the inhabitants of a region.
- * </p>
- * <p>
- * Note that all of these functions require file-system and Internet access to download and parse the files provided by
- * the NationStates API.
- * </p>
+ * {@code JInfoCache} queries and caches data from the NationStates API. If data is not in the cache, it gets the data
+ * and adds it to the cache. The cache does not expire.
+ * <p>Note that all of these functions require file-system and Internet access to download and parse the files provided
+ * by the NationStates API.</p>
  */
 public class JInfoCache {
 
-	public static JInfoCache singleton;
+	public static JInfoCache instance;
 
 	private Map<String, List<String>> regionList = new HashMap<>();
 	private Map<String, List<String>> regionTags = new HashMap<>();
@@ -54,13 +48,13 @@ public class JInfoCache {
 	}
 
 	public static JInfoCache getInstance() {
-		if (singleton == null) singleton = new JInfoCache();
-		return singleton;
+		if (instance == null) instance = new JInfoCache();
+		return instance;
 	}
 
 	/**
 	 * Queries the NationStates API for a listing of all World Assembly delegates.
-	 * @return <code>List&lt;String&gt;</code> with the recipients inside
+	 * @return {@code List<String>} with the recipients inside
 	 * @throws JTelegramException in case there is a problem with connecting to the NS API
 	 */
 	public List<String> getDelegates() throws JTelegramException {
@@ -74,7 +68,7 @@ public class JInfoCache {
 
 	/**
 	 * Queries the NationStates API for a listing of all the members of a region.
-	 * @return <code>List&lt;String&gt;</code> with the recipients inside
+	 * @return {@code List<String>} with the recipients inside
 	 * @throws JTelegramException in case the NationStates API is unreachable for some reason
 	 */
 	public List<String> getRegion(String region) throws JTelegramException {
@@ -92,17 +86,18 @@ public class JInfoCache {
 	/**
 	 * Queries the NationStates API for a list of all the regions declaring some tag.
 	 * @param regionTag to query (e.g. 'LGBT', 'Massive')
-	 * @return <code>List&lt;String&gt;</code> of regions with that tag
+	 * @return {@code List<String>} of regions with that tag
 	 * @throws JTelegramException on IO Exception, likely due to API being unreachable
 	 */
 	public List<String> getRegionTag(String regionTag) throws JTelegramException {
 		try {
-			if (!regionTags.containsKey(regionTag) || regionTags.get(regionTag) == null) {
+			if (!regionTags.containsKey(regionTag) || regionTags.get(regionTag) == null)
 				regionTags.put(regionTag, NSWorld.getRegionTag(regionTag));
-			}
+
 		} catch (IOException e) {
 			throw new JTelegramException("Failed to fetch regions declaring tag " + regionTag, e);
-		} catch (IndexOutOfBoundsException e) {
+
+		} catch (NSWorld.NSNoSuchTagException e) {
 			throw new JTelegramException(String.format("Region tag '%s' does not exist", regionTag), e);
 		}
 
@@ -111,7 +106,7 @@ public class JInfoCache {
 
 	/**
 	 * Queries the NationStates API for a listing of every single World Assembly member.
-	 * @return <code>List&lt;String&gt;</code> with the recipients inside
+	 * @return {@code List<String>} with the recipients inside
 	 * @throws JTelegramException in case the NationStates API is unreachable for some reason
 	 */
 	public List<String> getWAMembers() throws JTelegramException {
