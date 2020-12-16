@@ -19,22 +19,25 @@ package com.git.ifly6.nsapi.ctelegram.io;
 
 import com.git.ifly6.nsapi.NSNation;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
- * Monitors are likely to encounter the same nation over and over again. This is especially the case if applying complex
- * filters that require lots of information. Caching nation level information with an expiration of {@link #TEN_MINUTES}
- * should greatly lower the number of API calls, improving performance.
+ * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
+ * encounter the same nation over and over again. This is especially the case if applying complex filters that require
+ * lots of information. Caching nation level information with an expiration of {@link #TEN_MINUTES} should greatly lower
+ * the number of API calls, improving performance.
  */
 public class CommNationCache {
 
     private static final Logger LOGGER = Logger.getLogger(CommNationCache.class.getName());
 
     private static CommNationCache instance;
-    private static final int TEN_MINUTES = 10 * 60;
+    private static final Duration TEN_MINUTES = Duration.ofMinutes(10);
 
     private Map<String, NSNation> cache = new HashMap<>();
 
@@ -76,11 +79,9 @@ public class CommNationCache {
      */
     public NSNation getNation(String s) {
         NSNation n = getOrCacheNation(s);
-        Instant minutesAgo = Instant.now().minusSeconds(TEN_MINUTES);
 
-        /* If the timestamp is before the stamp minutes ago, then it is older. Correspondingly, if true, the cached
-         * information has expired. */
-        boolean expired = n.dataTimestamp().isBefore(minutesAgo);
+        /* If the duration between data acquisition and present is greater than ten minutes, mark expired. */
+        boolean expired = Duration.between(n.dataTimestamp(), Instant.now()).compareTo(TEN_MINUTES) > 0;
         if (expired)
             cacheNation(s); // update cache
 

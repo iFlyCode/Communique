@@ -41,7 +41,7 @@ public class JavaTelegram {
 
     private static volatile boolean killThread = false;
 
-    protected JTelegramKeys keys = new JTelegramKeys();
+    protected JTelegramKeys keys;
 
     private List<String> recipients = new ArrayList<>();
     private List<String> sentList = new ArrayList<>();

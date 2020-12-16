@@ -19,7 +19,7 @@ package com.git.ifly6.nsapi.ctelegram.monitors;
 
 import com.git.ifly6.nsapi.NSWorld;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -27,12 +27,12 @@ import java.util.logging.Logger;
 /**
  * Monitors <a href="https://www.nationstates.net/cgi-bin/api.cgi?q=newnations">new nations</a> API call to provide a
  * stream of new nations to which telegrams can be dispatched. Monitor has a default update interval {@link
- * CommUpdatingMonitor#DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(int)}. Data is only
- * updated after the update interval elapses.
+ * CommUpdatingMonitor#DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(Duration)}.
+ * Data is only updated after the update interval elapses.
  */
 public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMonitor {
 
-    private static Logger LOGGER = Logger.getLogger(CommNewNationsMonitor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CommNewNationsMonitor.class.getName());
 
     private static CommNewNationsMonitor instance;
     private List<String> newNations;
@@ -49,7 +49,6 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
     @Override
     protected void updateAction() {
         newNations = NSWorld.getNew();
-        lastUpdate = Instant.now();
     }
 
     /**
@@ -62,8 +61,8 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
     }
 
     /**
-     * {@inheritDoc} New nations are updated at interval {@link #setUpdateInterval(int)} but default behaviour is to
-     * update cached data every 120 seconds. Calling this method multiple times within the update interval will not
+     * {@inheritDoc} New nations are updated at interval {@link #setUpdateInterval(Duration)} but default behaviour is
+     * to update cached data every 120 seconds. Calling this method multiple times within the update interval will not
      * yield new data.
      */
     @Override

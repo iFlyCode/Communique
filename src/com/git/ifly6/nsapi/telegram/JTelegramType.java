@@ -17,107 +17,112 @@
 
 package com.git.ifly6.nsapi.telegram;
 
+import java.time.Duration;
+
+import static com.git.ifly6.nsapi.telegram.JTelegramConstants.DEFAULT_MILLIS;
+
 /**
  * Specifies different types of telegrams to be sending and their default timings and names.
  */
 public enum JTelegramType {
 
-	/**
-	 * Timing for campaign telegrams with {@link #DEFAULT_TIMING} delay.
-	 */
-	CAMPAIGN {
-		@Override
-		public int getWaitTime() {
-			return DEFAULT_TIMING;
-		}
+    /**
+     * Timing for campaign telegrams with {@link JTelegramConstants#DEFAULT_MILLIS} delay.
+     */
+    CAMPAIGN {
+        @Override
+        public int getWaitTime() {
+            return (int) JTelegramConstants.DEFAULT_DURATION.toMillis();
+        }
 
-		@Override
-		public void setDefaultTime(int i) {
-			throw new UnsupportedOperationException("Cannot set time on immutable setting");
-		}
+        @Override
+        public Duration getWaitDuration() {
+            return JTelegramConstants.DEFAULT_DURATION;
+        }
 
-		@Override
-		public String toString() {
-			return "Campaign";
-		}
+        @Override
+        public String toString() {
+            return "Campaign";
+        }
+    },
 
-	},
+    /**
+     * Timing for recruitment telegrams with wait timing at 180.05 seconds.
+     */
+    RECRUIT {
+        private final Duration RECRUIT_DURATION = Duration.ofMillis(Math.round(180.05 * 1000L));
 
-	/**
-	 * Timing for recruitment telegrams with wait timing at 180.05 seconds.
-	 */
-	RECRUIT {
-		@Override
-		public int getWaitTime() {
-			return (int) (180.05 * 1000);
-		}
+        @Override
+        public int getWaitTime() {
+            return (int) RECRUIT_DURATION.toMillis();
+        }
 
-		@Override
-		public void setDefaultTime(int i) {
-			throw new UnsupportedOperationException("Cannot set time on immutable setting");
-		}
+        @Override
+        public Duration getWaitDuration() {
+            return RECRUIT_DURATION;
+        }
 
-		@Override
-		public String toString() {
-			return "Recruitment";
-		}
+        @Override
+        public String toString() {
+            return "Recruitment";
+        }
+    },
 
-	},
+    /**
+     * Custom telegram type with custom timing. Default timing is still {@link JTelegramConstants#DEFAULT_MILLIS} but
+     * can be set to any desired value.
+     */
+    CUSTOM {
+        private Duration time = JTelegramConstants.DEFAULT_DURATION;
 
-	/**
-	 * Custom telegram type with custom timing. Default timing is still {@link #DEFAULT_TIMING} but can be set to any
-	 * desired value.
-	 */
-	CUSTOM {
-		private int time = DEFAULT_TIMING;
+        @Override
+        public int getWaitTime() {
+            return (int) time.toMillis();
+        }
 
-		@Override
-		public int getWaitTime() {
-			return time;
-		}
+        @Override
+        public Duration getWaitDuration() {
+            return null;
+        }
 
-		@Override
-		public void setDefaultTime(int i) {
-			time = i;
-		}
+        public void setWaitDuration(Duration d) {
+            time = d;
+        }
 
-		@Override
-		public String toString() {
-			return String.format("Custom timing (%d ms)", time);
-		}
-	},
+        @Override
+        public String toString() {
+            return String.format("Custom timing at %d ms", time.toMillis());
+        }
+    },
 
-	/**
-	 * Timing for unmarked telegrams with {@link #DEFAULT_TIMING} delay.
-	 */
-	NONE {
-		@Override
-		public int getWaitTime() {
-			return DEFAULT_TIMING;
-		}
+    /**
+     * Timing for unmarked telegrams with {@link JTelegramConstants#DEFAULT_MILLIS} delay.
+     */
+    NONE {
+        @Override
+        public int getWaitTime() {
+            return DEFAULT_MILLIS;
+        }
 
-		@Override
-		public void setDefaultTime(int i) {
-			throw new UnsupportedOperationException("Cannot set time on immutable setting");
-		}
+        @Override
+        public Duration getWaitDuration() {
+            return null;
+        }
 
-		@Override
-		public String toString() {
-			return "No type";
-		}
+        @Override
+        public String toString() {
+            return "No type";
+        }
+    };
 
-	};
+    public abstract Duration getWaitDuration();
 
-	public static final int DEFAULT_TIMING = (int) (30.05 * 1000);
+    /**
+     * Wait time defined by the telegram type; in milliseconds.
+     * @return wait time in milliseconds
+     */
+    public abstract int getWaitTime();
 
-	/**
-	 * Wait time defined by the telegram type; in milliseconds.
-	 * @return wait time in milliseconds
-	 */
-	public abstract int getWaitTime();
-
-	public abstract void setDefaultTime(int i);
-
-	public abstract String toString();
+    public abstract String toString();
 
 }

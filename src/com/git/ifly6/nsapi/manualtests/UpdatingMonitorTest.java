@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,7 +56,7 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
                 .limit(5)
                 .boxed()
                 .collect(Collectors.toList());
-        LOGGER.info("Updated.");
+        LOGGER.info("new random integers");
     }
 
     public static String prettyPrint(Map<Instant, ? extends Collection<String>> map) {
@@ -65,6 +66,8 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        final String action = "change delay interval";
+
         System.out.println("Start update test");
         UpdatingMonitorTest mct = new UpdatingMonitorTest();
         mct.setUpdateInterval(Duration.ofSeconds(1));
@@ -74,22 +77,25 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
         Thread.sleep(10); // give time for instantiation...
 
         Map<Instant, List<String>> results = new HashMap<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             results.put(Instant.now(), mct.getRecipients());
             Thread.sleep(1005);
         }
         System.out.println(prettyPrint(results));
 
-        // test restart
-        System.out.println("Stopping for 5 seconds");
-        mct.stop();
-        Thread.sleep(5000);
+//        // test restart
+//        System.out.println("Stopping for 5 seconds");
+//        mct.stop();
+//        Thread.sleep(5000);
+//
+//        System.out.println("Attempting restart");
+//        mct.start();
 
-        System.out.println("Attempting restart");
-        mct.start();
+        // test change update interval by restart
+        mct.setUpdateInterval(Duration.of(15, ChronoUnit.SECONDS));
 
         Map<Instant, List<String>> restartResults = new HashMap<>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             restartResults.put(Instant.now(), mct.getRecipients());
             Thread.sleep(1005);
         }

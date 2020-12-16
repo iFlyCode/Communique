@@ -28,10 +28,13 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -41,20 +44,23 @@ import java.util.logging.Logger;
  */
 public class CommSender {
 
-    /** Thrown if no recipient is found in the queue */
-    public static class NoQueuedRecipientsException extends IndexOutOfBoundsException {
-    }
-
     public static final Logger LOGGER = Logger.getLogger(CommSender.class.getName());
+
+    /** One thread for many clients. */
+    private static ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> job;
+
+    private CommSenderOutput outputInterface;
 
     private final JTelegramKeys keys;
     private final CommMonitor monitor;
     private final JTelegramType telegramType;
 
-    private Timer timer;
-
     /** See {@link #setFeedLimit(int)}. */
     private int feedLimit = Integer.MAX_VALUE;
+
+    /** If true, does not send telegrams. */
+    private boolean dryRun = false;
 
     /** Processing action to apply to {@link CommMonitor} output. */
     private Function<List<String>, List<String>> processingAction;
@@ -67,21 +73,22 @@ public class CommSender {
 
     /**
      * Constructs a {@link CommSender}.
+     * @param anInterface  to report to
      * @param keys         to send with
      * @param monitor      to provide recipients
      * @param telegramType to provide delay timings
      */
-    public CommSender(JTelegramKeys keys, CommMonitor monitor, JTelegramType telegramType) {
+    public CommSender(JTelegramKeys keys, CommMonitor monitor, JTelegramType telegramType,
+                      CommSenderOutput anInterface) {
         this.keys = keys;
         this.monitor = monitor;
         this.telegramType = telegramType;
+        outputInterface = anInterface;
     }
 
-    /**
-     * Feeds the queue until the feed limit is exceeded. Queue is fed whenever the queue is empty.
-     */
+    /** Feeds the queue until the feed limit is exceeded. Queue is fed whenever the queue is empty. */
     private void feedQueue() {
-        List<String> recipients = processingAction(monitor.getRecipients());
+        List<String> recipients = processingAction.apply(monitor.getRecipients());
 
         int recipientsAdded = 0;
         for (String s : recipients) {
@@ -91,10 +98,6 @@ public class CommSender {
         }
 
         LOGGER.info(String.format("Fed queue with %d recipients", recipientsAdded));
-    }
-
-    private List<String> processingAction(List<String> recipients) {
-        return processingAction.apply(recipients);
     }
 
     /** @return feed limit, ie number of recipients taken from the monitor in each step */
@@ -113,33 +116,42 @@ public class CommSender {
     }
 
     /**
-     * Sets the processing action applied on {@link #feedQueue()}.
+     * Sets the processing action applied to {@link CommMonitor#getRecipients()} results when called by {@link
+     * #feedQueue()}. Processing action takes a list and returns a list. Its implementation is left extremely open-ended
+     * on purpose.
      * @param processingAction to apply on recipients feed
+     * @see com.git.ifly6.nsapi.ctelegram.io.CommNationCache
      */
     public void setProcessingAction(Function<List<String>, List<String>> processingAction) {
         this.processingAction = processingAction;
     }
 
     /**
-     * Sends telegram to recipient, with recipient determined as first thing in the queue.
+     * If true, no telegrams are actually sent. Should be used for debugging purposes only. Default is false.
+     * @param dryRun if true
      */
+    public void setDryRun(boolean dryRun) {
+        this.dryRun = dryRun;
+    }
+
+    /** Sends telegram to recipient, with recipient determined as first thing in the queue. */
     private void executeSend() {
         String recipient = sendQueue.poll();
         if (recipient == null)
-            throw new NoQueuedRecipientsException();
+            throw new EmptyQueueException();
 
         // if we have a recipient...
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
                 executeSend(); // immediately try again
             } catch (StackOverflowError error) {
-                // might happen if cannot get recipients over and over again
+                // might happen if cannot get recipients over and over again?
                 throw new NSIOException("Encountered stack overflow error");
             }
 
         // if the recipient will accept our telegram...
         try {
-            JTelegramConnection connection = new JTelegramConnection(keys, recipient);
+            JTelegramConnection connection = new JTelegramConnection(keys, recipient, dryRun);
             int responseCode = connection.verify();
 
             // if there is an error
@@ -147,6 +159,7 @@ public class CommSender {
                 throw NSTGSettingsException.createException(keys, responseCode);
 
             // we sent to this recipient
+            reportSent(recipient);
             sentList.add(recipient);
 
         } catch (IOException e) {
@@ -155,33 +168,34 @@ public class CommSender {
         }
     }
 
+    private void reportSent(String recipient) {
+        sentList.add(recipient);
+        outputInterface.sentTo(recipient, sentList.size());
+    }
+
     public void startSend() {
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // if no recipient in queue, try to get some
+        job = timer.scheduleWithFixedDelay(() -> {
+            // if no recipient in queue, try to get some
+            if (sendQueue.peek() == null) {
+                LOGGER.info("No recipients in queue; attempting to feed.");
+                feedQueue();
+
+                // if still there are no recipients to queue
                 if (sendQueue.peek() == null) {
-                    LOGGER.info("No recipients in queue; attempting to feed.");
-                    feedQueue();
-
-                    // if still there are no recipients to queue
-                    if (sendQueue.peek() == null) {
-                        LOGGER.info("Mission failed; we'll get recipients next time");
-                        return;
-                    }
-                }
-
-                // execute send
-                try {
-                    executeSend();
-                } catch (NoQueuedRecipientsException e) {
-                    /* Should not catch NSTGSettingsException, as if settings are wrong, you should know immediately.
-                     * Otherwise, log no recipient exception, though it shouldn't happen due to filtering above. */
-                    LOGGER.warning("Exhausted loaded queue; were all recipients invalid?");
+                    LOGGER.info("Mission failed; we'll get recipients next time");
+                    return;
                 }
             }
-        }, 0, telegramType.getWaitTime());
+
+            // execute send
+            try {
+                executeSend();
+            } catch (EmptyQueueException e) {
+                /* Should not catch NSTGSettingsException, as if settings are wrong, you should know immediately.
+                 * Otherwise, log no recipient exception, though it shouldn't happen due to filtering above. */
+                LOGGER.warning("Exhausted loaded queue; were all recipients invalid?");
+            }
+        }, 0, telegramType.getWaitDuration().toMillis(), TimeUnit.MILLISECONDS);
     }
 
     public void restartSend() {
@@ -192,8 +206,14 @@ public class CommSender {
     }
 
     public void stopSend() {
-        timer.cancel();
-        if (monitor instanceof CommUpdatingMonitor)
-            ((CommUpdatingMonitor) monitor).stop();
+        if (job != null) {
+            job.cancel(false); // allow completion
+            if (monitor instanceof CommUpdatingMonitor)
+                ((CommUpdatingMonitor) monitor).stop();
+        }
+    }
+
+    /** Thrown if no recipient is found in the queue */
+    public static class EmptyQueueException extends NoSuchElementException {
     }
 }

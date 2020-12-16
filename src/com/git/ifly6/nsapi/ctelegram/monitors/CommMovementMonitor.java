@@ -19,7 +19,7 @@ package com.git.ifly6.nsapi.ctelegram.monitors;
 
 import com.git.ifly6.nsapi.NSRegion;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -73,12 +73,11 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
             );
 
         inhabitantsNow = newInhabitants;
-        lastUpdate = Instant.now();
     }
 
     /**
      * {@inheritDoc} Recipients can only be found after {@link #DEFAULT_UPDATE_INTERVAL} or update interval established
-     * by {@link #setUpdateInterval(Duration)}. If not enough time has elapsed, returns an empty list; otherwise,
+     * by {@link #setUpdateInterval(Duration)} If not enough time has elapsed, returns an empty list; otherwise,
      * returns nations depending on {@link CommMovementDirection}.
      * <p>Note that recipients returned for multiple regions are movements in and out of those regions taken together.
      * If monitoring Europe and the North Pacific, someone who moves from the North Pacific <b>to</b> Europe will not be
