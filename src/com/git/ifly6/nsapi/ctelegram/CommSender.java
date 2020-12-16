@@ -18,6 +18,7 @@
 package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.ctelegram.io.NSTGSettingsException;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;
@@ -25,6 +26,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -174,6 +176,9 @@ public class CommSender {
     }
 
     public void startSend() {
+        if (isRunning())
+            throw new UnsupportedOperationException("Cannot start sending after it already started");
+
         job = timer.scheduleWithFixedDelay(() -> {
             // if no recipient in queue, try to get some
             if (sendQueue.peek() == null) {
@@ -211,6 +216,20 @@ public class CommSender {
             if (monitor instanceof CommUpdatingMonitor)
                 ((CommUpdatingMonitor) monitor).stop();
         }
+    }
+
+    /** @return true if sending telegrams. */
+    public boolean isRunning() {
+        if (job == null) return false;
+        if (job.isDone() || job.isCancelled()) return false;
+        if (timer.isShutdown() || timer.isTerminated()) return false;
+        return true;
+    }
+
+    /** @return {@link Duration} until next telegram is sent; {@code null} if not running. */
+    public Duration nextIn() {
+        if (isRunning()) return Duration.ofMillis(job.getDelay(TimeUnit.MILLISECONDS));
+        throw new UnsupportedOperationException("No duration to next telegram; no telegrams are being sent");
     }
 
     /** Thrown if no recipient is found in the queue */

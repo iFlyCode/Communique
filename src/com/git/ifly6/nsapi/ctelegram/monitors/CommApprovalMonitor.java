@@ -17,37 +17,11 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-public enum CommMovementDirection {
-
-    ENTER {
-        /** {@inheritDoc} Something that enters present after but not present before. */
-        @Override
-        public List<String> apply(Set<String> before, Set<String> after) {
-            return after.stream()
-                    .filter(s -> !before.contains(s))
-                    .collect(Collectors.toList());
-        }
-    },
-
-    EXIT {
-        /** {@inheritDoc} Something that exits is present before, but not after. */
-        @Override
-        public List<String> apply(Set<String> before, Set<String> after) {
-            return before.stream()
-                    .filter(s -> !after.contains(s))
-                    .collect(Collectors.toList());
-        }
-    };
-
-    /**
-     * Applies differencing algorithm based on enumerated description
-     * @param before elements present before
-     * @param after  elements present after
-     * @return appropriate difference
-     */
-    public abstract List<String> apply(Set<String> before, Set<String> after);
+/**
+ * Monitors for approvals given to a proposal.
+ */
+public class CommApprovalMonitor {
+    /* This is meant for counter-campaigns or for counter-counter-campaigns. Need enum for direction; need before and
+     * after lists for checks. Will also need means to get information about a proposal. Proposals should be identified
+     * by their proposal IDs. No regions or nations should be cached. */
 }

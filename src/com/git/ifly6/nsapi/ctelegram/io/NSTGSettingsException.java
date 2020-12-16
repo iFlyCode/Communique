@@ -15,7 +15,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram;
+package com.git.ifly6.nsapi.ctelegram.io;
 
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;

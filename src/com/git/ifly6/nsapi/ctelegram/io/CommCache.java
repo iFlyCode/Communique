@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Caches objects which can be timestamped.
+ * Caches objects which can be timestamped. Also implicitly requires, due to {@link #createNewObject(String)} that the
+ * key (a string) be mappable 1:1 to the object.
  * @param <T> extends {@link NSTimeStamped}
  */
 public abstract class CommCache<T extends NSTimeStamped> {

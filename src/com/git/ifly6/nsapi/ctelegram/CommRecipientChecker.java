@@ -18,28 +18,11 @@
 package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSNation;
+import com.git.ifly6.nsapi.ctelegram.io.CommNationCache;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
-import org.javatuples.Pair;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /** Checks whether recipient accepts telegrams based on telegram type. */
 public class CommRecipientChecker {
-
-    private static Map<Pair<String, JTelegramType>, Boolean> tgValidityCache = new HashMap<>();
-
-    /**
-     * @param r is the recipient to check
-     * @param t type to check for
-     * @return true if accepting telegrams
-     */
-    private static boolean doesRecipientAccept1(String r, JTelegramType t) {
-        NSNation n = new NSNation(r).populateData();
-        if (t == JTelegramType.RECRUIT) return n.isRecruitable();
-        if (t == JTelegramType.CAMPAIGN) return n.isCampaignable();
-        return true;
-    }
 
     /**
      * Does the recipient accept our telegram? If we are recruiting and nation is not recruitable, return false. If
@@ -49,10 +32,9 @@ public class CommRecipientChecker {
      * @return true if recipient accepts telegram
      */
     public static boolean doesRecipientAccept(String r, JTelegramType t) {
-        Pair<String, JTelegramType> ourKey = new Pair<>(r, t);
-        if (!tgValidityCache.containsKey(ourKey))
-            tgValidityCache.put(ourKey, doesRecipientAccept1(r, t));
-
-        return tgValidityCache.get(ourKey);
+        NSNation n = CommNationCache.getInstance().lookupObject(r);
+        if (t == JTelegramType.RECRUIT) return n.isRecruitable();
+        if (t == JTelegramType.CAMPAIGN) return n.isCampaignable();
+        return true;
     }
 }

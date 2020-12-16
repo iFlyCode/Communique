@@ -25,14 +25,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Monitors movement in or out, see {@link CommMovementDirection}, of a specified region.
+ * Monitors movement in or out, see {@link Direction}, of a specified region.
  */
 public class CommMovementMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     private List<String> regions;
-    private CommMovementDirection direction;
+    private Direction direction;
 
     private Set<String> inhabitantsBefore;
     private Set<String> inhabitantsNow;
@@ -42,7 +43,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
      * @param r regions to monitor
      * @param d direction of travel to check for
      */
-    public CommMovementMonitor(List<String> r, CommMovementDirection d) {
+    public CommMovementMonitor(List<String> r, Direction d) {
         this(r, d, true);
     }
 
@@ -52,7 +53,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
      * @param direction        of travel to monitor
      * @param startImmediately if true
      */
-    public CommMovementMonitor(List<String> regions, CommMovementDirection direction, boolean startImmediately) {
+    public CommMovementMonitor(List<String> regions, Direction direction, boolean startImmediately) {
         super();
         this.regions = regions;
         this.direction = direction;
@@ -63,7 +64,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     @Override
     protected void updateAction() {
         if (Objects.isNull(regions) || regions.isEmpty())
-            throw new NullPointerException("timer started without specifying region");
+            throw new NullPointerException("job started without specifying region");
 
         inhabitantsBefore = inhabitantsNow;
         Set<String> newInhabitants = new HashSet<>();
@@ -78,16 +79,13 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     /**
      * {@inheritDoc} Recipients can only be found after {@link #DEFAULT_UPDATE_INTERVAL} or update interval established
      * by {@link #setUpdateInterval(Duration)} If not enough time has elapsed, returns an empty list; otherwise, returns
-     * nations depending on {@link CommMovementDirection}.
+     * nations depending on {@link Direction}.
      * <p>Note that recipients returned for multiple regions are movements in and out of those regions taken together.
      * If monitoring Europe and the North Pacific, someone who moves from the North Pacific <b>to</b> Europe will not be
      * marked.</p>
      */
     @Override
     public List<String> getRecipients() {
-        if (direction == null)
-            throw new NullPointerException("movement information queried without direction");
-
         if (inhabitantsNow == null || inhabitantsBefore == null) {
             LOGGER.info("Not enough information to find any changes.");
             return new ArrayList<>();
@@ -99,6 +97,37 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     /** @return regions at which the movement monitor is pointed. */
     public List<String> getRegions() {
         return regions;
+    }
+
+    public enum Direction {
+
+        ENTER {
+            /** {@inheritDoc} Something that enters present after but not present before. */
+            @Override
+            public List<String> apply(Set<String> before, Set<String> after) {
+                return after.stream()
+                        .filter(s -> !before.contains(s))
+                        .collect(Collectors.toList());
+            }
+        },
+
+        EXIT {
+            /** {@inheritDoc} Something that exits is present before, but not after. */
+            @Override
+            public List<String> apply(Set<String> before, Set<String> after) {
+                return before.stream()
+                        .filter(s -> !after.contains(s))
+                        .collect(Collectors.toList());
+            }
+        };
+
+        /**
+         * Applies differencing algorithm based on enumerated description
+         * @param before elements present before
+         * @param after  elements present after
+         * @return appropriate difference
+         */
+        public abstract List<String> apply(Set<String> before, Set<String> after);
     }
 }
 

@@ -17,35 +17,15 @@
 
 package com.git.ifly6.nsapi.manualtests;
 
-import com.git.ifly6.nsapi.ctelegram.monitors.CommMovementMonitor;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class MovementMonitorTest {
-
-    public static void main(String[] args) throws InterruptedException {
-        List<String> regions = Arrays.asList("Europe");
-        CommMovementMonitor movementMonitor = new CommMovementMonitor(
-                regions, CommMovementMonitor.Direction.EXIT, false);
-        movementMonitor.setUpdateInterval(Duration.ofSeconds(60));
-        movementMonitor.start();
-
-        List<String> totalRecipients = new ArrayList<>();
-        while (totalRecipients.size() < 10) {
-            System.out.println("Waiting for data to come in...");
-            Thread.sleep((long) (movementMonitor.getUpdateInterval().toMillis() * 1.2));
-
-            System.out.println("Recipients:");
-            List<String> recipients = movementMonitor.getRecipients();
-            totalRecipients.addAll(recipients);
-
-            System.out.println(recipients);
-        }
-
-        movementMonitor.stop();
-        System.out.println("Stopped");
+public class WorldAssemblyTest {
+    public static void main(String[] args) {
+        List<String> l = CommWorldAssembly.getVoters(
+                CommWorldAssembly.Chamber.GA,
+                CommWorldAssembly.Vote.AGAINST);
+        System.out.println(l);
     }
 }
