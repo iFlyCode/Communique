@@ -30,83 +30,83 @@ import java.util.Set;
  */
 public enum CommuniqueProcessingAction {
 
-	/** Randomises the order of recipients */
-	RANDOMISE {
-		@Override
-		public List<String> apply(List<String> input) {
-			Collections.shuffle(input);
-			return input; // do nothing
-		}
+    /** Randomises the order of recipients */
+    RANDOMISE {
+        @Override
+        public List<String> apply(List<String> input) {
+            Collections.shuffle(input);
+            return input; // do nothing
+        }
 
-		@Override
-		public String toString() {
-			return "Randomise order";
-		}
-	},
+        @Override
+        public String toString() {
+            return "Randomise order";
+        }
+    },
 
-	/** Reverses the initial order of recipients */
-	REVERSE {
-		@Override
-		public List<String> apply(List<String> input) {
-			for (int i = 0; i < input.size() / 2; i++) { // algorithm to quickly reverse a list
-				String original = input.get(i);
-				int other = input.size() - 1 - i;
-				input.set(i, input.get(other));
-				input.set(other, original);
-			}
-			return input; // do nothing
-		}
+    /** Reverses the initial order of recipients */
+    REVERSE {
+        @Override
+        public List<String> apply(List<String> input) {
+            for (int i = 0; i < input.size() / 2; i++) { // algorithm to quickly reverse a list
+                String original = input.get(i);
+                int other = input.size() - 1 - i;
+                input.set(i, input.get(other));
+                input.set(other, original);
+            }
+            return input; // do nothing
+        }
 
-		@Override
-		public String toString() {
-			return "Reverse order";
-		}
-	},
+        @Override
+        public String toString() {
+            return "Reverse order";
+        }
+    },
 
-	/**
-	 * Moves all delegates in the list of recipients to the front, randomises its order, then places all other nations
-	 * in a random order after those delegates.
-	 */
-	DELEGATE_PRIORITISE {
-		@Override
-		public List<String> apply(List<String> input) {
-			Set<String> delegates = new HashSet<>(JInfoCache.getInstance().getDelegates());
+    /**
+     * Moves all delegates in the list of recipients to the front, randomises its order, then places all other nations
+     * in a random order after those delegates.
+     */
+    DELEGATE_PRIORITISE {
+        @Override
+        public List<String> apply(List<String> input) {
+            Set<String> delegates = new HashSet<>(JInfoCache.getInstance().getDelegates());
 
-			List<String> listDelegates = new ArrayList<>(); // delegates we have
-			List<String> nonDelegate = new ArrayList<>(); // the rest
-			for (String s : input)
-				if (delegates.contains(s)) listDelegates.add(s);
-				else nonDelegate.add(s);
+            List<String> listDelegates = new ArrayList<>(); // delegates we have
+            List<String> nonDelegate = new ArrayList<>(); // the rest
+            for (String s : input)
+                if (delegates.contains(s)) listDelegates.add(s);
+                else nonDelegate.add(s);
 
-			Collections.shuffle(listDelegates);
-			Collections.shuffle(nonDelegate);
+            Collections.shuffle(listDelegates);
+            Collections.shuffle(nonDelegate);
 
-			listDelegates.addAll(nonDelegate);
-			return listDelegates;
-		}
+            listDelegates.addAll(nonDelegate);
+            return listDelegates;
+        }
 
-		@Override
-		public String toString() {
-			return "Prioritise delegates";
-		}
-	},
+        @Override
+        public String toString() {
+            return "Prioritise delegates";
+        }
+    },
 
-	NONE {
-		@Override
-		public List<String> apply(List<String> input) {
-			return input;
-		}
+    NONE {
+        @Override
+        public List<String> apply(List<String> input) {
+            return input;
+        }
 
-		@Override
-		public String toString() {
-			return "None";
-		}
-	};
+        @Override
+        public String toString() {
+            return "None";
+        }
+    };
 
-	/** Applies the processing action to the provided list, which should be of raw NationStates reference names */
-	public abstract List<String> apply(List<String> input);
+    /** Applies the processing action to the provided list, which should be of raw NationStates reference names */
+    public abstract List<String> apply(List<String> input);
 
-	/** Should always return the name of the <code>CommuiniqueProcessingAction</code> in the code */
-	@Override
-	public abstract String toString();
+    /** Should always return the name of the <code>CommuiniqueProcessingAction</code> in the code */
+    @Override
+    public abstract String toString();
 }

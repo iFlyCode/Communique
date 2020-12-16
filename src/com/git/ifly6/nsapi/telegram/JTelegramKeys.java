@@ -35,77 +35,77 @@ import java.util.Objects;
  */
 public class JTelegramKeys {
 
-	private String clientKey;
-	private String secretKey;
-	private String telegramId;
+    private String clientKey;
+    private String secretKey;
+    private String telegramId;
 
-	/**
-	 * Creates a <code>JTelegramKeys</code> which holds the client, secret, and telegram keys provided in the
-	 * constructor.
-	 * @param client a <code>String</code> which contains the <code>clientKey</code>
-	 * @param secret a <code>String</code> which contains the <code>secretKey</code>
-	 * @param tgId   a <code>String</code> which contains the <code>telegramId</code>
-	 */
-	public JTelegramKeys(String client, String secret, String tgId) {
-		clientKey = client;
-		secretKey = secret;
-		telegramId = tgId;
-	}
+    /**
+     * Creates a <code>JTelegramKeys</code> which holds the client, secret, and telegram keys provided in the
+     * constructor.
+     * @param client a <code>String</code> which contains the <code>clientKey</code>
+     * @param secret a <code>String</code> which contains the <code>secretKey</code>
+     * @param tgId   a <code>String</code> which contains the <code>telegramId</code>
+     */
+    public JTelegramKeys(String client, String secret, String tgId) {
+        clientKey = client;
+        secretKey = secret;
+        telegramId = tgId;
+    }
 
-	/**
-	 * Creates a purposely invalid "empty" <code>JTelegramKeys</code>.
-	 */
-	public JTelegramKeys() {
-		// cannot be removed; IO code relies on this 'empty' constructor
-		clientKey = "CLIENT_KEY";
-		secretKey = "SECRET_KEY";
-		telegramId = "TELEGRAM_ID";
-	}
+    /**
+     * Creates a purposely invalid "empty" <code>JTelegramKeys</code>.
+     */
+    public JTelegramKeys() {
+        // cannot be removed; IO code relies on this 'empty' constructor
+        clientKey = "CLIENT_KEY";
+        secretKey = "SECRET_KEY";
+        telegramId = "TELEGRAM_ID";
+    }
 
-	@Override
-	public String toString() {
-		return String.join(", ", Arrays.asList(clientKey, secretKey, telegramId));
-	}
+    @Override
+    public String toString() {
+        return String.join(", ", Arrays.asList(clientKey, secretKey, telegramId));
+    }
 
-	public String getClientKey() {
-		return clientKey;
-	}
+    public String getClientKey() {
+        return clientKey;
+    }
 
-	public String getSecretKey() {
-		return secretKey;
-	}
+    public String getSecretKey() {
+        return secretKey;
+    }
 
-	public String getTelegramId() {
-		return telegramId;
-	}
+    public String getTelegramId() {
+        return telegramId;
+    }
 
-	public void setClientKey(String input) {
-		clientKey = input.trim();
-	}
+    public void setClientKey(String input) {
+        clientKey = input.trim();
+    }
 
-	public void setSecretKey(String input) {
-		secretKey = input.trim();
-	}
+    public void setSecretKey(String input) {
+        secretKey = input.trim();
+    }
 
-	public void setTelegramId(String input) {
-		telegramId = input.trim();
-	}
+    public void setTelegramId(String input) {
+        telegramId = input.trim();
+    }
 
-	/** @return {@code String[]} with elements {@code { clientKey, secretKey, telegramId }}. */
-	public String[] toArray() {
-		return new String[]{clientKey, secretKey, telegramId};
-	}
+    /** @return {@code String[]} with elements {@code { clientKey, secretKey, telegramId }}. */
+    public String[] toArray() {
+        return new String[] {clientKey, secretKey, telegramId};
+    }
 
-	/** @return true if any key is empty or null */
-	public boolean anyEmpty() {
-		if (Objects.isNull(clientKey) || clientKey.isEmpty()) return true;
-		if (Objects.isNull(secretKey) || secretKey.isEmpty()) return true;
+    /** @return true if any key is empty or null */
+    public boolean anyEmpty() {
+        if (Objects.isNull(clientKey) || clientKey.isEmpty()) return true;
+        if (Objects.isNull(secretKey) || secretKey.isEmpty()) return true;
 
-		//noinspection RedundantIfStatement
-		if (Objects.isNull(telegramId) || telegramId.isEmpty()) return true;
-		// ^ IntelliJ says 'simplify!', this is more clear
+        //noinspection RedundantIfStatement
+        if (Objects.isNull(telegramId) || telegramId.isEmpty()) return true;
+        // ^ IntelliJ says 'simplify!', this is more clear
 
-		return false;
-	}
+        return false;
+    }
 
 }

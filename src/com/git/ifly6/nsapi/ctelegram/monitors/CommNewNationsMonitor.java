@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 /**
  * Monitors <a href="https://www.nationstates.net/cgi-bin/api.cgi?q=newnations">new nations</a> API call to provide a
  * stream of new nations to which telegrams can be dispatched. Monitor has a default update interval {@link
- * CommUpdatingMonitor#DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(Duration)}.
- * Data is only updated after the update interval elapses.
+ * CommUpdatingMonitor#DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(Duration)}. Data is
+ * only updated after the update interval elapses.
  */
 public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMonitor {
 
@@ -46,11 +46,6 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
         start();
     }
 
-    @Override
-    protected void updateAction() {
-        newNations = NSWorld.getNew();
-    }
-
     /**
      * Get instance of the monitor.
      * @return sole instance
@@ -58,6 +53,11 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
     public static CommNewNationsMonitor getInstance() {
         if (instance == null) instance = new CommNewNationsMonitor();
         return instance;
+    }
+
+    @Override
+    protected void updateAction() {
+        newNations = NSWorld.getNew();
     }
 
     /**

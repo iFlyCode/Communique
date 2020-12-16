@@ -24,13 +24,11 @@ import java.io.IOException;
 
 public class RatelimitTest {
 
-	public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 
-		/*
-		 * This section here purposefully creates an API rate limit error. For some reason, you have to read the data
-		 * or it doesn't actually connect. I guess that's Java trying to save you network calls without explicit
-		 * instructions.
-		 * */
+        /* This section here purposefully creates an API rate limit error. For some reason, you have to read the data
+         * or it doesn't actually connect. I guess that's Java trying to save you network calls without explicit
+         * instructions. */
 //		for (int i = 0; i < 51; i++) {
 //			URL url = new URL(NSConnection.API_PREFIX + "q=newnations");
 //			HttpURLConnection apiConnection = (HttpURLConnection) url.openConnection();
@@ -46,27 +44,27 @@ public class RatelimitTest {
 //
 //		System.out.println(NSConnection.API_PREFIX + "q=newnations");
 
-		/*
-		 * This section logs the start time and the time delta between connections. For the JInfoFetcher equivalent
-		 * code, it should operate around every 700 milliseconds, which is above the 610 ms API cut off.
-		 */
-		final int MAX = 100;
-		long startTime = System.currentTimeMillis();
-		long lastTime = startTime;
+        /*
+         * This section logs the start time and the time delta between connections. For the JInfoFetcher equivalent
+         * code, it should operate around every 700 milliseconds, which is above the 610 ms API cut off.
+         */
+        final int MAX = 100;
+        long startTime = System.currentTimeMillis();
+        long lastTime = startTime;
 
-		for (int i = 0; i < MAX; i++) {
+        for (int i = 0; i < MAX; i++) {
 
-			try {
-				NSConnection connection = new NSConnection(NSConnection.API_PREFIX + "q=newnations");
-				connection.connect();
-			} catch (NSIOException e) {
-				// pass
-			}
+            try {
+                NSConnection connection = new NSConnection(NSConnection.API_PREFIX + "q=newnations");
+                connection.connect();
+            } catch (NSIOException e) {
+                // pass
+            }
 
-			System.out.printf("Tried to connect %d of %d \t time %d, %d delta%n", i, MAX,
-					System.currentTimeMillis() - startTime, System.currentTimeMillis() - lastTime);
-			lastTime = System.currentTimeMillis();
-		}
-	}
+            System.out.printf("Tried to connect %d of %d \t time %d, %d delta%n", i, MAX,
+                    System.currentTimeMillis() - startTime, System.currentTimeMillis() - lastTime);
+            lastTime = System.currentTimeMillis();
+        }
+    }
 
 }

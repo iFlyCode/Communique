@@ -22,17 +22,17 @@ package com.git.ifly6.nsapi;
  */
 public class NSIOException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public NSIOException() {
-		super();
-	}
+    public NSIOException() {
+        super();
+    }
 
-	public NSIOException(String message) {
-		super(message);
-	}
+    public NSIOException(String message) {
+        super(message);
+    }
 
-	public NSIOException(String message, Exception e) {
-		super(message, e);
-	}
+    public NSIOException(String message, Exception e) {
+        super(message, e);
+    }
 }
