@@ -25,7 +25,12 @@ import com.jcabi.xml.XMLDocument;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /** Gets information about the World Assembly. */
 public class CommWorldAssembly {
@@ -33,25 +38,39 @@ public class CommWorldAssembly {
     private CommWorldAssembly() {
     }
 
-    /** Formats URL for NS chamber vote. */
-    private static String formatURL(Chamber c, Vote v) {
+    /** Formats URL for NS chamber vote; nation. */
+    private static String formatNationsURL(Chamber c, Vote v) {
         return NSConnection.API_PREFIX
                 + MessageFormat.format("wa={0}&q=resolution+voters", c.getCouncilCode());
+    }
+
+    /** Formats URL for NS chamber vote; delegates. */
+    public static String formatDelegatesURL(Chamber c, Vote vote) {
+        // https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=resolution+delvotes
+        return NSConnection.API_PREFIX
+                + MessageFormat.format("wa={0}&q=resolution+delvotes", c.getCouncilCode());
+    }
+
+    /** Formats URL for NS chamber vote; delegates. */
+    public static String formatProposalURL(Chamber c) {
+        // https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=proposals
+        return NSConnection.API_PREFIX
+                + MessageFormat.format("wa={0}&q=proposals", c.getCouncilCode());
     }
 
     /**
      * Gets voters in a chamber who are voting a certain way
      * @param chamber to look in
-     * @param voting direction to look for
+     * @param voting  direction to look for
      * @return voters who are voting in specified chamber with specified vote
      */
     public static List<String> getVoters(Chamber chamber, Vote voting) {
         try {
-            NSConnection apiConnect = new NSConnection(formatURL(chamber, voting));
+            NSConnection apiConnect = new NSConnection(formatNationsURL(chamber, voting));
             XML xml = new XMLDocument(apiConnect.getResponse());
             List<String> voters = xml.xpath(
                     MessageFormat.format("/WA/RESOLUTION/{0}/N/text()", // load all these values
-                            voting.getXMLTag())); // get elements voting this direction
+                            voting.getNationXMLTag())); // get elements voting this direction
             return ApiUtils.ref(voters); // ref
 
         } catch (IOException e) {
@@ -59,22 +78,116 @@ public class CommWorldAssembly {
         }
     }
 
+    /**
+     * Gets delegates voting in specified chamber with certain direction. Results are sorted: delegates by vote weight,
+     * descending; ties broken by name.
+     * @param chamber to look in
+     * @param voting  position
+     * @return names of delegates
+     */
+    public static List<Delegate> getDelegates(Chamber chamber, Vote voting) {
+        try {
+            NSConnection apiConnect = new NSConnection(formatDelegatesURL(chamber, voting));
+            XML xml = new XMLDocument(apiConnect.getResponse());
+            List<String> delegates = xml.xpath(
+                    MessageFormat.format("/WA/RESOLUTION/{0}/DELEGATE/NATION/text()", // load all these values
+                            voting.getDelegateXMLTag())); // get elements voting this direction
+
+            List<String> votingWeights = xml.xpath(
+                    MessageFormat.format("/WA/RESOLUTION/{0}/DELEGATE/VOTES/text()", // load all these values
+                            voting.getDelegateXMLTag())); // get elements voting this direction
+
+            if (delegates.size() != votingWeights.size())
+                throw new UnsupportedOperationException("Error in NS API; every delegate must have a voting weight!");
+
+            return IntStream.range(0, delegates.size()).boxed() // enumerate values
+                    .map(i -> new Delegate(delegates.get(i), Integer.parseInt(votingWeights.get(i)))) // zip values
+                    .sorted(Comparator.comparing(Delegate::getWeight) // compare by weight
+                            .reversed()                                            // make descending
+                            .thenComparing(Delegate::getName))                       // break ties by name
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            throw new NSIOException("Could not connect to NationStates API", e);
+        }
+    }
+
+    /**
+     * Gets people who approved the specified proposal.
+     * <p>This takes two API calls to query for each chamber.</p>
+     * @throws NoSuchProposalException if proposal does not exist
+     */
+    public static List<String> getApprovers(String proposalID) {
+        try {
+            for (Chamber c : Chamber.values()) {
+                XML xml = new XMLDocument(new NSConnection(formatProposalURL(c)).getResponse());
+                for (XML xmlNode : xml.nodes("/WA/PROPOSALS/PROPOSAL")) {
+                    String thisProposalID = xmlNode.node().getAttributes().getNamedItem("id").getTextContent();
+                    if (ApiUtils.ref(proposalID).equals(ApiUtils.ref(thisProposalID))) // have correct proposal
+                        return ApiUtils.ref(
+                                Arrays.asList(
+                                        xmlNode.nodes("APPROVALS").get(0).node()
+                                                .getTextContent().split(":")
+                                )
+                        );
+                }
+            }
+
+            throw new NoSuchProposalException(String.format("Proposal %s does not exist", proposalID));
+
+        } catch (IOException e) {
+            throw new NSIOException("Could not connect to NationStates API", e);
+        }
+    }
+
+    public static class Delegate {
+        public final String name;
+        public final Integer weight;
+
+        public Delegate(String name, Integer weight) {
+            this.name = ApiUtils.ref(name);
+            this.weight = weight;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Integer getWeight() {
+            return weight;
+        }
+    }
+
+    /** Enumerates voting positions. */
     public enum Vote {
         FOR {
             @Override
-            public String getXMLTag() {
+            public String getNationXMLTag() {
                 return "VOTES_FOR";
+            }
+
+            @Override
+            public String getDelegateXMLTag() {
+                return "DELVOTES_FOR";
             }
         }, AGAINST {
             @Override
-            public String getXMLTag() {
+            public String getNationXMLTag() {
                 return "VOTES_AGAINST";
+            }
+
+            @Override
+            public String getDelegateXMLTag() {
+                return "DELVOTES_AGAINST";
             }
         };
 
-        public abstract String getXMLTag();
+        public abstract String getNationXMLTag();
+
+        public abstract String getDelegateXMLTag();
     }
 
+    /** Enumerates World Assembly chambes. */
     public enum Chamber {
         GA {
             @Override
@@ -103,4 +216,10 @@ public class CommWorldAssembly {
         public abstract String properName();
     }
 
+    /** Thrown if the proposal queried does not exist */
+    public static class NoSuchProposalException extends NoSuchElementException {
+        public NoSuchProposalException(String s) {
+            super(s);
+        }
+    }
 }

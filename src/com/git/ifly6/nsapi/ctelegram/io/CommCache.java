@@ -28,14 +28,27 @@ import java.util.logging.Logger;
 /**
  * Caches objects which can be timestamped. Also implicitly requires, due to {@link #createNewObject(String)} that the
  * key (a string) be mappable 1:1 to the object.
- * @param <T> extends {@link NSTimeStamped}
+ * @param <T> is time-stamped object, ie extends {@link NSTimeStamped}.
  */
 public abstract class CommCache<T extends NSTimeStamped> {
 
     private static final Logger LOGGER = Logger.getLogger(CommCache.class.getName());
-    protected static final Duration TEN_MINUTES = Duration.ofMinutes(10);
+    private Duration expirationIn;
 
     private Map<String, T> cache = new HashMap<>();
+
+    /** Creates empty cache with cache expiration in 10 minutes. */
+    public CommCache() {
+        this.expirationIn = Duration.ofMinutes(10);
+    }
+
+    /**
+     * Creates empty cache with custom cache expiration duration.
+     * @param expirationIn duration
+     */
+    public CommCache(Duration expirationIn) {
+        this.expirationIn = expirationIn;
+    }
 
     /**
      * Supplies a new {@link NSTimeStamped} instance to the cache. Without a supplier, the cache cannot load data.
@@ -67,7 +80,7 @@ public abstract class CommCache<T extends NSTimeStamped> {
 
     /**
      * Gets information for an object. If it does not exist, adds that object to the cache. If the cached information is
-     * older than {@link #TEN_MINUTES}, it updates the cache.
+     * older than {@link #expirationIn}, it updates the cache.
      * @param s is the ref name of the object to get data for
      * @return {@link NSTimeStamped} with reasonably up-to-date cached data
      */
@@ -75,7 +88,7 @@ public abstract class CommCache<T extends NSTimeStamped> {
         T n = getOrCacheObject(s);
 
         /* If the duration between data acquisition and present is greater than ten minutes, mark expired. */
-        boolean expired = Duration.between(n.dataTimestamp(), Instant.now()).compareTo(TEN_MINUTES) > 0;
+        boolean expired = Duration.between(n.dataTimestamp(), Instant.now()).compareTo(expirationIn) > 0;
         if (expired)
             cacheObject(s); // update cache
 

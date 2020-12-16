@@ -20,7 +20,7 @@ package com.git.ifly6.nsapi.ctelegram.io;
 import com.git.ifly6.nsapi.NSRegion;
 
 /**
- * Caches {@link NSRegion}. Upon expiration of cache data, see {@link #TEN_MINUTES} updates data.
+ * Caches {@link NSRegion}. Upon expiration of cache data, see {@link #EXPIRE_DURATION} updates data.
  */
 public class CommRegionCache extends CommCache<NSRegion> {
 
@@ -29,8 +29,7 @@ public class CommRegionCache extends CommCache<NSRegion> {
     private CommRegionCache() {}
 
     public static CommRegionCache getInstance() {
-        if (instance == null)
-            instance = new CommRegionCache();
+        if (instance == null) instance = new CommRegionCache();
         return instance;
     }
 

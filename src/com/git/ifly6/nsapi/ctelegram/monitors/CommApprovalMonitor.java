@@ -17,11 +17,71 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-/**
- * Monitors for approvals given to a proposal.
- */
-public class CommApprovalMonitor {
-    /* This is meant for counter-campaigns or for counter-counter-campaigns. Need enum for direction; need before and
-     * after lists for checks. Will also need means to get information about a proposal. Proposals should be identified
-     * by their proposal IDs. No regions or nations should be cached. */
+import com.git.ifly6.nsapi.ctelegram.io.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/** Monitors approval actions related to a World Assembly proposal. */
+public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMonitor {
+
+    private String proposalID;
+    private Action action;
+    private List<String> previousApprovers;
+    private List<String> currentApprovers;
+
+    /** Creates monitor to monitor provided proposal ID for specified action. */
+    public CommApprovalMonitor(String proposalID, Action action) {
+        this.proposalID = proposalID;
+        this.action = action;
+        previousApprovers = new ArrayList<>();
+        currentApprovers = new ArrayList<>();
+    }
+
+    /**
+     * {@inheritDoc} Only returns approvers which undertook the specified {@link Action} and which are (according to
+     * cached data, see {@link CommDelegatesCache},) currently delegates.
+     * @return list of delegates that took specified action.
+     */
+    @Override
+    public List<String> getRecipients() {
+        Set<String> delegateSet = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
+        List<String> changedApprovers = action.find(previousApprovers, currentApprovers);
+        return changedApprovers.stream()
+                .filter(delegateSet::contains)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    protected void updateAction() {
+        previousApprovers = currentApprovers;
+        currentApprovers = CommWorldAssembly.getApprovers(proposalID);
+    }
+
+    /** Enumerates actions undertaken by delegates. */
+    public enum Action {
+        APPROVED {
+            @Override
+            public List<String> find(List<String> before, List<String> after) {
+                // elements in after that are were not in before
+                Set<String> beforeSet = new HashSet<>(before);
+                return after.stream().filter(s -> !beforeSet.contains(s))
+                        .collect(Collectors.toList());
+            }
+        }, UNAPPROVED {
+            @Override
+            public List<String> find(List<String> before, List<String> after) {
+                // elements in before that are not in afterSet
+                Set<String> afterSet = new HashSet<>(before);
+                return before.stream().filter(s -> !afterSet.contains(s))
+                        .collect(Collectors.toList());
+            }
+        };
+
+        public abstract List<String> find(List<String> before, List<String> after);
+    }
 }

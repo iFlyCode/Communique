@@ -17,11 +17,9 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.ctelegram.io.CommRegionCache;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,71 +27,44 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /** Monitors voters in specified regions for votes for or against a resolution at vote. */
-public class CommVotingMonitor extends CommUpdatingMonitor implements CommMonitor {
+public class CommRegionalVoteMonitor extends CommAssemblyMonitor implements CommMonitor {
 
-    public static final Logger LOGGER = Logger.getLogger(CommVotingMonitor.class.getName());
-    private static CommVotingMonitor instance;
-
-    private CommWorldAssembly.Chamber chamber;
-    private final CommWorldAssembly.Vote voting;
+    public static final Logger LOGGER = Logger.getLogger(CommRegionalVoteMonitor.class.getName());
 
     private List<String> regions;
     private CommRegionCache regionCache = CommRegionCache.getInstance();
 
-    private Set<String> previousVoters;
-    private Set<String> currentVoters;
-
     /**
      * @param chamber       to check for voters
-     * @param regions       to check for voters, if empty, all regions
+     * @param regions       to check for voters; cannot be empty
      * @param voting        direction; choose one
      * @param ignoreInitial if true, does not include people who already voted
      */
-    public CommVotingMonitor(CommWorldAssembly.Chamber chamber, List<String> regions, CommWorldAssembly.Vote voting,
-                             boolean ignoreInitial) {
+    public CommRegionalVoteMonitor(CommWorldAssembly.Chamber chamber, List<String> regions,
+                                   CommWorldAssembly.Vote voting, boolean ignoreInitial) {
+        if (regions.isEmpty()) throw new UnsupportedOperationException("Must provide regions to monitor");
         this.chamber = chamber;
         this.regions = regions;
         this.voting = voting;
 
         if (ignoreInitial) {
-            Set<String> voters = new HashSet<>(getCurrentVoters(this.chamber, this.voting));
+            Set<String> voters = getMonitoredRecipients();
             previousVoters = voters;
             currentVoters = voters;
         }
     }
 
-    @Override
-    public List<String> getRecipients() {
-        if (previousVoters == null || currentVoters == null) {
-            LOGGER.info("Not enough information to find any changes.");
-            return new ArrayList<>();
-        }
-        return currentVoters.stream()
-                .filter(s -> !previousVoters.contains(s))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    protected void updateAction() {
-        Set<String> voters = getCurrentVoters(this.chamber, this.voting);
-        previousVoters = currentVoters;
-        currentVoters = voters;
-    }
-
     /**
      * Gets current voters who are residents of the specified regions.
-     * @param chamber to look at
-     * @param voting position
      * @return list of voters
      */
-    private Set<String> getCurrentVoters(CommWorldAssembly.Chamber chamber, CommWorldAssembly.Vote voting) {
+    @Override
+    protected Set<String> getMonitoredRecipients() {
         Set<String> voters = new HashSet<>(CommWorldAssembly.getVoters(chamber, voting));
-
-        Set<String> regionResidents = new HashSet<>();
-        for (String r : regions) {
-            NSRegion region = regionCache.lookupObject(r);
-            regionResidents.addAll(region.getRegionMembers());
-        }
+        Set<String> regionResidents = regions.stream()
+                .map(s -> regionCache.lookupObject(s).getRegionMembers())
+                .flatMap(List::stream)
+                .collect(Collectors.toCollection(HashSet::new));
 
         return voters.stream()
                 .filter(regionResidents::contains)

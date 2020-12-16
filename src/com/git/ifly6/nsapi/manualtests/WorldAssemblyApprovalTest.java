@@ -15,31 +15,13 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.io;
+package com.git.ifly6.nsapi.manualtests;
 
-import com.git.ifly6.nsapi.NSNation;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 
-import java.util.function.Function;
-
-/**
- * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
- * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Caching nation level information with an expiration of {@link #EXPIRE_DURATION} should greatly lower
- * the number of API calls, improving performance.
- */
-public class CommNationCache extends CommCache<NSNation> {
-
-    private static CommNationCache instance;
-
-    private CommNationCache() {}
-
-    public static CommNationCache getInstance() {
-        if (instance == null) instance = new CommNationCache();
-        return instance;
-    }
-
-    @Override
-    protected NSNation createNewObject(String s) {
-        return new NSNation(s).populateData();
+public class WorldAssemblyApprovalTest {
+    public static void main(String[] args) {
+        System.out.println(CommWorldAssembly.getApprovers("free_azell_1607726516"));
+        System.out.println(CommWorldAssembly.getApprovers("gorundu_1607928980"));
     }
 }
