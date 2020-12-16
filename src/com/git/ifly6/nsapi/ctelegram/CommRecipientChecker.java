@@ -18,7 +18,7 @@
 package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSNation;
-import com.git.ifly6.nsapi.ctelegram.io.CommNationCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 /** Checks whether recipient accepts telegrams based on telegram type. */

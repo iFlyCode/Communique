@@ -17,7 +17,7 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.ctelegram.io.CommRegionCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 
 import java.util.HashSet;

@@ -14,32 +14,37 @@
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package com.git.ifly6.nsapi.ctelegram.io.cache;
 
-package com.git.ifly6.nsapi.ctelegram.io;
+import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.NSTimeStamped;
+import com.git.ifly6.nsapi.NSWorld;
 
-import com.git.ifly6.nsapi.NSNation;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.List;
 
-import java.util.function.Function;
+/** Holds a time-stamped version of NationStates delegates. */
+public class CommDelegates implements NSTimeStamped {
 
-/**
- * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
- * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Caching nation level information with an expiration of {@link #EXPIRE_DURATION} should greatly lower
- * the number of API calls, improving performance.
- */
-public class CommNationCache extends CommCache<NSNation> {
+    private Instant timestamp;
+    private List<String> delegates;
 
-    private static CommNationCache instance;
+    public CommDelegates() {
+        try {
+            delegates = NSWorld.getDelegates();
+            timestamp = Instant.now();
+        } catch (IOException e) {
+            throw new NSIOException("Could not get delegates from NationStates", e);
+        }
+    }
 
-    private CommNationCache() {}
-
-    public static CommNationCache getInstance() {
-        if (instance == null) instance = new CommNationCache();
-        return instance;
+    public List<String> getDelegates() {
+        return delegates;
     }
 
     @Override
-    protected NSNation createNewObject(String s) {
-        return new NSNation(s).populateData();
+    public Instant dataTimestamp() {
+        return timestamp;
     }
 }

@@ -19,6 +19,7 @@ package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.io.NSTGSettingsException;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;
@@ -122,7 +123,7 @@ public class CommSender {
      * #feedQueue()}. Processing action takes a list and returns a list. Its implementation is left extremely open-ended
      * on purpose.
      * @param processingAction to apply on recipients feed
-     * @see com.git.ifly6.nsapi.ctelegram.io.CommNationCache
+     * @see CommNationCache
      */
     public void setProcessingAction(Function<List<String>, List<String>> processingAction) {
         this.processingAction = processingAction;

@@ -14,8 +14,7 @@
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package com.git.ifly6.nsapi.ctelegram.io;
+package com.git.ifly6.nsapi.ctelegram.io.cache;
 
 import com.git.ifly6.nsapi.NSRegion;
 
