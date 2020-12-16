@@ -85,7 +85,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
         }
         if (job == null || job.isDone()) {
             job = ex.scheduleWithFixedDelay(runnableAction,
-                    initialDelay.toMillis(),
+                    Math.max(0, initialDelay.toMillis()), // floor initial delay to 0
                     (updateInterval == null
                             ? DEFAULT_UPDATE_INTERVAL
                             : updateInterval).toMillis(),
@@ -122,21 +122,24 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     /**
      * Sets the monitor's update interval; if task is already running, creates task to wait until almost the end of the
      * current task's delay (ten milliseconds) until restarting the task with the new delay interval.
-     * @param d duration to wait between updating
+     * <p>If the job is executing while this method is called, it will be terminated and a new job substituted, with no
+     * initial delay; {@link #start(Duration)} floors delays to 0 milliseconds.</p>
+     * @param d {@link Duration} to wait between updating
      */
-    public void setUpdateInterval(Duration d) {
-        final Duration oldUpdateInterval = updateInterval;
+    public void setUpdateInterval(final Duration d) {
+        final Duration oldInterval = updateInterval;
         updateInterval = d;
 
-        if (job != null) {
+        if (job != null && !job.isDone()) {
             LOGGER.info(String.format("changing delay interval from %d ms to %d ms",
-                    oldUpdateInterval.toMillis(),
+                    oldInterval.toMillis(),
                     updateInterval.toMillis()));
 
-            // job.getDelay returns how many milliseconds until next; neededDelay is 10 milliseconds before that
-            final long neededDelay = job.getDelay(TimeUnit.MILLISECONDS);
+            // job.getDelay returns how many milliseconds until next
+            // if job is executing while update interval c
+            final Duration neededDelay = Duration.ofMillis(job.getDelay(TimeUnit.MILLISECONDS));
             this.stop();
-            this.start(Duration.ofMillis(neededDelay));
+            this.start(neededDelay);
         }
     }
 
