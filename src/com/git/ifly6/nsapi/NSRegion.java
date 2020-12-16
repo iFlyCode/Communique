@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class NSRegion {
+public class NSRegion implements NSTimeStamped {
 
     // So we don't need to fetch it again over different regions
     private static Set<String> worldWAMembers;
@@ -182,7 +182,8 @@ public class NSRegion {
      * Returns time when data was acquired.
      * @return {@link Instant} of data acqisition
      */
-    public Instant getUpdateTime() {
+    @Override
+    public Instant dataTimestamp() {
         return updateTime;
     }
 

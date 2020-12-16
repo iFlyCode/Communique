@@ -17,29 +17,26 @@
 
 package com.git.ifly6.nsapi.ctelegram.io;
 
-import com.git.ifly6.nsapi.NSNation;
-
-import java.util.function.Function;
+import com.git.ifly6.nsapi.NSRegion;
 
 /**
- * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
- * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Caching nation level information with an expiration of {@link #TEN_MINUTES} should greatly lower
- * the number of API calls, improving performance.
+ * Caches {@link NSRegion}. Upon expiration of cache data, see {@link #TEN_MINUTES} updates data.
  */
-public class CommNationCache extends CommCache<NSNation> {
+public class CommRegionCache extends CommCache<NSRegion> {
 
-    private static CommNationCache instance;
+    private static CommRegionCache instance;
 
-    private CommNationCache() {}
+    private CommRegionCache() {}
 
-    public static CommNationCache getInstance() {
-        if (instance == null) instance = new CommNationCache();
+    public static CommRegionCache getInstance() {
+        if (instance == null)
+            instance = new CommRegionCache();
         return instance;
     }
 
     @Override
-    protected NSNation createNewObject(String s) {
-        return new NSNation(s).populateData();
+    protected NSRegion createNewObject(String s) {
+        return new NSRegion(s).populateData();
     }
+
 }

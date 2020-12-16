@@ -40,7 +40,7 @@ import java.util.List;
  * out if you attempt mass information gathering of every single census score.
  * </p>
  */
-public class NSNation {
+public class NSNation implements NSTimeStamped {
 
     public static final HashMap<String, List<String>> CATEGORIES_MAP = new HashMap<>();
 
@@ -160,6 +160,7 @@ public class NSNation {
      * Returns the date at which the data in the nation was populated. Returns null if it was never populated.
      * @return the timestamp of the data contained in this object, if it was ever retrieved automatically
      */
+    @Override
     public Instant dataTimestamp() {
         return updateTime;
     }

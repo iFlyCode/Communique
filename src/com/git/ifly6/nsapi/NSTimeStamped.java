@@ -15,31 +15,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.io;
+package com.git.ifly6.nsapi;
 
-import com.git.ifly6.nsapi.NSNation;
+import java.time.Instant;
 
-import java.util.function.Function;
+public interface NSTimeStamped {
 
-/**
- * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
- * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Caching nation level information with an expiration of {@link #TEN_MINUTES} should greatly lower
- * the number of API calls, improving performance.
- */
-public class CommNationCache extends CommCache<NSNation> {
+    Instant dataTimestamp();
 
-    private static CommNationCache instance;
-
-    private CommNationCache() {}
-
-    public static CommNationCache getInstance() {
-        if (instance == null) instance = new CommNationCache();
-        return instance;
-    }
-
-    @Override
-    protected NSNation createNewObject(String s) {
-        return new NSNation(s).populateData();
-    }
 }
