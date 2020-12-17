@@ -865,17 +865,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         } else recruiter.toFront();
     }
 
-    /**
-     {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void log(String input) {
         LOGGER.info(input);
     }
 
-    /**
-     {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void sentTo(String recipientName, int x, int length) {
 

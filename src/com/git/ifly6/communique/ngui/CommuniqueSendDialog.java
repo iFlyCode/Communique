@@ -17,7 +17,6 @@
 package com.git.ifly6.communique.ngui;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
-import com.git.ifly6.communique.data.Communique7Parser;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
