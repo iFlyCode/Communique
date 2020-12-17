@@ -38,67 +38,70 @@ import java.util.stream.Collectors;
  */
 public class Communique7Parser {
 
-	/**
-	 * Declares the version of the parser, which is based on two values: (1) the syntax of the Communique recipients
-	 * language and (2) the file syntax in which that information is held.
-	 */
-	public static final int version = 12;
+    /**
+     * Declares parser build, which is based on two values: (1) the syntax of the Communique recipients language and (2)
+     * the file syntax in which that information is held.
+     */
+    public static final int BUILD = 12;
 
-	/** List of recipients changed by various actions and applications called by the parser. */
-	private Set<CommuniqueRecipient> recipients;
+    /** Declares semantic version. */
+	public static final String VERSION = "2.5";
 
-	/**
-	 * Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
-	 * methods, either in the form of a <code>List&lt;String&gt;</code> or any number of
-	 * <code>CommuniqueRecipient</code>.
-	 */
-	public Communique7Parser() {
-		recipients = new LinkedHashSet<>();
-	}
+    /** List of recipients changed by various actions and applications called by the parser. */
+    private Set<CommuniqueRecipient> recipients;
 
-	/**
-	 * Applies the tokens, specified in the <code>CommuniqueRecipient</code> object, to the recipients list in the
-	 * parser.
-	 * @param token a <code>CommuniqueRecipient</code>
-	 * @return this parser
-	 */
-	public Communique7Parser apply(CommuniqueRecipient token) throws JTelegramException {
-		recipients = token.getFilterType().apply(recipients, token);
-		/* This is the beautiful part, because I've chained everything to a filter, this means that I don't have to
-		 * write any code whatsoever to sort things into what they have to do, unlike the old parser. Now, everything is
-		 * chained to an ENUM which already knows exactly what it has to do, and therefore, everything is already dealt
-		 * with. */
-		return this;
-	}
+    /**
+     * Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
+     * methods, either in the form of a <code>List&lt;String&gt;</code> or any number of
+     * <code>CommuniqueRecipient</code>.
+     */
+    public Communique7Parser() {
+        recipients = new LinkedHashSet<>();
+    }
 
-	/**
-	 * Applies the tokens to the recipients list with a specified list of tokens.
-	 * @param list of <code>CommuniqueRecipient</code>s
-	 * @return this parser
-	 */
-	public Communique7Parser apply(List<CommuniqueRecipient> list) throws JTelegramException {
-		list.forEach(this::apply);
-		return this;
-	}
+    /**
+     * Applies the tokens, specified in the <code>CommuniqueRecipient</code> object, to the recipients list in the
+     * parser.
+     * @param token a <code>CommuniqueRecipient</code>
+     * @return this parser
+     */
+    public Communique7Parser apply(CommuniqueRecipient token) throws JTelegramException {
+        recipients = token.getFilterType().apply(recipients, token);
+        /* This is the beautiful part, because I've chained everything to a filter, this means that I don't have to
+         * write any code whatsoever to sort things into what they have to do, unlike the old parser. Now, everything is
+         * chained to an ENUM which already knows exactly what it has to do, and therefore, everything is already dealt
+         * with. */
+        return this;
+    }
 
-	/**
-	 * Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
-	 * @param tokens to apply
-	 * @return this parser
-	 */
-	public Communique7Parser apply(CommuniqueRecipient... tokens) {
-		Arrays.stream(tokens).forEach(this::apply);
-		return this;
-	}
+    /**
+     * Applies the tokens to the recipients list with a specified list of tokens.
+     * @param list of <code>CommuniqueRecipient</code>s
+     * @return this parser
+     */
+    public Communique7Parser apply(List<CommuniqueRecipient> list) throws JTelegramException {
+        list.forEach(this::apply);
+        return this;
+    }
 
-	/**
-	 * Returns a list of all the recipients in standard NationStates reference name form
-	 * @return list of recipients
-	 */
-	public List<String> listRecipients() {
-		return recipients.stream()
-				.map(CommuniqueRecipient::getName)
-				.collect(Collectors.toList());
-	}
+    /**
+     * Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
+     * @param tokens to apply
+     * @return this parser
+     */
+    public Communique7Parser apply(CommuniqueRecipient... tokens) {
+        Arrays.stream(tokens).forEach(this::apply);
+        return this;
+    }
+
+    /**
+     * Returns a list of all the recipients in standard NationStates reference name form
+     * @return list of recipients
+     */
+    public List<String> listRecipients() {
+        return recipients.stream()
+                .map(CommuniqueRecipient::getName)
+                .collect(Collectors.toList());
+    }
 
 }

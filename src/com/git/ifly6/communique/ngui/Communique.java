@@ -171,7 +171,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		double sWidth = screenDimensions.getWidth();
 		double sHeight = screenDimensions.getHeight();
 
-		frame.setTitle("Communiqué " + Communique7Parser.version);
+		frame.setTitle("Communiqué " + Communique7Parser.BUILD);
 		frame.setBounds(100, 100, (int) Math.round(2 * sWidth / 3), (int) Math.round(2 * sHeight / 3));
 		frame.setMinimumSize(new Dimension(600, 400));
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -820,7 +820,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	@Override
 	public CommuniqueConfig exportState() {
-		config.defaultVersion();
+		config.defaultBuild();
 		LOGGER.info("Communiqué config exported");
 		return this.config;
 	}

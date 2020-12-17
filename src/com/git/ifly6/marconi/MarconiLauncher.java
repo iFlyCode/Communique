@@ -83,7 +83,7 @@ public class MarconiLauncher {
 			URI u = MarconiLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI();
 			fileName = new File(u).getName();
 		} catch (URISyntaxException | RuntimeException e1) {
-			fileName = "Marconi_" + Communique7Parser.version + ".jar"; // default to standard naming format.
+			fileName = "Marconi_" + Communique7Parser.BUILD + ".jar"; // default to standard naming format.
 		}
 
 		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
@@ -110,8 +110,10 @@ public class MarconiLauncher {
 			}
 			if (commandLine.hasOption("R")) recruiting = true;
 			if (commandLine.hasOption("v")) {
-				System.out.println("Marconi version " + Communique7Parser.version + "\n"
-						+ "Please visit https://github.com/iFlyCode/Communique/releases.\n");
+				System.out.printf("Marconi version %s, build %d.\n"
+						+ "Please visit https://github.com/ifly6/Communique/releases.\n%n",
+						Communique7Parser.VERSION,
+						Communique7Parser.BUILD);
 				return; // exit
 			}
 

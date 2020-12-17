@@ -124,7 +124,7 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 	 */
 	private void initialize() {
 
-		frame = new JFrame("Communiqué Recruiter " + Communique7Parser.version);
+		frame = new JFrame("Communiqué Recruiter " + Communique7Parser.BUILD);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		{

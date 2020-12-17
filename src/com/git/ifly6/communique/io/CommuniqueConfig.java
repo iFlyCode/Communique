@@ -36,10 +36,10 @@ import java.util.stream.Collectors;
 public class CommuniqueConfig implements java.io.Serializable {
 
 	// For backwards compatibility, almost all field names cannot be changed
-	private static final long serialVersionUID = Communique7Parser.version;
+	private static final long serialVersionUID = Communique7Parser.BUILD;
 
 	public static final String HEADER = "Communiqué Configuration File. Do not edit by hand. Produced at: "
-			+ CommuniqueUtilities.getDate() + ". Produced by version " + Communique7Parser.version;
+			+ CommuniqueUtilities.getDate() + ". Produced by version " + Communique7Parser.BUILD;
 
 	public int version;
 
@@ -68,7 +68,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 */
 	public CommuniqueConfig() {
 		this.keys = new JTelegramKeys(); // empty keys
-		this.version = defaultVersion(); // default version to current version
+		this.version = defaultBuild(); // default version to current version
 		this.processingAction = CommuniqueProcessingAction.NONE; // no processing action
 	}
 
@@ -93,9 +93,9 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 * Sets the default version to the version in {@link Communique7Parser}.
 	 * @return the version in <code>Communique7Parser</code>
 	 */
-	public int defaultVersion() {
-		this.version = Communique7Parser.version;
-		return Communique7Parser.version;
+	public int defaultBuild() {
+		this.version = Communique7Parser.BUILD;
+		return Communique7Parser.BUILD;
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class CommuniqueConfig implements java.io.Serializable {
 	 * one in the header, to the version of the program on which it was saved.
 	 */
 	void clean() {
-		version = this.defaultVersion(); // updates version
+		version = this.defaultBuild(); // updates version
 
 		// proceeds to clean all of the fields
 		cRecipients = cRecipients.stream().distinct()

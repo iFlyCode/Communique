@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  */
 public class CommuniqueSendDialog extends JDialog {
 
-	private static final long serialVersionUID = Communique7Parser.version;
+	private static final long serialVersionUID = Communique7Parser.BUILD;
 	private static final Logger LOGGER = Logger.getLogger(CommuniqueSendDialog.class.getName());
 
 	public static final int SEND = 1;
