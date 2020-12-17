@@ -117,7 +117,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
 
             // version option
             if (commandLine.hasOption("v")) {
-                System.out.println("Marconi version " + Communique7Parser.version + "\n"
+                System.out.println("Marconi version " + Communique7Parser.BUILD + "\n"
                         + "See https://github.com/ifly6/Communique/releases.\n");
                 System.exit(0); // terminate
             }

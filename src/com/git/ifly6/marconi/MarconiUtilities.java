@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
@@ -98,21 +97,13 @@ public class MarconiUtilities {
         return response;
     }
 
-    /**
-     * @param prompt the question posed to the user.
-     * @return answer
-     */
-    static String promptYN(String prompt) {
-        return prompt(prompt, Arrays.asList("yes", "no", "y", "n"));
-    }
-
     /** @return name of the jar in which Marconi is located. */
     static String getJARName() {
         try {
             return new File(Marconi.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                     .getName();
         } catch (URISyntaxException e) {
-            return String.format("Marconi_%d.jar", Communique7Parser.version); // default to standard naming format.
+            return String.format("Marconi_%d.jar", Communique7Parser.BUILD); // default to standard naming format.
         }
     }
 
