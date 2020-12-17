@@ -40,15 +40,14 @@ import static java.util.Arrays.asList;
 
 /**
  * {@link CommuniqueReader} reads Communique configuration files. It contains some backwards compatibility for the last
- * version of the pre-JSON configuration files. The handling for this logic is done primarily in the {@link
+ * file build of the pre-JSON configuration files. The handling for this logic is done primarily in the {@link
  * CommuniqueReader#read()} file.
  * @see CommuniqueFileReader
  */
 @SuppressWarnings("deprecation")
-		// Suppress deprecation as we use dep. classes
 class CommuniqueReader {
 
-	private Logger logger = Logger.getLogger(CommuniqueReader.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(CommuniqueReader.class.getName());
 
 	/**
 	 * {@link Path} where the class is pointed to
@@ -71,7 +70,7 @@ class CommuniqueReader {
 
 		CommuniqueConfig config;
 
-		try { // note, this will handle future version of the class by ignoring the now-irrelevant fields
+		try { // note, this will handle future builds of the class by ignoring the now-irrelevant fields
 			Gson gson = new Gson();
 			config = gson.fromJson(Files.newBufferedReader(path), CommuniqueConfig.class);
 
@@ -99,11 +98,11 @@ class CommuniqueReader {
 			// If we are reading one of the old files, which would throw some RuntimeExceptions,
 			// try the old reader.
 
-			logger.log(Level.INFO, "Json exception thrown. Attempting read with old file reader.", e);
+			LOGGER.log(Level.INFO, "Json exception thrown. Attempting read with old file reader.", e);
 			CommuniqueFileReader reader = new CommuniqueFileReader(path.toFile());
 
 			config = new CommuniqueConfig();
-			config.version = reader.getFileVersion();
+			config.version = reader.getFileBuild();
 			config.processingAction = reader.isRandomised() // translate old boolean flag
 					? CommuniqueProcessingAction.RANDOMISE
 					: CommuniqueProcessingAction.NONE;

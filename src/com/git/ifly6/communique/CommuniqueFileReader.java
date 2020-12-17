@@ -17,7 +17,6 @@
 
 package com.git.ifly6.communique;
 
-import com.git.ifly6.communique.data.CommuniqueParser;
 import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
@@ -39,7 +38,6 @@ import java.util.Scanner;
  * class will automatically load and process any documents you give it when it is created. If you want that behaviour to
  * change, extend the class and write a new constructor.</strike>
  * </p>
- * @see CommuniqueParser
  * @see com.git.ifly6.communique.io.CommuniqueLoader CLoader
  */
 @SuppressWarnings("DeprecatedIsStillUsed")
@@ -51,14 +49,14 @@ public class CommuniqueFileReader {
 	private boolean recruitment;
 	private boolean randomised;
 
-	Object[] information = {new JTelegramKeys(), new String[]{}};
+	Object[] information;
 
 	/**
 	 * Constructs a FileReader tailored to the correct file and loads the entire file into an ArrayList. From there, it
 	 * calls <code>parseConfig()</code> to load all the processed information into an accessible object.
 	 * @param file of the Communiqué configuration file
 	 * @throws FileNotFoundException if the Communiqué configuration file is non-existent or unwritable
-	 * @throws JTelegramException    if the version is incorrect
+	 * @throws JTelegramException    if the build is incorrect
 	 */
 	public CommuniqueFileReader(File file) throws FileNotFoundException, JTelegramException {
 		// Immediately load the file into memory.
@@ -71,7 +69,7 @@ public class CommuniqueFileReader {
 		if (isCompatible()) {
 			information = parseConfig();
 		} else {
-			throw new JTelegramException("Communiqué file version mismatch");
+			throw new JTelegramException("Communiqué file build mismatch");
 		}
 	}
 
@@ -154,22 +152,20 @@ public class CommuniqueFileReader {
 	}
 
 	/**
-	 * Queries the file for an integer version to determine whether it is compatible with this parser. If so, it returns
-	 * true. Otherwise, it will return false. This operation also effectively makes sure that there is a file which can
-	 * be read.
-	 * @return <code>boolean</code> containing true or false on whether the configuration file is compatible.
+	 * Queries the file for build number to determine whether it is compatible with this parser.
+	 * @return true if compatible
 	 */
 	public boolean isCompatible() {
-		return getFileVersion() < 7;    // changed from original
+		return getFileBuild() < 7;    // changed from original
 	}
 
 	/**
-	 * Finds the file version declarer by finding the line which states "# Produced by version" or the version tag. The
-	 * following is an integer which determines which version of the program this file was made by. Returns its
-	 * contents.
-	 * @return <code>String</code> containing the ending of the commented version line
+	 * Finds file build by parsing text for line
+	 * <pre># Produced by version</pre>
+	 * Otherwise, checks the version tag.
+	 * @return {@code int} with build number
 	 */
-	public int getFileVersion() {
+	public int getFileBuild() {
 		// Look for version tag first
 		for (String element : fileContents)
 			if (element.startsWith("version"))

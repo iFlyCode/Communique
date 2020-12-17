@@ -820,7 +820,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
 	@Override
 	public CommuniqueConfig exportState() {
-		config.defaultBuild();
 		LOGGER.info("Communiqué config exported");
 		return this.config;
 	}
@@ -867,17 +866,13 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 		} else recruiter.toFront();
 	}
 
-	/**
-	 * @see com.git.ifly6.nsapi.telegram.JTelegramLogger#log(java.lang.String)
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void log(String input) {
 		LOGGER.info(input);
 	}
 
-	/**
-	 * @see com.git.ifly6.nsapi.telegram.JTelegramLogger#sentTo(java.lang.String, int, int)
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void sentTo(String recipientName, int x, int length) {
 

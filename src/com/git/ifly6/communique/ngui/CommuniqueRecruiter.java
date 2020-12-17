@@ -193,7 +193,6 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
 		excludeList = new JList<>(exListModel);
 		excludeList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		excludeList.setSelectionModel(new DefaultListSelectionModel() {
-			private static final long serialVersionUID = 1L;
 			boolean gestureStarted = false;
 
 			@Override
