@@ -50,7 +50,7 @@ public class CommSender {
     public static final Logger LOGGER = Logger.getLogger(CommSender.class.getName());
 
     /** One thread for many clients. */
-    private static ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledExecutorService scheduller = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> job;
 
     private CommSenderOutput outputInterface;
@@ -91,13 +91,17 @@ public class CommSender {
 
     /** Feeds the queue until the feed limit is exceeded. Queue is fed whenever the queue is empty. */
     private void feedQueue() {
+        LOGGER.fine("Feeding queue");
         List<String> recipients = processingAction.apply(monitor.getRecipients());
 
         int recipientsAdded = 0;
         for (String s : recipients) {
             if (recipientsAdded > feedLimit) break;
-            if (!sendQueue.contains(s) && !sentList.contains(s)) // prevent double-queueing
+            if (!sendQueue.contains(s) && !sentList.contains(s)) {
+                // prevent double-queueing
                 sendQueue.add(s);
+                LOGGER.finest(String.format("Fed queue element %s", s));
+            }
         }
 
         LOGGER.info(String.format("Fed queue with %d recipients", recipientsAdded));
@@ -139,14 +143,19 @@ public class CommSender {
 
     /** Sends telegram to recipient, with recipient determined as first thing in the queue. */
     private void executeSend() {
+        LOGGER.finer("Send starting");
+        if (dryRun) LOGGER.warning("SENDING AS DRY RUN!");
+
         String recipient = sendQueue.poll();
         if (recipient == null)
             throw new EmptyQueueException();
 
         // if we have a recipient...
+        LOGGER.finer(String.format("Got recipient %s from queue", recipient));
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
-                executeSend(); // immediately try again
+                LOGGER.finer(String.format("Recipient %s invalid; try next in queue", recipient));
+                executeSend(); // try again
             } catch (StackOverflowError error) {
                 // might happen if cannot get recipients over and over again?
                 throw new NSIOException("Encountered stack overflow error");
@@ -154,8 +163,12 @@ public class CommSender {
 
         // if the recipient will accept our telegram...
         try {
+            LOGGER.finer("Creating telegram connection ");
             JTelegramConnection connection = new JTelegramConnection(keys, recipient, dryRun);
+
+            // get response code
             int responseCode = connection.verify();
+            LOGGER.finer(String.format("Received response code %d", responseCode));
 
             // if there is an error
             if (responseCode != JTelegramConnection.QUEUED)
@@ -164,9 +177,9 @@ public class CommSender {
             // we sent to this recipient
             reportSent(recipient);
             sentList.add(recipient);
+            LOGGER.info(String.format("Sent telegram to recipient %s", recipient));
 
-        } catch (IOException e) {
-            // rethrow
+        } catch (IOException e) { // rethrow
             throw new NSIOException("Encountered IO exception when connecting to NationStates", e);
         }
     }
@@ -180,15 +193,15 @@ public class CommSender {
         if (isRunning())
             throw new UnsupportedOperationException("Cannot start sending after it already started");
 
-        job = timer.scheduleWithFixedDelay(() -> {
+        job = scheduller.scheduleWithFixedDelay(() -> {
             // if no recipient in queue, try to get some
             if (sendQueue.peek() == null) {
-                LOGGER.info("No recipients in queue; attempting to feed.");
+                LOGGER.info("No recipients in queue; attempting to feed");
                 feedQueue();
 
                 // if still there are no recipients to queue
                 if (sendQueue.peek() == null) {
-                    LOGGER.info("Mission failed; we'll get recipients next time");
+                    LOGGER.info("Attempt to feed failed; we'll get recipients next time");
                     return;
                 }
             }
@@ -199,12 +212,17 @@ public class CommSender {
             } catch (EmptyQueueException e) {
                 /* Should not catch NSTGSettingsException, as if settings are wrong, you should know immediately.
                  * Otherwise, log no recipient exception, though it shouldn't happen due to filtering above. */
-                LOGGER.warning("Exhausted loaded queue; were all recipients invalid?");
+                LOGGER.warning("Exhausted loaded queue; were all queued recipients invalid?");
             }
         }, 0, telegramType.getWaitDuration().toMillis(), TimeUnit.MILLISECONDS);
+
+        // log sending thread creation
+        LOGGER.info(String.format("Scheduled sending thread start with wait duration %d ms",
+                telegramType.getWaitDuration().toMillis()));
     }
 
     public void restartSend() {
+        LOGGER.fine("Restarting send thread");
         if (monitor instanceof CommUpdatingMonitor)
             ((CommUpdatingMonitor) monitor).start();
 
@@ -212,6 +230,7 @@ public class CommSender {
     }
 
     public void stopSend() {
+        LOGGER.fine("Send thread stopped");
         if (job != null) {
             job.cancel(false); // allow completion
             if (monitor instanceof CommUpdatingMonitor)
@@ -223,7 +242,7 @@ public class CommSender {
     public boolean isRunning() {
         if (job == null) return false;
         if (job.isDone() || job.isCancelled()) return false;
-        if (timer.isShutdown() || timer.isTerminated()) return false;
+        if (scheduller.isShutdown() || scheduller.isTerminated()) return false;
         return true;
     }
 
