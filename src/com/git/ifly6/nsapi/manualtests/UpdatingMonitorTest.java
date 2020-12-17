@@ -74,14 +74,8 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
         mct.start();
 
         System.out.println("Delay for start");
-        Thread.sleep(10); // give time for instantiation...
-
-        Map<Instant, List<String>> results = new HashMap<>();
-        for (int i = 0; i < 3; i++) {
-            results.put(Instant.now(), mct.getRecipients());
-            Thread.sleep(1005);
-        }
-        System.out.println(prettyPrint(results));
+        Thread.sleep(50); // give time for instantiation...
+        getResults(mct);
 
 //        // test restart
 //        System.out.println("Stopping for 5 seconds");
@@ -93,15 +87,18 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
 
         // test change update interval by restart
         mct.setUpdateInterval(Duration.of(15, ChronoUnit.SECONDS));
-
-        Map<Instant, List<String>> restartResults = new HashMap<>();
-        for (int i = 0; i < 3; i++) {
-            restartResults.put(Instant.now(), mct.getRecipients());
-            Thread.sleep(1005);
-        }
-        System.out.println(prettyPrint(restartResults));
+        getResults(mct);
         mct.stop();
 
         System.out.println("Test successful");
+    }
+
+    private static void getResults(UpdatingMonitorTest mct) throws InterruptedException {
+        Map<Instant, List<String>> results = new HashMap<>();
+        for (int i = 0; i < 3; i++) {
+            results.put(Instant.now(), mct.getRecipients());
+            Thread.sleep(1005);
+        }
+        System.out.println(prettyPrint(results));
     }
 }
