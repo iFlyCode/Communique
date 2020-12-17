@@ -16,11 +16,17 @@
  */
 package com.git.ifly6.nsapi.ctelegram.io.cache;
 
+import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.NSTimeStamped;
+import com.git.ifly6.nsapi.NSWorld;
+
+import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 /** Caches NationStates delegates for later access. <b>Only invoke with {@link #DELEGATE_KEY}!</b> */
-public class CommDelegatesCache extends CommCache<CommDelegates> {
+public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> {
 
     public static final String DELEGATE_KEY = "__delegates__";
     private static CommDelegatesCache instance;
@@ -39,13 +45,13 @@ public class CommDelegatesCache extends CommCache<CommDelegates> {
     }
 
     @Override
-    protected CommDelegates createNewObject(String s) {
-        return new CommDelegates();
+    protected Delegates createNewObject(String s) {
+        return new Delegates();
     }
 
     /** Prefer {@link #getDelegates()}. */
     @Override
-    public CommDelegates lookupObject(String s) {
+    public Delegates lookupObject(String s) {
         if (s.equals(DELEGATE_KEY))
             return super.lookupObject(s);
         throw new UnsupportedOperationException(
@@ -55,10 +61,34 @@ public class CommDelegatesCache extends CommCache<CommDelegates> {
     /**
      * Gets cached delegates list.
      * @return cached delegates list.
-     * @see CommDelegates
+     * @see Delegates
      */
     public List<String> getDelegates() {
         return lookupObject(DELEGATE_KEY).getDelegates();
     }
 
+    /** Holds a time-stamped version of NationStates delegates. */
+    public static class Delegates implements NSTimeStamped {
+
+        private Instant timestamp;
+        private List<String> delegates;
+
+        public Delegates() {
+            try {
+                delegates = NSWorld.getDelegates();
+                timestamp = Instant.now();
+            } catch (IOException e) {
+                throw new NSIOException("Could not get delegates from NationStates", e);
+            }
+        }
+
+        public List<String> getDelegates() {
+            return delegates;
+        }
+
+        @Override
+        public Instant dataTimestamp() {
+            return timestamp;
+        }
+    }
 }
