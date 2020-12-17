@@ -167,9 +167,9 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
                 expandedRecipients.size());
 
         // allow cancel
-        System.out.println("You have 5 seconds to cancel.");
+        System.out.println("You have 3 (three) seconds to cancel.");
         try {
-            Thread.sleep(Duration.ofSeconds(5).toMillis());
+            Thread.sleep(Duration.ofSeconds(3).toMillis());
         } catch (InterruptedException e) {
             System.out.println("Exiting.");
             System.exit(0);
@@ -187,6 +187,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
     }
 
     @Override
+    @SuppressWarnings("RedundantStringFormatCall")
     public void sentTo(String recipient, int numberSent) {
         config.addcRecipient(CommuniqueRecipients.createExcludedNation(recipient));
         System.out.println(String.format("Sent telegram %s to recipient %s", numberSent, recipient));
