@@ -40,15 +40,14 @@ import static java.util.Arrays.asList;
 
 /**
  * {@link CommuniqueReader} reads Communique configuration files. It contains some backwards compatibility for the last
- * version of the pre-JSON configuration files. The handling for this logic is done primarily in the {@link
+ * file build of the pre-JSON configuration files. The handling for this logic is done primarily in the {@link
  * CommuniqueReader#read()} file.
  * @see CommuniqueFileReader
  */
-@SuppressWarnings("deprecation")
-        // Suppress deprecation as we use dep. classes
+@SuppressWarnings("deprecation") // CommuniqueFileReader
 class CommuniqueReader {
 
-    private Logger logger = Logger.getLogger(CommuniqueReader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CommuniqueReader.class.getName());
 
     /**
      * {@link Path} where the class is pointed to
@@ -71,7 +70,7 @@ class CommuniqueReader {
 
         CommuniqueConfig config;
 
-        try { // note, this will handle future version of the class by ignoring the now-irrelevant fields
+        try { // note, this will handle future builds of the class by ignoring the now-irrelevant fields
             Gson gson = new Gson();
             config = gson.fromJson(Files.newBufferedReader(path), CommuniqueConfig.class);
 
@@ -95,15 +94,12 @@ class CommuniqueReader {
             // defaults for wait string are not necessary: blank accepts hard-coded defaults already. A+
 
         } catch (JsonSyntaxException | JsonIOException e) {
-
-            // If we are reading one of the old files, which would throw some RuntimeExceptions,
-            // try the old reader.
-
-            logger.log(Level.INFO, "Json exception thrown. Attempting read with old file reader.", e);
+            // If we are reading one of the old files, which would throw some RuntimeExceptions; try the old reader
+            LOGGER.log(Level.INFO, "Json exception thrown. Attempting read with old file reader.", e);
             CommuniqueFileReader reader = new CommuniqueFileReader(path.toFile());
 
             config = new CommuniqueConfig();
-            config.version = reader.getFileVersion();
+            config.version = reader.getFileBuild();
             config.processingAction = reader.isRandomised() // translate old boolean flag
                     ? CommuniqueProcessingAction.RANDOMISE
                     : CommuniqueProcessingAction.NONE;
@@ -128,8 +124,7 @@ class CommuniqueReader {
     }
 
     /**
-     * Parses and unifies {@link CommuniqueConfig#recipients} and {@link CommuniqueConfig#sentList} into a
-     * <code>List&lt;CommuniqueRecipient&gt;</code>
+     * Parses and unifies {@link CommuniqueConfig#recipients} and {@link CommuniqueConfig#sentList}.
      * <p>This exists because of an interim period before the creation of {@link CommuniqueRecipient} but after {@link
      * CommuniqueConfig} was turned into a serialised JSON file. In that period, strings in the old recipients format
      * were stored in the two (now-deprecated) <code>recipients</code> and <code>sentList</code> fields. Since it is

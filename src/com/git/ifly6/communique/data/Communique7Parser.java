@@ -27,22 +27,25 @@ import java.util.stream.Collectors;
 
 /**
  * <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
- * recipients as used in NationStates. It supersedes the old parser, {@link CommuniqueParser}, which used the custom
- * recipient declaration system in older versions of Communique.
+ * recipients as used in NationStates. It supersedes the old parser, {@code CommuniqueParser}, which used the custom
+ * recipient declaration system in older builds of Communique.
  * <p><code>Communique7Parser</code> also provides methods to translate between the old and new Communique address
  * tokens, allowing for a seamless transition between the old and new token systems.</p>
  * <p>This class does not lazily load data. When invoking <code>apply</code>, all elements are processed
- * immediately. This class is meant to be used fluently, e.g.
- * <code>new Communique7Parser().apply(tokens).listRecipients()</code>.</p>
+ * immediately. This class is meant to be used fluently, e.g.</p>
+ * <pre>new Communique7Parser().apply(tokens).listRecipients()</pre>
  * @author ifly6
  */
 public class Communique7Parser {
 
     /**
-     * Declares the version of the parser, which is based on two values: (1) the syntax of the Communique recipients
-     * language and (2) the file syntax in which that information is held.
+     * Declares parser build, which is based on two values: (1) the syntax of the Communique recipients
+      language and (2) the file syntax in which that information is held.
      */
-    public static final int version = 12;
+    public static final long BUILD = 12;
+
+    /** Declares semantic version. */
+    public static final String VERSION = "2.5";
 
     /** List of recipients changed by various actions and applications called by the parser. */
     private Set<CommuniqueRecipient> recipients;

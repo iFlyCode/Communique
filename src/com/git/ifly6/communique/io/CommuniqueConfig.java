@@ -23,6 +23,7 @@ import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,13 +36,15 @@ import java.util.stream.Collectors;
  */
 public class CommuniqueConfig implements java.io.Serializable {
 
-    // For backwards compatibility, almost all field names cannot be changed
-    private static final long serialVersionUID = Communique7Parser.version;
+    // NOTE! For backwards compatibility, do not change field names!
+    private static final long serialVersionUID = Communique7Parser.BUILD;
 
-    public static final String HEADER = "Communiqué Configuration File. Do not edit by hand. Produced at: "
-            + CommuniqueUtilities.getDate() + ". Produced by version " + Communique7Parser.version;
+    @SuppressWarnings("unused")
+    public static final String HEADER = MessageFormat.format(
+            "Communiqué configuration file. Do not edit by hand. Produced at: {0}. Communiqué build {1}",
+            CommuniqueUtilities.getDate(), Communique7Parser.BUILD);
 
-    public int version;
+    public long version; // do not change to 'build'
 
     protected boolean isRecruitment;
     public CommuniqueProcessingAction processingAction;
@@ -68,34 +71,25 @@ public class CommuniqueConfig implements java.io.Serializable {
      */
     public CommuniqueConfig() {
         this.keys = new JTelegramKeys(); // empty keys
-        this.version = defaultVersion(); // default version to current version
+        this.version = Communique7Parser.BUILD; // default version to current version
         this.processingAction = CommuniqueProcessingAction.NONE; // no processing action
     }
 
     /**
      * Constructor for <code>{@link CommuniqueConfig}</code>s. All the
      * <code>{@link CommuniqueRecipient}</code>s should be specified after the fact.
-     * @param t                the type of telegrams configured to be sent
-     * @param processingAction is the applicable processing action
-     * @param keys             are the keys
-     * @param s                for the wait string
+     * @param t          the type of telegrams configured to be sent
+     * @param procAction is the applicable processing action
+     * @param keys       are the keys
+     * @param s          for the wait string
      */
-    public CommuniqueConfig(JTelegramType t, CommuniqueProcessingAction processingAction,
+    public CommuniqueConfig(JTelegramType t, CommuniqueProcessingAction procAction,
                             JTelegramKeys keys, String s) {
         this();
         this.telegramType = t;
-        this.processingAction = processingAction;
+        this.processingAction = procAction;
         this.keys = keys;
         this.waitString = s;
-    }
-
-    /**
-     * Sets the default version to the version in {@link Communique7Parser}.
-     * @return the version in <code>Communique7Parser</code>
-     */
-    public int defaultVersion() {
-        this.version = Communique7Parser.version;
-        return Communique7Parser.version;
     }
 
     /**
@@ -145,7 +139,7 @@ public class CommuniqueConfig implements java.io.Serializable {
      * one in the header, to the version of the program on which it was saved.
      */
     void clean() {
-        version = this.defaultVersion(); // updates version
+
 
         // proceeds to clean all of the fields
         cRecipients = cRecipients.stream().distinct()
@@ -171,7 +165,7 @@ public class CommuniqueConfig implements java.io.Serializable {
      * @return the same with all the extra 'nation:'s removed.
      */
     private static String cleanNation(String recipientString) {
-        return recipientString.replace(":(nation:)*", ":");
+        return recipientString.replaceAll(":(nation:)+", ":");
     }
 
 }

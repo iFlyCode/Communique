@@ -17,113 +17,102 @@
 
 package com.git.ifly6.communique;
 
-import com.git.ifly6.communique.data.CommuniqueParser;
+import com.git.ifly6.communique.io.CommuniqueVersionException;
 import com.git.ifly6.nsapi.ApiUtils;
-import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * This class has been deprecated. Please see {@link com.git.ifly6.communique.io.CommuniqueLoader CLoader}. Note that
- * this is still in line with Communique 4 and 5's configuration files, and therefore, because it is still used to read
- * those configuration files when necessary, should not be changed.
- * <p>
- * <strike>Convenience class for correctly loading, deciphering, and verifying Communiqué configuration files. It is
- * directly based on <code>FileReader</code> so it assumes the default encoding and byte-buffer sizes. Note that this
- * class will automatically load and process any documents you give it when it is created. If you want that behaviour to
- * change, extend the class and write a new constructor.</strike>
- * </p>
- * @see CommuniqueParser
- * @see com.git.ifly6.communique.io.CommuniqueLoader CLoader
+ * This class has been deprecated. Reads old Communique configuration files.
+ * <p>See {@link com.git.ifly6.communique.io.CommuniqueLoader}. Note that this is still in line with Communique 4 and
+ * 5's configuration files, and therefore, because it is still used to read those configuration files when necessary,
+ * should not be changed.</p>
+ * @see com.git.ifly6.communique.io.CommuniqueLoader
  */
 @SuppressWarnings("DeprecatedIsStillUsed")
 @Deprecated
 public class CommuniqueFileReader {
 
-    List<String> fileContents = new ArrayList<>(0);
+    private List<String> fileContents;
 
     private boolean recruitment;
     private boolean randomised;
 
-    Object[] information = {new JTelegramKeys(), new String[] {}};
+    private Map.Entry<JTelegramKeys, List<String>> keysAndList;
 
     /**
-     * Constructs a FileReader tailored to the correct file and loads the entire file into an ArrayList. From there, it
-     * calls <code>parseConfig()</code> to load all the processed information into an accessible object.
-     * @param file of the Communiqué configuration file
-     * @throws FileNotFoundException if the Communiqué configuration file is non-existent or unwritable
-     * @throws JTelegramException    if the version is incorrect
+     * Reads the file to {@code List<String>}. Then parses information and makes accessible by get methods.
+     * @param file location of  configuration file
+     * @throws FileNotFoundException      if thrown by {@link FileReader}
+     * @throws CommuniqueVersionException if the build is incorrect
      */
-    public CommuniqueFileReader(File file) throws FileNotFoundException, JTelegramException {
-        // Immediately load the file into memory.
-        Scanner scan = new Scanner(new FileReader(file));
-        while (scan.hasNextLine())
-            fileContents.add(scan.nextLine().trim());
+    public CommuniqueFileReader(File file) throws FileNotFoundException, CommuniqueVersionException {
+        // load the file into memory
+        BufferedReader br = new BufferedReader(new FileReader(file));
 
-        scan.close();
+        fileContents = br.lines().collect(Collectors.toList());
 
-        if (isCompatible()) {
-            information = parseConfig();
-        } else {
-            throw new JTelegramException("Communiqué file version mismatch");
-        }
+        if (isCompatible()) keysAndList = parseConfig();
+        else
+            throw new CommuniqueVersionException("Communiqué file build mismatch");
     }
 
+
     /**
-     * Gets the keys from <code>information</code> which is returned in a JTelegramKeys object containing the keys which
-     * were written onto the configuration file.
-     * @return <code>JTelegramKeys</code> containing the keys
+     * Gets the client, secret, and telegram id keys.
+     * @return {@link JTelegramKeys} containing the keys
      */
     public JTelegramKeys getKeys() {
-        return (JTelegramKeys) information[0];
+        return keysAndList.getKey();
     }
 
     /**
-     * Gets the list of recipients from <code>information</code> which was written on the configuration file.
+     * Gets the list of recipient in configuration file.
      * <p>
      * The file structure is pretty simple. It uses comments and tags to store all information which are not the list of
      * recipients, as the list of recipients is everything but those two tag types. The tags used here are like the
-     * property tags, <code>isRecruitment</code>, for example. Anything which starts with a <code>#</code> character is
-     * also ignored. Everything else, as long as it is not a new line, is returned. All of this is implemented in the
-     * configuration parser in this class.
+     * property tags, {@code isRecruitment}, for example. Anything which starts with a {@code #} character is ignored.
+     * Everything else, as long as it is not a new line, is returned.
      * </p>
-     * @return <code>String[]</code> containing every entry of the configuration file except the commented or empty
-     * lines
+     * @return array of recipients
      * @see #parseConfig
      */
     public String[] getRecipients() {
-        return (String[]) information[1];
+        return keysAndList.getValue().toArray(new String[0]);
     }
 
     /**
-     * Gets the flag <code>isRecruitment</code> which was loaded off the provided configuration file.
-     * @return <code>boolean</code> containing the contents of <code>isRecruitment</code>
+     * Gets flag {@code isRecruitment} from configuration file.
+     * @return true if recruiting
      */
     public boolean isRecruitment() {
         return recruitment;
     }
 
     /**
-     * Gets the flag <code>randomSort</code> which was loaded off the provided configuration file.
-     * @return <code>boolean</code> containing the contents of <code>randomSort</code>
+     * Gets flag {@code randomSort} loaded from the provided configuration file.
+     * @return true if preference is randomised sending order
      */
     public boolean isRandomised() {
         return randomised;
     }
 
     /**
-     * Parses the entire configuration file by searching out the <code>client_key</code> and other such keys, ignores
-     * lines which start with <code>#</code> and then returns everything else as the recipients list.
-     * @return <code>Object[]</code> which replaces the default initialisers of <code>information</code> which is then
-     * referenced by other methods in this class.
+     * Parses the entire configuration file by searching out the {@code client_key} and other such keys, ignores lines
+     * which start with {@code #} and then returns everything else as the recipients list.
+     * @return tuple with {@link JTelegramKeys} and {@code List<String>}
      */
-    private Object[] parseConfig() {
+    private Map.Entry<JTelegramKeys, List<String>> parseConfig() {
+        // ignores # implicitly in last element of switch
         JTelegramKeys keys = new JTelegramKeys();
         List<String> recipientsList = new ArrayList<>(0);
 
@@ -150,35 +139,32 @@ public class CommuniqueFileReader {
             }
         }
 
-        return new Object[] {keys, recipientsList.toArray(new String[0])};
+        return new AbstractMap.SimpleEntry<>(keys, recipientsList);
     }
 
     /**
-     * Queries the file for an integer version to determine whether it is compatible with this parser. If so, it returns
-     * true. Otherwise, it will return false. This operation also effectively makes sure that there is a file which can
-     * be read.
-     * @return <code>boolean</code> containing true or false on whether the configuration file is compatible.
+     * Queries the file for build number to determine whether it is compatible with this parser.
+     * @return true if compatible
      */
     public boolean isCompatible() {
-        return getFileVersion() < 7;    // changed from original
+        return getFileBuild() < 7;    // changed from original
     }
 
     /**
-     * Finds the file version declarer by finding the line which states "# Produced by version" or the version tag. The
-     * following is an integer which determines which version of the program this file was made by. Returns its
-     * contents.
-     * @return <code>String</code> containing the ending of the commented version line
+     * Checks the version tag. Otherwise, finds file build by parsing text for line
+     * <pre># Produced by version INT</pre>
+     * @return build number
      */
-    public int getFileVersion() {
+    public long getFileBuild() {
         // Look for version tag first
         for (String element : fileContents)
             if (element.startsWith("version"))
-                return Integer.parseInt(element.replace("version=", ""));
+                return Long.parseLong(element.replace("version=", "").trim());
 
         // If the version tag does not yet exist, look for header version tag
         for (String element : fileContents)
             if (element.startsWith("# Produced by version "))
-                return Integer.parseInt(element.replace("# Produced by version ", ""));
+                return Long.parseLong(element.replace("# Produced by version ", "").trim());
 
         return 0;
     }

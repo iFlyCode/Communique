@@ -43,9 +43,10 @@ import java.util.logging.Logger;
  */
 class CommuniqueTextDialog extends JDialog {
 
-    private static final Logger log = Logger.getLogger(CommuniqueTextDialog.class.getName());
+    private static final long serialVersionUID = Communique7Parser.BUILD;
+	private static final Logger log = Logger.getLogger(CommuniqueTextDialog.class.getName());
 
-    private static final long serialVersionUID = Communique7Parser.version;
+
 
     static void createDialog(JFrame parent, String title, String message) {
         new CommuniqueTextDialog(parent, title, message, new Font(Font.SANS_SERIF, Font.PLAIN, 11), true);

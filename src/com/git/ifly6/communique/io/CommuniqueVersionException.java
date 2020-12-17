@@ -14,11 +14,15 @@
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 package com.git.ifly6.communique.io;
 
-/**
- * Thrown by {@link CommuniqueScraper} if there is no resolution in the WA chamber selected.
- * @author ifly6
- */
-public class NoResolutionException extends RuntimeException {
+public class CommuniqueVersionException extends RuntimeException {
+    public CommuniqueVersionException(String message) {
+        super(message);
+    }
+
+    public CommuniqueVersionException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

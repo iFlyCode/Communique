@@ -50,7 +50,8 @@ public class CommuniqueLAF {
         else if (CommuniqueUtilities.IS_OS_MAC) {
             appSupport = Paths.get(System.getProperty("user.home"), "Library", "Application Support", "Communique");
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Communiqué " + Communique7Parser.version);
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name",
+                    "Communiqué " + Communique7Parser.BUILD);
 
         } else appSupport = Paths.get(System.getProperty("user.dir"), "config");
 

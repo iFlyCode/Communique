@@ -169,7 +169,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         double sWidth = screenDimensions.getWidth();
         double sHeight = screenDimensions.getHeight();
 
-        frame.setTitle("Communiqué " + Communique7Parser.version);
+        frame.setTitle("Communiqué " + Communique7Parser.BUILD);
         frame.setBounds(100, 100, (int) Math.round(2 * sWidth / 3), (int) Math.round(2 * sHeight / 3));
         frame.setMinimumSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -818,7 +818,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
     @Override
     public CommuniqueConfig exportState() {
-        config.defaultVersion();
+
         LOGGER.info("Communiqué config exported");
         return this.config;
     }
@@ -866,7 +866,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     }
 
     /**
-     * @see com.git.ifly6.nsapi.telegram.JTelegramLogger#log(java.lang.String)
+     {@inheritDoc}
      */
     @Override
     public void log(String input) {
@@ -874,7 +874,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     }
 
     /**
-     * @see com.git.ifly6.nsapi.telegram.JTelegramLogger#sentTo(java.lang.String, int, int)
+     {@inheritDoc}
      */
     @Override
     public void sentTo(String recipientName, int x, int length) {
