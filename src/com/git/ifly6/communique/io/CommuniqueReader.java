@@ -67,9 +67,7 @@ class CommuniqueReader {
 	 * @throws IOException if there is an issue reading the data
 	 */
 	CommuniqueConfig read() throws IOException {
-
 		CommuniqueConfig config;
-
 		try { // note, this will handle future builds of the class by ignoring the now-irrelevant fields
 			Gson gson = new Gson();
 			config = gson.fromJson(Files.newBufferedReader(path), CommuniqueConfig.class);
@@ -94,10 +92,7 @@ class CommuniqueReader {
 			// defaults for wait string are not necessary: blank accepts hard-coded defaults already. A+
 
 		} catch (JsonSyntaxException | JsonIOException e) {
-
-			// If we are reading one of the old files, which would throw some RuntimeExceptions,
-			// try the old reader.
-
+			// If we are reading one of the old files, which would throw some RuntimeExceptions; try the old reader
 			LOGGER.log(Level.INFO, "Json exception thrown. Attempting read with old file reader.", e);
 			CommuniqueFileReader reader = new CommuniqueFileReader(path.toFile());
 
@@ -114,7 +109,6 @@ class CommuniqueReader {
 					.map(CommuniqueRecipient::parseRecipient)
 					.collect(Collectors.toList());
 			config.setcRecipients(recipients);
-
 		}
 
 		// There can be old files in Json which predate the introduction of CommuniqueRecipient in version 7
