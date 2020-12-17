@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
  * CommuniqueRecruiter} and {@link MarconiRecruiter}.
  * @author ifly6
  */
+@Deprecated
 public abstract class AbstractCommuniqueRecruiter implements JTelegramLogger {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractCommuniqueRecruiter.class.getName());

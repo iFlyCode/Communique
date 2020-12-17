@@ -25,18 +25,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Provides the outline of the Communique and Marconi programs. Also provides the shared {@link CommuniqueConfig} save
- * and load functionality shared between {@link Communique} and {@link Marconi}.
+ * Provides the shared {@link CommuniqueConfig} save and load functionality shared between {@link Communique} and {@link
+ * Marconi}.
  * @author ifly6
  */
 public abstract class AbstractCommunique {
 
-    /**
-     * Returns a <code>CConfig</code> object which represents the state of the program as it is here.
-     * @return a <code>CConfig</code> representing the program
-     */
+    /** @return {@link CommuniqueConfig} representing current program state. */
     public abstract CommuniqueConfig exportState();
 
+    /** Imports {@link CommuniqueConfig} representing overwriting program state. */
     public abstract void importState(CommuniqueConfig config);
 
     public void save(Path savePath) throws IOException {

@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
  * interface. The class is designed around the manipulation of {@link CommuniqueConfig} objects which are then returned
  * to {@link Communique} for possible saving.
  */
+@Deprecated
 public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 
     private static final String[] protectedRegions = new String[] {"the Pacific", "the North Pacific", "the South Pacific",

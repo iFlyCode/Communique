@@ -18,16 +18,19 @@
 package com.git.ifly6.marconi;
 
 import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.communique.data.Communique7Parser;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -38,20 +41,26 @@ public class MarconiUtilities {
     static Path lockFile = Paths.get(System.getProperty("user.dir"), "marconi.lock");
     private static Scanner scan = new Scanner(System.in);
 
-    /**
-     * Determines whether there is another instance of Marconi which is already sending.
-     * @return boolean, whether program is already running
-     */
-    static boolean isFileLocked() {
+    /** Creates Marconi lock file. */
+    static void createFileLock() {
         try {
             if (!Files.exists(lockFile)) {
-                Files.write(lockFile, Collections.singletonList(CommuniqueUtilities.getDate()));
-                return false;
-            } else return true;
-        } catch (IOException exc) {
-            LOGGER.log(Level.INFO, "Cannot determine if program is already running from lock file.", exc);
-            return false;
+                Files.write(lockFile, Collections.singletonList(
+                        String.format("marconi. started %s.", CommuniqueUtilities.getDate())));
+                lockFile.toFile().deleteOnExit(); // delete lock file when marconi closes!
+            }
+        } catch (IOException e) {
+            LOGGER.severe("Cannot create lock file!");
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Determines whether there is another instance of Marconi which is already sending.
+     * @return boolean, whether lock file already exists
+     */
+    static boolean isFileLocked() {
+        return Files.exists(lockFile);
     }
 
     /**
@@ -95,5 +104,27 @@ public class MarconiUtilities {
      */
     static String promptYN(String prompt) {
         return prompt(prompt, Arrays.asList("yes", "no", "y", "n"));
+    }
+
+    /** @return name of the jar in which Marconi is located. */
+    static String getJARName() {
+        try {
+            return new File(Marconi.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                    .getName();
+        } catch (URISyntaxException e) {
+            return String.format("Marconi_%d.jar", Communique7Parser.version); // default to standard naming format.
+        }
+    }
+
+    /** Creates two column string. */
+    static String twoColumn(List<String> items) {
+        List<String> lines = new ArrayList<>();
+        for (int x = 0; x < items.size(); x = x + 2)
+            try {
+                lines.add(String.format("%-30.30s  %-30.30s", items.get(x), items.get(x + 1)));
+            } catch (IndexOutOfBoundsException e) {
+                lines.add(items.get(x)); // odd number of entries
+            }
+        return String.join("\n", lines);
     }
 }

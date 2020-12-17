@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class HappeningsParser {
+    // todo make monitor
 
     private static final String HAPPENINGS_URL = "https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
 

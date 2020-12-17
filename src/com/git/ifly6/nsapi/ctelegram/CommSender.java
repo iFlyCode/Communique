@@ -28,7 +28,8 @@ import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.HashSet;
+import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -50,14 +51,14 @@ public class CommSender {
     public static final Logger LOGGER = Logger.getLogger(CommSender.class.getName());
 
     /** One thread for many clients. */
-    private static ScheduledExecutorService scheduller = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> job;
 
-    private CommSenderOutput outputInterface;
-
+    private final CommSenderOutput outputInterface;
+    private final Instant initAt = Instant.now();
     private final JTelegramKeys keys;
-    private final CommMonitor monitor;
     private final JTelegramType telegramType;
+    private final CommMonitor monitor;
 
     /** See {@link #setFeedLimit(int)}. */
     private int feedLimit = Integer.MAX_VALUE;
@@ -72,7 +73,7 @@ public class CommSender {
     private final Queue<String> sendQueue = new LinkedList<>();
 
     /** Recipients to which the telegram has already been sent are put in the sent list. */
-    private Set<String> sentList = new HashSet<>();
+    private Set<String> sentList = new LinkedHashSet<>(); // ordered
 
     /**
      * Constructs a {@link CommSender}.
@@ -193,7 +194,7 @@ public class CommSender {
         if (isRunning())
             throw new UnsupportedOperationException("Cannot start sending after it already started");
 
-        job = scheduller.scheduleWithFixedDelay(() -> {
+        job = scheduler.scheduleWithFixedDelay(() -> {
             // if no recipient in queue, try to get some
             // if monitor is exhausted, it will automatically throw an exhausted exception
 
@@ -250,11 +251,21 @@ public class CommSender {
         }
     }
 
+    /** Returns list of sent recipients. */
+    public Set<String> getSentList() {
+        return sentList;
+    }
+
+    /** @returns {@link CommSender} initialisation time */
+    public Instant getInitAt() {
+        return initAt;
+    }
+
     /** @return true if sending telegrams. */
     public boolean isRunning() {
         if (job == null) return false;
         if (job.isDone() || job.isCancelled()) return false;
-        if (scheduller.isShutdown() || scheduller.isTerminated()) return false;
+        if (scheduler.isShutdown() || scheduler.isTerminated()) return false;
         return true;
     }
 

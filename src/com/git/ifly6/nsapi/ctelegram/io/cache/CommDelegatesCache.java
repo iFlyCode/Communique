@@ -25,7 +25,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-/** Caches NationStates delegates for later access. <b>Only invoke with {@link #DELEGATE_KEY}!</b> */
+/**
+ * Caches NationStates delegates for later access. <b>Only invoke with {@link #DELEGATE_KEY}!</b> Cache expiration time
+ * for this cache is thirty minutes; prefer {@link #getDelegates()}.
+ */
 public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> {
 
     public static final String DELEGATE_KEY = "__delegates__";
@@ -36,8 +39,7 @@ public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> 
     }
 
     /**
-     * Cache expiration time for this cache is thirty minutes. {@link #lookupObject(String)} should only be invoked with
-     * {@link #DELEGATE_KEY}.
+     * Gets the one cache.
      */
     public static CommDelegatesCache getInstance() {
         if (instance == null) instance = new CommDelegatesCache(Duration.ofMinutes(30));

@@ -120,7 +120,6 @@ public enum RecipientType {
             String tag = cr.getName();
             if (tag.equals("recruit"))
                 return Collections.emptyList(); // recruit is handled by Communique logic, not here
-            if (tag.equals("repeat")) return Collections.emptyList(); // repeat last pull and continue
             if (tag.equals("active")) return HappeningsParser.getActiveNations();  // active
             return Collections.emptyList();
         }

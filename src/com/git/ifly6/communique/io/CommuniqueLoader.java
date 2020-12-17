@@ -39,8 +39,7 @@ public class CommuniqueLoader {
 
     private Path path;
 
-    // Force initialisation with appropriate variables
-    @SuppressWarnings(value = {"unused"})
+    /** @see CommuniqueLoader(Path) */
     private CommuniqueLoader() {
     }
 

@@ -37,12 +37,12 @@ public class CommuniqueUtilities {
      * @param seconds elapsed
      * @return a string in days, hours, minutes, and seconds
      */
-    public static String time(int seconds) {
-        int minutes = seconds / 60;
+    public static String time(long seconds) {
+        long minutes = seconds / 60;
         seconds -= minutes * 60;
-        int hours = minutes / 60;
+        long hours = minutes / 60;
         minutes -= hours * 60;
-        int days = hours / 24;
+        long days = hours / 24;
         hours -= days * 24;
         return String.format("%dd:%dh:%dm:%ds", days, hours, minutes, seconds);
     }

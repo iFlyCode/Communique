@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /** @author ifly6 */
+@Deprecated
 public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 
     private static final Logger LOGGER = Logger.getLogger(MarconiRecruiter.class.getName());

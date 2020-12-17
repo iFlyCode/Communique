@@ -38,7 +38,7 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
     private List<String> newNations;
 
     /**
-     * Singleton. One monitor for one site. See also Plutarch, <i>Life of Demetrias</i> {@code
+     * Singleton. {@link #getInstance()}. One monitor for one site. See also Plutarch, <i>Life of Demetrias</i> {@code
      * http://www.attalus.org/old/demetrius2.html#42}.
      */
     private CommNewNationsMonitor() {

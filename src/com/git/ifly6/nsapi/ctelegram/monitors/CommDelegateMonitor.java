@@ -23,6 +23,7 @@ import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +47,7 @@ public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMoni
     protected void updateAction() {
         try {
             delegates = CommDelegatesCache.getInstance().getDelegates();
+            Collections.shuffle(delegates); // randomise order
             repeatedFailures = 0;
         } catch (NSIOException e) {
             repeatedFailures++;
