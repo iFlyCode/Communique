@@ -17,6 +17,8 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import com.git.ifly6.nsapi.NSConnection;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Executors;
@@ -34,8 +36,8 @@ import java.util.logging.Logger;
 public abstract class CommUpdatingMonitor implements CommMonitor {
 
     public static final Logger LOGGER = Logger.getLogger(CommUpdatingMonitor.class.getName());
-
     public static final Duration DEFAULT_UPDATE_INTERVAL = Duration.ofSeconds(120);
+
     private Duration updateInterval = null;
 
     /** {@link Instant} of last update start. */
@@ -56,12 +58,30 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
 
     /**
      * Constructs an updating monitor with {@link #DEFAULT_UPDATE_INTERVAL} which, when it starts, calls an update
-     * action. Monitors should automatically be started in their constructors; manual start is necessary to allow
-     * assignment of needed variables.
+     * action. Monitor automatically starts.
      */
     public CommUpdatingMonitor() {
-        ex = Executors.newSingleThreadScheduledExecutor();
+        this(DEFAULT_UPDATE_INTERVAL);
     }
+
+    /**
+     * Constructs updating monitor with provided update interval. Monitor automatically starts.
+     * @param updateInterval replacing {@link #DEFAULT_UPDATE_INTERVAL}
+     */
+    public CommUpdatingMonitor(final Duration updateInterval) {
+        final int minimumWaitMillis = NSConnection.WAIT_TIME * 2;
+        if (updateInterval.toMillis() < minimumWaitMillis)
+            throw new IllegalArgumentException(
+                    String.format("Cannot construct monitor with update interval less than %d ms",
+                            minimumWaitMillis));
+
+        ex = Executors.newSingleThreadScheduledExecutor();
+        this.updateInterval = updateInterval;
+        this.start();
+    }
+
+    @Override
+    public abstract boolean recipientsExhausted();
 
     /**
      * {@code updateAction()} defines what the monitor should do to update. Place the necessary code in this location
@@ -70,7 +90,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     protected abstract void updateAction();
 
     /** Starts the monitor immediately. If start is called after job already started, does nothing. */
-    public void start() {
+    private void start() {
         start(Duration.ZERO);
     }
 
@@ -78,7 +98,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      * Starts monitor after initial delay.
      * @throws UnsupportedOperationException if start called after already started
      */
-    public void start(Duration initialDelay) {
+    private void start(Duration initialDelay) {
         if (ex.isShutdown()) { // if it is shut down, create a new thread and restart
             LOGGER.info("update action executor service was shut down somehow; allocating new...");
             ex = Executors.newSingleThreadScheduledExecutor();
@@ -86,15 +106,21 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
         if (job == null || job.isDone()) {
             job = ex.scheduleWithFixedDelay(runnableAction,
                     Math.max(0, initialDelay.toMillis()), // floor initial delay to 0
-                    (updateInterval == null
-                            ? DEFAULT_UPDATE_INTERVAL
-                            : updateInterval).toMillis(),
+                    updateInterval.toMillis(),
                     TimeUnit.MILLISECONDS);
 
         } else {
             LOGGER.info("Attempted to start after job already started!");
             throw new UnsupportedOperationException("Cannot start monitor after it already started");
         }
+    }
+
+    /**
+     * Restarts the monitor immediately. All monitors should initialise and start automatically. This method is provided
+     * to restart a stopped monitor.
+     */
+    public void restart() {
+        start();
     }
 
     /** Stops the monitor. */
@@ -148,7 +174,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      * @return timer update interval in integer seconds
      */
     public Duration getUpdateInterval() {
-        return updateInterval == null ? DEFAULT_UPDATE_INTERVAL : updateInterval;
+        return updateInterval;
     }
 
     /** Thrown on exception in update thread. */

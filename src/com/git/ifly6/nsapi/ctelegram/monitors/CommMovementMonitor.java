@@ -44,21 +44,25 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
      * @param d direction of travel to check for
      */
     public CommMovementMonitor(List<String> r, Direction d) {
-        this(r, d, true);
+        this(r, d, DEFAULT_UPDATE_INTERVAL);
     }
 
     /**
      * Creates a movement monitor.
-     * @param regions          to monitor
-     * @param direction        of travel to monitor
-     * @param startImmediately if true
+     * @param regions        to monitor
+     * @param direction      of travel to monitor
+     * @param updateInterval update interval
      */
-    public CommMovementMonitor(List<String> regions, Direction direction, boolean startImmediately) {
-        super();
+    public CommMovementMonitor(List<String> regions, Direction direction, Duration updateInterval) {
+        super(updateInterval);
         this.regions = regions;
         this.direction = direction;
-        if (startImmediately)
-            start();
+    }
+
+    /** Recipients generate slowly, but never exhaust. */
+    @Override
+    public boolean recipientsExhausted() {
+        return false;
     }
 
     @Override

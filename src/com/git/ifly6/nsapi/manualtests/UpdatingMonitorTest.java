@@ -39,6 +39,10 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
     private Random random = new Random();
     private List<Integer> integers = new ArrayList<>();
 
+    public UpdatingMonitorTest(Duration updateInterval) {
+        super(updateInterval);
+    }
+
     @Override
     public List<String> getRecipients() {
         final List<String> stringList = integers.stream()
@@ -46,6 +50,11 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
                 .collect(Collectors.toList());
         LOGGER.info(String.format("Called integers %s", stringList.toString()));
         return stringList;
+    }
+
+    @Override
+    public boolean recipientsExhausted() {
+        return false; // random numbers don't exhaust
     }
 
     @Override
@@ -66,12 +75,8 @@ public class UpdatingMonitorTest extends CommUpdatingMonitor {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        final String action = "change delay interval";
-
         System.out.println("Start update test");
-        UpdatingMonitorTest mct = new UpdatingMonitorTest();
-        mct.setUpdateInterval(Duration.ofSeconds(1));
-        mct.start();
+        UpdatingMonitorTest mct = new UpdatingMonitorTest(Duration.ofSeconds(1));
 
         System.out.println("Delay for start");
         Thread.sleep(50); // give time for instantiation...

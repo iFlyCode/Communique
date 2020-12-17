@@ -18,38 +18,39 @@
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
 import com.git.ifly6.nsapi.NSIOException;
-import com.git.ifly6.nsapi.NSWorld;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 
-import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
  * Provides up-to-date view of the list of NationStates delegates. Updates every 30 minutes, per {@link
- * #DELEGATE_UPDATE_INTERVAL}.
+ * #DELEGATE_UPDATE_INTERVAL}. Monitor is meant to get delegates (and also to new delegates elected after
+ * initialisation) for approvals. Exhausts after 36 hours.
  */
 public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     public static final Duration DELEGATE_UPDATE_INTERVAL = Duration.ofMinutes(30);
+    private static final Instant startTime = Instant.now();
 
     private int repeatedFailures = 0;
     private List<String> delegates;
 
     public CommDelegateMonitor() {
-        super();
-        setUpdateInterval(DELEGATE_UPDATE_INTERVAL);
-        start();
+        super(DELEGATE_UPDATE_INTERVAL);
     }
 
     @Override
     protected void updateAction() {
         try {
-            delegates = NSWorld.getDelegates();
+            delegates = CommDelegatesCache.getInstance().getDelegates();
             repeatedFailures = 0;
-        } catch (IOException e) {
+        } catch (NSIOException e) {
             repeatedFailures++;
-            if (repeatedFailures > 10)
-                throw new NSIOException("failed to get delegates", e);
+            if (repeatedFailures > 5)
+                throw new NSIOException("Failed to get delegates more than five times!", e);
         }
     }
 
@@ -59,5 +60,11 @@ public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMoni
     @Override
     public List<String> getRecipients() {
         return delegates;
+    }
+
+    /** Monitor exhausts after one and a half days (36 hours). */
+    @Override
+    public boolean recipientsExhausted() {
+        return startTime.plus(36, ChronoUnit.HOURS).isAfter(Instant.now());
     }
 }

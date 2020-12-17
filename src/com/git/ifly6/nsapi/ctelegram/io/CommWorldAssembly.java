@@ -38,6 +38,12 @@ public class CommWorldAssembly {
     private CommWorldAssembly() {
     }
 
+    /** Formats URL to get information on the resolution. */
+    private static String formatResolutionURL(Chamber c) {
+        return NSConnection.API_PREFIX
+                + MessageFormat.format("wa={0}&q=resolution", c.getCouncilCode());
+    }
+
     /** Formats URL for NS chamber vote; nation. */
     private static String formatNationsURL(Chamber c, Vote v) {
         return NSConnection.API_PREFIX
@@ -56,6 +62,18 @@ public class CommWorldAssembly {
         // https://www.nationstates.net/cgi-bin/api.cgi?wa=1&q=proposals
         return NSConnection.API_PREFIX
                 + MessageFormat.format("wa={0}&q=proposals", c.getCouncilCode());
+    }
+
+    /** Gets resolution ID for proposal in chamber. */
+    public static String getProposalID(Chamber chamber) {
+        try {
+            NSConnection apiConnect = new NSConnection(formatResolutionURL(chamber));
+            XML xml = new XMLDocument(apiConnect.getResponse());
+            return xml.xpath("/WA/RESOLUTION/ID/text()").get(0);
+
+        } catch (IOException e) {
+            throw new NSIOException("Could not connect to NationStates API", e);
+        }
     }
 
     /**

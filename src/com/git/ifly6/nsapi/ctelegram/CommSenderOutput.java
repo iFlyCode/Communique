@@ -26,4 +26,9 @@ public interface CommSenderOutput {
      * @param numberSent serial count
      */
     void sentTo(String recipient, int numberSent);
+
+    /**
+     * Defines actions to be taken when {@link CommSender} send thread terminates.
+     */
+    void onTerminate();
 }

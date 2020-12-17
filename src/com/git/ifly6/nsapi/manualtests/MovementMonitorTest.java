@@ -29,9 +29,7 @@ public class MovementMonitorTest {
     public static void main(String[] args) throws InterruptedException {
         List<String> regions = Arrays.asList("Europe");
         CommMovementMonitor movementMonitor = new CommMovementMonitor(
-                regions, CommMovementMonitor.Direction.EXIT, false);
-        movementMonitor.setUpdateInterval(Duration.ofSeconds(60));
-        movementMonitor.start();
+                regions, CommMovementMonitor.Direction.EXIT, Duration.ofSeconds(60));
 
         List<String> totalRecipients = new ArrayList<>();
         while (totalRecipients.size() < 10) {

@@ -195,14 +195,26 @@ public class CommSender {
 
         job = scheduller.scheduleWithFixedDelay(() -> {
             // if no recipient in queue, try to get some
-            if (sendQueue.peek() == null) {
-                LOGGER.info("No recipients in queue; attempting to feed");
-                feedQueue();
+            // if monitor is exhausted, it will automatically throw an exhausted exception
 
-                // if still there are no recipients to queue
-                if (sendQueue.peek() == null) {
-                    LOGGER.info("Attempt to feed failed; we'll get recipients next time");
-                    return;
+            if (sendQueue.peek() == null) {
+                if (monitor.recipientsExhausted()) {
+                    LOGGER.info("No recipients in queue; attempting to feed");
+                    feedQueue();
+
+                    // if still there are no recipients to queue
+                    if (sendQueue.peek() == null) {
+                        LOGGER.info("Mission to feed failed; we'll get recipients next time");
+                        return;
+                    }
+
+                } else {
+                    LOGGER.info("No recipients in queue; cannot feed as monitor is exhausted");
+                    this.stopSend();
+
+                    LOGGER.info("Calling interface onTerminate action");
+                    this.outputInterface.onTerminate();
+                    return; // end
                 }
             }
 
@@ -224,15 +236,15 @@ public class CommSender {
     public void restartSend() {
         LOGGER.fine("Restarting send thread");
         if (monitor instanceof CommUpdatingMonitor)
-            ((CommUpdatingMonitor) monitor).start();
+            ((CommUpdatingMonitor) monitor).restart();
 
         this.startSend();
     }
 
     public void stopSend() {
-        LOGGER.fine("Send thread stopped");
+        LOGGER.fine("Stopping send thread");
         if (job != null) {
-            job.cancel(false); // allow completion
+            job.cancel(false); // must allow completion!!
             if (monitor instanceof CommUpdatingMonitor)
                 ((CommUpdatingMonitor) monitor).stop();
         }

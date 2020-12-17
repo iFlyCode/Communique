@@ -17,8 +17,8 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 
 /** Monitors approval actions related to a World Assembly proposal. */
 public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMonitor {
+
+    private boolean exhausted;
 
     private String proposalID;
     private Action action;
@@ -49,6 +51,7 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
      */
     @Override
     public List<String> getRecipients() {
+        if (exhausted) throw new ExhaustedException("Proposal no longer exists; approval change stream exhausted.");
         Set<String> delegateSet = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
         List<String> changedApprovers = action.find(previousApprovers, currentApprovers);
         return changedApprovers.stream()
@@ -57,9 +60,18 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
     }
 
     @Override
+    public boolean recipientsExhausted() {
+        return exhausted;
+    }
+
+    @Override
     protected void updateAction() {
         previousApprovers = currentApprovers;
-        currentApprovers = CommWorldAssembly.getApprovers(proposalID);
+        try {
+            currentApprovers = CommWorldAssembly.getApprovers(proposalID);
+        } catch (CommWorldAssembly.NoSuchProposalException e) {
+            exhausted = true;
+        }
     }
 
     /** Enumerates actions undertaken by delegates. */

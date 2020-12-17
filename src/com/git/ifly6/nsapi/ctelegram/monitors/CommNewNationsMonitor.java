@@ -43,7 +43,6 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
      */
     private CommNewNationsMonitor() {
         super();
-        start();
     }
 
     /**
@@ -55,15 +54,9 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
         return instance;
     }
 
-    @Override
-    protected void updateAction() {
-        newNations = NSWorld.getNew();
-    }
-
     /**
-     * {@inheritDoc} New nations are updated at interval {@link #setUpdateInterval(Duration)} but default behaviour is
-     * to update cached data every 120 seconds. Calling this method multiple times within the update interval will not
-     * yield new data.
+     * {@inheritDoc} Provides view, updated every 120 seconds, of the new nations API call. Calling this method multiple
+     * times within the update interval will not yield new data.
      */
     @Override
     public List<String> getRecipients() {
@@ -72,5 +65,16 @@ public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMo
             return new ArrayList<>();
         }
         return newNations;
+    }
+
+    /** Recipients never exhaust. */
+    @Override
+    public boolean recipientsExhausted() {
+        return false;
+    }
+
+    @Override
+    protected void updateAction() {
+        newNations = NSWorld.getNew();
     }
 }

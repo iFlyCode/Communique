@@ -17,6 +17,8 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import com.git.ifly6.nsapi.NSException;
+
 import java.util.List;
 
 /**
@@ -30,4 +32,16 @@ public interface CommMonitor {
      */
     List<String> getRecipients();
 
+    /**
+     * Returns boolean indicating whether monitor is exhausted of recipients.
+     * @return true if exhausted
+     */
+    boolean recipientsExhausted();
+
+    /** Thrown if calling an exhausted monitor. */
+    class ExhaustedException extends NSException {
+        public ExhaustedException(String message) {
+            super(message);
+        }
+    }
 }

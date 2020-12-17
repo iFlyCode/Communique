@@ -28,9 +28,11 @@ import java.util.stream.Collectors;
 public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(CommAssemblyMonitor.class.getName());
+    private boolean exhausted = false;
 
     protected CommWorldAssembly.Chamber chamber;
     protected CommWorldAssembly.Vote voting;
+    private String resolutionID;
 
     protected Set<String> previousVoters;
     protected Set<String> currentVoters;
@@ -45,6 +47,8 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
             LOGGER.info("Not enough information to find any changes.");
             return new ArrayList<>();
         }
+
+        if (exhausted) throw new ExhaustedException("Assembly monitor exhausted; initialised resolution ID changed.");
         return currentVoters.stream()
                 .filter(s -> !previousVoters.contains(s))
                 .collect(Collectors.toList());
@@ -52,9 +56,28 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
 
     @Override
     protected void updateAction() {
-        Set<String> voters = getMonitoredRecipients();
-        previousVoters = currentVoters;
-        currentVoters = voters;
+        exhausted = determineIfExhausted();
+        if (!exhausted) {
+            previousVoters = currentVoters;
+            currentVoters = getMonitoredRecipients();
+        }
+    }
+
+    /** Determines whether the {@link CommAssemblyMonitor} is exhausted. */
+    protected boolean determineIfExhausted() {
+        String currentProposal = CommWorldAssembly.getProposalID(this.chamber);
+        if (resolutionID != null)
+            return resolutionID.equals(currentProposal);
+
+        // if resolutionID == null, initialise it
+        LOGGER.info(String.format("Loading proposal ID into monitor for resolution %s", currentProposal));
+        resolutionID = currentProposal;
+        return false;
+    }
+
+    @Override
+    public boolean recipientsExhausted() {
+        return exhausted;
     }
 
     /** @return set of recipients monitored. */

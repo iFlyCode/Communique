@@ -18,21 +18,26 @@
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * A static monitor does not update or monitor much of anything. After instantiation, it contains the data it contains
  * without any changes. The contents of the class are immutable.
  */
 public class CommStaticMonitor implements CommMonitor {
-    private final List<String> recipients;
+    private final List<String> allRecipients;
+    private final Queue<String> recipients;
+    private boolean exhausted = false;
 
     /**
      * Creates a static monitor
      * @param recipients to contain
      */
     public CommStaticMonitor(List<String> recipients) {
-        this.recipients = Collections.unmodifiableList(recipients);
+        allRecipients = recipients;
+        this.recipients = new LinkedList<>(allRecipients);
     }
 
     /**
@@ -40,6 +45,18 @@ public class CommStaticMonitor implements CommMonitor {
      */
     @Override
     public List<String> getRecipients() {
-        return recipients;
+        String nextRecipient = recipients.poll();
+        if (nextRecipient != null)
+            return Collections.singletonList(nextRecipient);
+
+        this.exhausted = true;
+        throw new ExhaustedException(String.format("Static recipients (init with %d) exhausted",
+                allRecipients.size()));
+    }
+
+    /** Recipients exhaust when all recipients provided by initialiser have been got. */
+    @Override
+    public boolean recipientsExhausted() {
+        return exhausted;
     }
 }
