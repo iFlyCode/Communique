@@ -160,21 +160,20 @@ public class CommuniqueFileReader {
 	}
 
 	/**
-	 * Finds file build by parsing text for line
-	 * <pre># Produced by version</pre>
-	 * Otherwise, checks the version tag.
-	 * @return {@code int} with build number
+	 * Checks the version tag. Otherwise, finds file build by parsing text for line
+	 * <pre># Produced by version INT</pre>
+	 * @return build number
 	 */
-	public int getFileBuild() {
+	public long getFileBuild() {
 		// Look for version tag first
 		for (String element : fileContents)
 			if (element.startsWith("version"))
-				return Integer.parseInt(element.replace("version=", ""));
+				return Long.parseLong(element.replace("version=", "").trim());
 
 		// If the version tag does not yet exist, look for header version tag
 		for (String element : fileContents)
 			if (element.startsWith("# Produced by version "))
-				return Integer.parseInt(element.replace("# Produced by version ", ""));
+				return Long.parseLong(element.replace("# Produced by version ", "").trim());
 
 		return 0;
 	}
