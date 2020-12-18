@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
 import java.awt.Font;
 
-import static com.git.ifly6.communique.ngui.components.CommuniqueConstants.CODE_HEADER;
+import static com.git.ifly6.communique.ngui.CommuniqueConstants.CODE_HEADER;
 
 public class CommuniqueFactory {
 

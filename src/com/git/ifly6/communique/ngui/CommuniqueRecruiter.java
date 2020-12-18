@@ -25,7 +25,6 @@ import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
-import com.git.ifly6.communique.ngui.components.CommuniqueConstants;
 import com.git.ifly6.communique.ngui.components.CommuniqueLAF;
 import com.git.ifly6.communique.ngui.components.CommuniqueNativisation;
 import com.git.ifly6.nsapi.ApiUtils;

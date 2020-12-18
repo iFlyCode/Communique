@@ -16,23 +16,49 @@
  */
 package com.git.ifly6.communique.ngui;
 
+import java.awt.Toolkit;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Scanner;
 
 /**
  * <code>CommuniqueMessages</code> holds <code>String</code>s for various Communique messages.
  */
-public class CommuniqueMessages {
+public class CommuniqueConstants {
+
+    public static final int COMMAND_KEY = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     public static final String TITLE = "Communiqué";
     public static final String ERROR = "Communiqué Error";
     public static final String UPDATER = "Communiqué Updater";
     public static final String RECRUITER = "Communiqué Recruiter";
 
+    public static final String CODE_HEADER =
+            "# == Communiqué Recipients Syntax ==\n"
+                    + "# Enter recipients, separated by comma or new lines. Please\n"
+                    + "# read the readme at \n"
+                    + "# [ https://github.com/ifly6/communique#readme ]\n\n";
+
+    public static final String INTERNET_ERROR = "NationStates appears down from your location.\n" +
+            "To send any telegrams, we must be able to connect to NationStates.";
+
+    public static URI GITHUB_URI;
+    public static URI FORUM_THREAD;
+    static {
+        try {
+            FORUM_THREAD = new URI("https://forum.nationstates.net/viewtopic.php?f=15&t=352065");
+            GITHUB_URI = new URL("https://github.com/ifly6/Communique").toURI();
+        } catch (URISyntaxException | MalformedURLException ignored) {
+        }
+    }
+
     private static String licence;
 
     // Prevent initialisation
-    private CommuniqueMessages() {
+    private CommuniqueConstants() {
     }
 
     public static final String acknowledgement =
@@ -42,12 +68,12 @@ public class CommuniqueMessages {
                     + "Wallenburg, and Tinhampton.";
 
     /**
-     * Gives the licence information that is saved in the file 'licences' in this source directory.
+     * Gives the licence information that is saved in the file 'licence' in this source directory.
      * @return licence information
      */
     public static String getLicence() {
         if (licence == null) {
-            InputStream resourceInputStream = CommuniqueMessages.class.getResourceAsStream("licence");
+            InputStream resourceInputStream = CommuniqueConstants.class.getResourceAsStream("licence");
             try (Scanner s = new Scanner(resourceInputStream)) {
                 licence = s.useDelimiter("\\A").hasNext() ? s.next() : "Could not load licence.";
             }

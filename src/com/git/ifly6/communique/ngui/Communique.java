@@ -28,7 +28,6 @@ import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.io.NoResolutionException;
-import com.git.ifly6.communique.ngui.components.CommuniqueConstants;
 import com.git.ifly6.communique.ngui.components.CommuniqueFactory;
 import com.git.ifly6.communique.ngui.components.CommuniqueLAF;
 import com.git.ifly6.nsapi.ApiUtils;
@@ -89,8 +88,8 @@ import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-import static com.git.ifly6.communique.ngui.components.CommuniqueConstants.CODE_HEADER;
-import static com.git.ifly6.communique.ngui.components.CommuniqueConstants.COMMAND_KEY;
+import static com.git.ifly6.communique.ngui.CommuniqueConstants.CODE_HEADER;
+import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
 import static com.git.ifly6.communique.ngui.components.CommuniqueLAF.appSupport;
 import static com.git.ifly6.communique.ngui.components.CommuniqueNativisation.showFileChooser;
 
@@ -154,7 +153,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         try {
             new URL("https://www.nationstates.net").openConnection().connect();
         } catch (IOException e) {
-            this.showMessageDialog(CommuniqueConstants.INTERNET_ERROR, CommuniqueMessages.ERROR);
+            this.showMessageDialog(CommuniqueConstants.INTERNET_ERROR, CommuniqueConstants.ERROR);
         }
     }
 
@@ -428,7 +427,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         mntmImportKeysFrom.addActionListener(e -> {
 
             String rawURL = this.showTextInputDialog("Paste in keys from the URL provided by receipt by the "
-                    + "Telegrams API", CommuniqueMessages.TITLE);
+                    + "Telegrams API", CommuniqueConstants.TITLE);
 
             // Verify that it is a valid NationStates URL
             String raw1 = "https://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client=YOUR_API_CLIENT_KEY&";
@@ -446,7 +445,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                 }
 
             } else this.showMessageDialog("Input a properly formatted NationStates URL in the form displayed "
-                    + "when a telegram is sent to 'tag:api'", CommuniqueMessages.ERROR);
+                    + "when a telegram is sent to 'tag:api'", CommuniqueConstants.ERROR);
         });
         mnEdit.add(mntmImportKeysFrom);
 
@@ -461,7 +460,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         mntmAsCommaSeparated.addActionListener(e -> {
             String message = "Input a string of delegates, as found on a list of delegates\nin one of the "
                     + "NationStates World Assembly pages:";
-            String input = this.showTextInputDialog(message, CommuniqueMessages.TITLE);
+            String input = this.showTextInputDialog(message, CommuniqueConstants.TITLE);
             if (input != null) {
                 input = input.replaceAll("\\(.+?\\)", ""); // get rid of brackets and anything in them
                 Arrays.stream(input.split(",\\s*?"))
@@ -493,11 +492,11 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
                 } catch (NoResolutionException nre) {
                     this.showMessageDialog("No resolution is at vote in that chamber, cannot import data",
-                            CommuniqueMessages.ERROR);
+                            CommuniqueConstants.ERROR);
 
                 } catch (RuntimeException exc) {
                     LOGGER.log(Level.WARNING, "Cannot import data.", exc);
-                    this.showMessageDialog("Cannot import data from NationStates website", CommuniqueMessages.ERROR);
+                    this.showMessageDialog("Cannot import data from NationStates website", CommuniqueConstants.ERROR);
                     exc.printStackTrace();
                 }
             }
@@ -519,7 +518,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                             .forEach(this::appendCode); // append to text area
                 } catch (IOException e1) {
                     LOGGER.log(Level.WARNING, "Cannot read file, IOException", e1);
-                    this.showMessageDialog("Cannot read file at " + path.toString(), CommuniqueMessages.ERROR);
+                    this.showMessageDialog("Cannot read file at " + path.toString(), CommuniqueConstants.ERROR);
                 }
             }
         });
@@ -531,7 +530,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         mntmAddExcludedNations.setToolTipText("Input comma-separated values");
         mntmAddExcludedNations.addActionListener(e -> {
             String message = "Input nations to exclude as comma-separated list (Do not include trailing 'and'.)";
-            String input = this.showTextInputDialog(message, CommuniqueMessages.TITLE);
+            String input = this.showTextInputDialog(message, CommuniqueConstants.TITLE);
             if (input != null) {
                 input = input.replaceAll("\\(.+?\\)", ""); // get rid of brackets and anything in them
                 Arrays.stream(input.split(","))
@@ -567,7 +566,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                 e -> CommuniqueTextDialog.createMonospacedDialog(
                         frame,
                         "About",
-                        CommuniqueMessages.acknowledgement,
+                        CommuniqueConstants.acknowledgement,
                         true));
         mnHelp.add(mntmAbout);
 
@@ -599,7 +598,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
         JMenuItem mntmLicence = new JMenuItem("Licence");
         mntmLicence.addActionListener(e -> CommuniqueTextDialog.createMonospacedDialog(frame, "Licence",
-                CommuniqueMessages.getLicence(), false));
+                CommuniqueConstants.getLicence(), false));
         mnHelp.add(mntmLicence);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -662,7 +661,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                 // if config.processingAction not in CommuniqueProcessingAction.values
                 // deal with invalid processing action
                 this.showMessageDialog("Invalid processing action.\n"
-                        + "Select a valid processing action", CommuniqueMessages.ERROR);
+                        + "Select a valid processing action", CommuniqueConstants.ERROR);
                 return;
             }
             parsedRecipients = config.processingAction.apply(parsedRecipients);
@@ -675,12 +674,12 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
             );
             // pass to message dialog
             LOGGER.log(Level.SEVERE, "Exception in parsing recipients. Displaying to user", pse);
-            this.showMessageDialog(label, CommuniqueMessages.ERROR);
+            this.showMessageDialog(label, CommuniqueConstants.ERROR);
             return;
 
         } catch (JTelegramException | IllegalArgumentException jte) {
             LOGGER.log(Level.SEVERE, "Exception in parsing recipients. Displaying to user", jte);
-            this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+            this.showMessageDialog(jte.getMessage(), CommuniqueConstants.ERROR);
             return;
         }
         LOGGER.info("Recipients Parsed");
@@ -690,7 +689,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
         // Check that there are in fact recipients
         if (parsedRecipients.size() == 0) {
-            Communique.this.showMessageDialog("No recipients specified.", CommuniqueMessages.ERROR);
+            Communique.this.showMessageDialog("No recipients specified.", CommuniqueConstants.ERROR);
             return;
         }
 
@@ -747,7 +746,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                     client.connect();
                 } catch (JTelegramException jte) {  // JTE occurring during send?
                     LOGGER.log(Level.SEVERE, "JTelegramException in send", jte);
-                    Communique.this.showMessageDialog(jte.getMessage(), CommuniqueMessages.ERROR);
+                    Communique.this.showMessageDialog(jte.getMessage(), CommuniqueConstants.ERROR);
                     return;
                 }
 
@@ -848,7 +847,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
             return Integer.parseInt(txtWaitTime.getText());
         } catch (NumberFormatException e) {
             String message = String.format("Invalid integer %s", txtWaitTime.getText());
-            Communique.this.showMessageDialog(message, CommuniqueMessages.ERROR);
+            Communique.this.showMessageDialog(message, CommuniqueConstants.ERROR);
             throw new JTelegramException(message, e);
         }
     }
