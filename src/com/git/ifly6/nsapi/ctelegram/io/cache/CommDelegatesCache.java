@@ -58,7 +58,7 @@ public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> 
         if (s.equals(DELEGATE_KEY))
             return super.lookupObject(s);
         throw new UnsupportedOperationException(
-                "Delegates cache only supports looking up with CommDelegatesCache.DELEGATE_KEY");
+                "Delegates cache only supports looking up with " + DELEGATE_KEY);
     }
 
     /**

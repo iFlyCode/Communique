@@ -20,11 +20,14 @@ package com.git.ifly6.nsapi.ctelegram.io;
 import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSConnection;
 import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.NSTimeStamped;
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -139,27 +142,37 @@ public class CommWorldAssembly {
      * @throws NoSuchProposalException if proposal does not exist
      */
     public static List<String> getApprovers(String proposalID) {
+        final List<Proposal> proposals = getAllProposals();
+        for (Proposal p : proposals)
+            if (p.id.equals(proposalID))
+                return p.approvers;
+
+        throw new NoSuchProposalException(String.format("Proposal %s does not exist", proposalID));
+    }
+
+    /**
+     * Queries for current approvals on all proposals.
+     * @returns proposal ID as key, {@code List<String>} of approvers as value.
+     */
+    public static List<Proposal> getAllProposals() {
         try {
+            List<Proposal> proposals = new ArrayList<>();
             for (Chamber c : Chamber.values()) {
                 XML xml = new XMLDocument(new NSConnection(formatProposalURL(c)).getResponse());
                 for (XML xmlNode : xml.nodes("/WA/PROPOSALS/PROPOSAL")) {
                     String thisProposalID = xmlNode.node().getAttributes().getNamedItem("id").getTextContent();
-                    if (ApiUtils.ref(proposalID).equals(ApiUtils.ref(thisProposalID))) // have correct proposal
-                        return ApiUtils.ref(
-                                Arrays.asList(
-                                        xmlNode.nodes("APPROVALS").get(0).node()
-                                                .getTextContent().split(":")
-                                )
-                        );
+                    List<String> approvers = ApiUtils.ref(Arrays.asList(
+                            xmlNode.nodes("APPROVALS").get(0).node().getTextContent().split(":")));
+                    proposals.add(new Proposal(thisProposalID, approvers));
                 }
             }
-
-            throw new NoSuchProposalException(String.format("Proposal %s does not exist", proposalID));
+            return proposals;
 
         } catch (IOException e) {
             throw new NSIOException("Could not connect to NationStates API", e);
         }
     }
+
 
     public static class Delegate {
         public final String name;
@@ -241,6 +254,24 @@ public class CommWorldAssembly {
     public static class NoSuchProposalException extends NoSuchElementException {
         public NoSuchProposalException(String s) {
             super(s);
+        }
+    }
+
+    /** Holds information on a proposal. */
+    public static class Proposal implements NSTimeStamped {
+        public final String id;
+        public final List<String> approvers;
+        public final Instant timeStamp;
+
+        private Proposal(String id, List<String> approvers) {
+            this.id = id;
+            this.approvers = approvers;
+            this.timeStamp = Instant.now();
+        }
+
+        @Override
+        public Instant dataTimestamp() {
+            return timeStamp;
         }
     }
 }
