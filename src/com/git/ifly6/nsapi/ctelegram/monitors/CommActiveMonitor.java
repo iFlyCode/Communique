@@ -17,15 +17,17 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.nsapi.NSConnection;
+import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,7 +40,8 @@ import java.util.stream.Collectors;
 public class CommActiveMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     public static final Duration ACTIVE_UPDATE_INTERVAL = Duration.ofMinutes(1);
-    private static final String HAPPENINGS_URL = "https://www.nationstates.net/cgi-bin/api.cgi?q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
+    private static final String HAPPENINGS_URL = NSConnection.API_PREFIX
+            + "q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
 
     private List<String> activeNations;
     private boolean delegatesOnly;
@@ -47,11 +50,23 @@ public class CommActiveMonitor extends CommUpdatingMonitor implements CommMonito
         super(ACTIVE_UPDATE_INTERVAL);
     }
 
-    @Override
-    public List<String> getRecipients() {
-        return null;
+    public CommActiveMonitor(boolean delegatesOnly) {
+        this.delegatesOnly = delegatesOnly;
     }
 
+    /** {@inheritDoc} Returns recipients which were recently mentioned in the Happenings API only. */
+    @Override
+    public List<String> getRecipients() {
+        Set<String> delegates = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
+        if (delegatesOnly)
+            return activeNations.stream()
+                    .filter(delegates::contains)
+                    .collect(Collectors.toList());
+
+        else return activeNations;
+    }
+
+    /** Does not exhaust */
     @Override
     public boolean recipientsExhausted() {
         return false;
@@ -59,28 +74,23 @@ public class CommActiveMonitor extends CommUpdatingMonitor implements CommMonito
 
     @Override
     protected void updateAction() {
-        throw new UnsupportedOperationException();
+        activeNations = getActiveNations();
     }
 
-    public static List<CommuniqueRecipient> getActiveNations() throws JTelegramException {
+    /** Gets list of nations appearing in happenings right now. */
+    public static List<String> getActiveNations() throws JTelegramException {
         try {
             NSConnection connection = new NSConnection(HAPPENINGS_URL).connect();
-
-            String data = connection.getResponse();
-
-            Pattern pattern = Pattern.compile(Pattern.quote("@@") + "(.*?)" + Pattern.quote("@@"));
-            Matcher matcher = pattern.matcher(data);
+            Matcher matcher = Pattern.compile("@@(.*?)@@").matcher(connection.getResponse());
 
             List<String> matches = new ArrayList<>();
-            while (matcher.find()) {
-                String matchedText = matcher.group(1);
-                matches.add(matchedText);
-            }
+            while (matcher.find())
+                matches.add(matcher.group());
 
-            return matches.stream().map(CommuniqueRecipients::createNation).collect(Collectors.toList());
+            return matches;
 
         } catch (IOException e) {
-            throw new JTelegramException("Encountered IO exception when getting active nations", e);
+            throw new NSIOException("Encountered IO exception when getting active nations", e);
         }
     }
 }

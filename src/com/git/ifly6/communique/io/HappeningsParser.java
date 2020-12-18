@@ -18,9 +18,11 @@
 package com.git.ifly6.communique.io;
 
 import com.git.ifly6.communique.data.CommuniqueRecipient;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommActiveMonitor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HappeningsParser {
 
@@ -29,6 +31,8 @@ public class HappeningsParser {
      * @return nations with recent happenings information
      */
     public static List<CommuniqueRecipient> getActiveNations() {
-        return CommActiveMonitor.getActiveNations();
+        return CommActiveMonitor.getActiveNations().stream()
+                .map(CommuniqueRecipients::createNation)
+                .collect(Collectors.toList());
     }
 }
