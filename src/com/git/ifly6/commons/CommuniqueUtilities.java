@@ -21,12 +21,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Predicate;
 
 /** This class is a collection of utility methods used inside Communique programs. */
 public class CommuniqueUtilities {
 
     public static final boolean IS_OS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
     public static final boolean IS_OS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("windows");
+    public static final Predicate<? super String> NO_COMMENTS = s -> !s.startsWith("#") && !s.startsWith("//");
 
     // Prevent initialisation
     private CommuniqueUtilities() {

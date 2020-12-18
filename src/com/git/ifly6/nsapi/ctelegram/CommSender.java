@@ -29,6 +29,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramType;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -272,8 +273,8 @@ public class CommSender {
     }
 
     /** @return {@link Duration} until next telegram is sent; {@code null} if not running. */
-    public Duration nextIn() {
-        if (isRunning()) return Duration.ofMillis(job.getDelay(TimeUnit.MILLISECONDS));
+    public Instant nextAt() {
+        if (isRunning()) return Instant.now().plus(job.getDelay(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
         throw new UnsupportedOperationException("No duration to next telegram; no telegrams are being sent");
     }
 

@@ -39,8 +39,7 @@ public class CommuniqueConstants {
     public static final String CODE_HEADER =
             "# == Communiqué Recipients Syntax ==\n"
                     + "# Enter recipients, separated by comma or new lines. Please\n"
-                    + "# read the readme at \n"
-                    + "# [ https://github.com/ifly6/communique#readme ]\n\n";
+                    + "# read the readme at [ https://github.com/ifly6/communique#readme ]\n";
 
     public static final String INTERNET_ERROR = "NationStates appears down from your location.\n" +
             "To send any telegrams, we must be able to connect to NationStates.";

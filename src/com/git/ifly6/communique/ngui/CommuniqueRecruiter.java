@@ -25,7 +25,6 @@ import com.git.ifly6.communique.data.RecipientType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
-import com.git.ifly6.communique.ngui.components.CommuniqueLAF;
 import com.git.ifly6.communique.ngui.components.CommuniqueNativisation;
 import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
@@ -88,10 +87,6 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
     private static final String[] protectedRegions = new String[] {"the Pacific", "the North Pacific", "the South Pacific",
             "the East Pacific", "the West Pacific", "Lazarus", "Balder", "Osiris", "the Rejected Realms"};
     private static final Logger LOGGER = Logger.getLogger(CommuniqueRecruiter.class.getName());
-
-    static {
-        LOGGER.addHandler(CommuniqueLAF.loggerFileHandler);
-    }
 
     private Communique communique;
 

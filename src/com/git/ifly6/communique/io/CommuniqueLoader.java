@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import static com.git.ifly6.communique.ngui.components.CommuniqueLAF.appSupport;
+import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 
 /**
  * {@link CommuniqueLoader} is a class allowing the easy abstraction of access to a single point and simplifying the
@@ -50,6 +50,7 @@ public class CommuniqueLoader {
      * @param path to examine
      */
     public CommuniqueLoader(Path path) {
+        this();
         this.path = path;
     }
 
@@ -77,11 +78,12 @@ public class CommuniqueLoader {
      * Writes the standard configuration file for the currently used client key. Properties writing here has been
      * localised for this setup using this method.
      */
+    @Deprecated
     public static void writeProperties(String clientKey) {
         try {
             Properties prop = new Properties();
             prop.setProperty("clientKey", clientKey);
-            FileOutputStream output = new FileOutputStream(appSupport.resolve("config.properties").toFile());
+            FileOutputStream output = new FileOutputStream(APP_SUPPORT.resolve("config.properties").toFile());
             prop.store(output, "Communique Properties");
             output.close();
         } catch (IOException e) {
@@ -93,10 +95,11 @@ public class CommuniqueLoader {
      * Returns the last used client key from the configuration file.
      * @return the client key from file
      */
+    @Deprecated
     public static String getClientKey() {
         try {
             Properties prop = new Properties();
-            prop.load(new FileInputStream(appSupport.resolve("config.properties").toFile()));
+            prop.load(new FileInputStream(APP_SUPPORT.resolve("config.properties").toFile()));
             String clientKey = prop.getProperty("clientKey");
             return ApiUtils.isEmpty(clientKey) ? "Client Key" : clientKey;
         } catch (IOException e) {

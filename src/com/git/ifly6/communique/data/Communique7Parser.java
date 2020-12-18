@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.data;
 
+import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.util.Arrays;
@@ -103,6 +104,14 @@ public class Communique7Parser {
         return recipients.stream()
                 .map(CommuniqueRecipient::getName)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Static monitor for parsed recipients.
+     * @return static monitor for recipients
+     */
+    public CommStaticMonitor getStaticMonitor() {
+        return new CommStaticMonitor(listRecipients());
     }
 
 }

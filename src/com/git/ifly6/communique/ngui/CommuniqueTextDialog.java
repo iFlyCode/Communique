@@ -18,6 +18,7 @@
 package com.git.ifly6.communique.ngui;
 
 import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.gui3.Communique3Utils;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -31,7 +32,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
@@ -62,14 +62,10 @@ public class CommuniqueTextDialog extends JDialog {
         int width = lineWrap
                 ? 400
                 : 10 + Arrays.stream(message.split("\n")).mapToInt(String::length).max().orElse(50) * 8;
-        int height = 450;
-        this.setSize(width, height);
-        this.setMinimumSize(new Dimension(300, 350));
-
-        Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation(
-                Math.round((float) sSize.width / 2 - (float) width / 2),
-                Math.round((float) sSize.height / 2 - (float) height / 2));
+        Communique3Utils.setupDimensions(this,
+                new Dimension(350, 350),
+                new Dimension(width, 450),
+                true);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout(5, 5));

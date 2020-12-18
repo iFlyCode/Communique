@@ -17,7 +17,7 @@
 
 package com.git.ifly6.marconi;
 
-import com.git.ifly6.commons.CommApplication;
+import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
@@ -28,7 +28,6 @@ import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommNewNationsMonitor;
-import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramLogger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -75,7 +74,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
     }
 
     public static void main(String[] args) {
-        String fileName = CommApplication.startUp(CommApplication.MARCONI);
+        String fileName = CommuniqueApplication.setupLogger(CommuniqueApplication.MARCONI);
 
         // parse command line options
         try {
@@ -134,7 +133,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         CommMonitor monitor =
                 cRecipients.contains(CommuniqueRecipients.createFlag("recruit"))
                         ? CommNewNationsMonitor.getInstance()
-                        : new CommStaticMonitor(expandedRecipients);
+                        : parser.getStaticMonitor();
 
         // Show the recipients in the order we are to send the telegrams.
         System.out.println();

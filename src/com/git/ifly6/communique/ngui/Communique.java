@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.ngui;
 
+import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
@@ -29,7 +30,6 @@ import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.io.NoResolutionException;
 import com.git.ifly6.communique.ngui.components.CommuniqueFactory;
-import com.git.ifly6.communique.ngui.components.CommuniqueLAF;
 import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
@@ -85,9 +85,9 @@ import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.CODE_HEADER;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
-import static com.git.ifly6.communique.ngui.components.CommuniqueLAF.appSupport;
 import static com.git.ifly6.communique.ngui.components.CommuniqueNativisation.showFileChooser;
 
 /**
@@ -123,8 +123,10 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     private Timer timer;
 
     public static void main(String[] args) {
-        CommuniqueLAF.setLAF(); // note that this line will also set up the static initialisation for appSupport etc
-        CommuniqueLAF.compressLogs(); // compresses logs one day older than this initialisation
+        CommuniqueApplication.setupLogger(CommuniqueApplication.COMMUNIQUE);
+        CommuniqueApplication.nativiseMac(CommuniqueApplication.COMMUNIQUE);
+        CommuniqueApplication.setLAF(); // note that this line will also set up the static initialisation for appSupport etc
+        CommuniqueApplication.compressLogs(); // compresses logs one day older than this initialisation
 
         EventQueue.invokeLater(() -> {
             try {
@@ -382,7 +384,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
         mntmShowDirectory.addActionListener(e -> {
             try {
-                Desktop.getDesktop().open(appSupport.toFile());
+                Desktop.getDesktop().open(APP_SUPPORT.toFile());
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -601,7 +603,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 // Save it to application support
-                CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
+                CommuniqueLoader loader = new CommuniqueLoader(APP_SUPPORT.resolve("autosave.txt"));
                 loader.save(exportState());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -611,8 +613,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         LOGGER.info("Communiqué loaded");
 
         // If there is an auto-save, load it
-        if (Files.exists(appSupport.resolve("autosave.txt"))) {
-            CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
+        if (Files.exists(APP_SUPPORT.resolve("autosave.txt"))) {
+            CommuniqueLoader loader = new CommuniqueLoader(APP_SUPPORT.resolve("autosave.txt"));
             try {
                 CommuniqueConfig configuration = loader.load();
                 this.importState(configuration);
@@ -723,7 +725,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                 // Save client key
                 try {
                     CommuniqueLoader.writeProperties(txtClientKey.getText());
-                    CommuniqueLoader loader = new CommuniqueLoader(appSupport.resolve("autosave.txt"));
+                    CommuniqueLoader loader = new CommuniqueLoader(APP_SUPPORT.resolve("autosave.txt"));
                     loader.save(exportState());
 
                 } catch (IOException e) {
@@ -814,7 +816,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
     @Override
     public CommuniqueConfig exportState() {
-
         LOGGER.info("Communiqué config exported");
         return this.config;
     }
@@ -904,7 +905,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     private List<CommuniqueRecipient> exportRecipients() {
         return Arrays.stream(txtrCode.getText().split("\n"))
                 .filter(ApiUtils::isNotEmpty)
-                .filter(s -> !s.startsWith("#"))
+                .filter(CommuniqueUtilities.NO_COMMENTS)
                 .map(CommuniqueRecipient::parseRecipient)
                 .collect(Collectors.toList());
     }

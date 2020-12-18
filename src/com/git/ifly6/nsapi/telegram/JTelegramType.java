@@ -18,6 +18,7 @@
 package com.git.ifly6.nsapi.telegram;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 import static com.git.ifly6.nsapi.telegram.JTelegramConstants.DEFAULT_MILLIS;
 
@@ -124,5 +125,12 @@ public enum JTelegramType {
     public abstract int getWaitTime();
 
     public abstract String toString();
+
+    /** Returns presets */
+    public static JTelegramType[] getPresets() {
+        return Arrays.stream(JTelegramType.values())
+                .filter(t -> t != JTelegramType.CUSTOM)
+                .toArray(JTelegramType[]::new);
+    }
 
 }

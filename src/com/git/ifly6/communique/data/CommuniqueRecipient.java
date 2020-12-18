@@ -38,27 +38,21 @@ public class CommuniqueRecipient {
     public static final CommuniqueRecipient WA_MEMBERS =
             new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "wa");
 
-    private FilterType filterType;
-    private RecipientType recipientType;
-    private String name;
-    private String raw;
+    private final FilterType filterType;
+    private final RecipientType recipientType;
+    private final String name;
 
-    /** Creates a <code>CommuniqueRecipient</code> with certain characteristics. */
-    public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name, String raw) {
+    /**
+     * Creates {@link CommuniqueRecipient}.
+     */
+    public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
         this.filterType = filterType;
         this.recipientType = recipientType;
         this.name = ApiUtils.ref(name);    // convert to reference name
-        this.raw = raw;
 
         // some format checking for the name
-        if (name.contains(":")) throw new IllegalArgumentException("nation name [" + name + "] is invalid");
-    }
-
-    /**
-     * Creates {@link CommuniqueRecipient} with null <code>raw</code> string
-     */
-    public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
-        this(filterType, recipientType, name, null);
+        if (name.contains(":"))
+            throw new IllegalArgumentException(String.format("nation name <%s> is invalid", name));
     }
 
     /**
@@ -83,13 +77,6 @@ public class CommuniqueRecipient {
      */
     public RecipientType getRecipientType() {
         return recipientType;
-    }
-
-    /**
-     * @return the original <code>String</code> used to construct this recipient
-     */
-    public String getRaw() {
-        return this.raw;
     }
 
     /**
@@ -144,7 +131,7 @@ public class CommuniqueRecipient {
             }
 
         // 2017-03-30 use lastIndexOf to deal with strange name changes, can cause error in name `+region:euro:pe`
-        return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1), start);
+        return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));
     }
 
     @Override
@@ -222,7 +209,6 @@ public class CommuniqueRecipient {
      * @param oldTokens to translate
      * @return a list of tokens which means the same thing in the new system
      * @see Communique7Parser
-     * @see CommuniqueParser
      */
     public static List<String> translateTokens(List<String> oldTokens) {
         List<String> tokens = new ArrayList<>();
