@@ -34,3 +34,4 @@ Communique.iml
 # used for possible last session logs
 communique-last-session.log
 marconi-last-session.log
+*.log
