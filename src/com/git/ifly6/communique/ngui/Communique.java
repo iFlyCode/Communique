@@ -59,8 +59,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.undo.UndoManager;
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -82,7 +80,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
@@ -926,26 +923,3 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     }
 }
 
-class CommuniqueDocumentListener implements DocumentListener {
-
-    private Consumer<DocumentEvent> consumer;
-
-    CommuniqueDocumentListener(Consumer<DocumentEvent> consumer) {
-        this.consumer = consumer;
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        consumer.accept(event);
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent event) {
-        consumer.accept(event);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        consumer.accept(event);
-    }
-}
