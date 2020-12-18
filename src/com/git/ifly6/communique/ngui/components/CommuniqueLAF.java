@@ -17,7 +17,7 @@
 
 package com.git.ifly6.communique.ngui.components;
 
-import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 
 import javax.swing.UIManager;

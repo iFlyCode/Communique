@@ -17,7 +17,7 @@
 
 package com.git.ifly6.communique.ngui;
 
-import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -98,7 +98,7 @@ import static com.git.ifly6.communique.ngui.components.CommuniqueNativisation.sh
  * <code>Communiqué</code> is the main class of the Communiqué system. It handles the GUI aspect of the entire program
  * and other actions.
  */
-@SuppressWarnings("ALL")
+@Deprecated
 public class Communique extends AbstractCommunique implements JTelegramLogger {
 
     private static final Logger LOGGER = Logger.getLogger(Communique.class.getName());

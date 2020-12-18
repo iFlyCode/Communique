@@ -17,14 +17,15 @@
 
 package com.git.ifly6.marconi;
 
-import com.git.ifly6.communique.CommuniqueUtilities;
+import com.git.ifly6.commons.CommApplication;
+import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
-import com.git.ifly6.nsapi.ctelegram.CommSenderOutput;
+import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommNewNationsMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
@@ -45,15 +46,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 /** Command line program executing {@link com.git.ifly6.communique.ngui.Communique} configuration files.
  * @since version 1.0 (build 1) */
-public class Marconi extends AbstractCommunique implements JTelegramLogger, CommSenderOutput {
+public class Marconi extends AbstractCommunique implements JTelegramLogger, CommSenderInterface {
 
     private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
     private static final Options COMMAND_LINE_OPTIONS;
@@ -77,26 +75,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
     }
 
     public static void main(String[] args) {
-        // better log format
-        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tF %1$tT %4$s %2$s %5$s%6$s%n");
-        try {
-            // Add in a logging file handler
-            Path logLocation = Paths.get(String.format("marconi-session-%s.log",
-                    CommuniqueUtilities.getTime()));
-            FileHandler handler = new FileHandler(logLocation.toString());
-            handler.setFormatter(new SimpleFormatter());
-            Logger.getLogger("").addHandler(handler); // empty string gets root logger
-
-        } catch (SecurityException | IOException e) {
-            e.printStackTrace();
-        }
-
-        // get jar name
-        String fileName = MarconiUtilities.getJARName();
-        Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
-            e.printStackTrace();
-            LOGGER.log(Level.SEVERE, String.format("Exception in %s: %s", t, e.toString()), e);
-        });
+        String fileName = CommApplication.startUp(CommApplication.MARCONI);
 
         // parse command line options
         try {

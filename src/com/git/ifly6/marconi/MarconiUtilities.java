@@ -17,12 +17,9 @@
 
 package com.git.ifly6.marconi;
 
-import com.git.ifly6.communique.CommuniqueUtilities;
-import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.commons.CommuniqueUtilities;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +33,21 @@ public class MarconiUtilities {
     private static final Logger LOGGER = Logger.getLogger(MarconiUtilities.class.getName());
 
     static Path lockFile = Paths.get(System.getProperty("user.dir"), "marconi.lock");
+
+    /**
+     * Creates two column string.
+     * @since version 3.0 (build 13)
+     */
+    protected static String twoColumn(List<String> items) {
+        List<String> lines = new ArrayList<>();
+        for (int x = 0; x < items.size(); x = x + 2)
+            try {
+                lines.add(String.format("%-30.30s  %-30.30s", items.get(x), items.get(x + 1)));
+            } catch (IndexOutOfBoundsException e) {
+                lines.add(items.get(x)); // odd number of entries
+            }
+        return String.join("\n", lines);
+    }
 
     /**
      * Creates Marconi lock file.
@@ -62,26 +74,5 @@ public class MarconiUtilities {
         return Files.exists(lockFile);
     }
 
-    /** @return name of the jar in which Marconi is located. */
-    static String getJARName() {
-        try {
-            return new File(Marconi.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                    .getName();
-        } catch (URISyntaxException e) {
-            return String.format("Marconi_%d.jar", Communique7Parser.BUILD); // default to standard naming format.
-        }
-    }
 
-    /** Creates two column string.
-     * @since version 3.0 (build 13) */
-    static String twoColumn(List<String> items) {
-        List<String> lines = new ArrayList<>();
-        for (int x = 0; x < items.size(); x = x + 2)
-            try {
-                lines.add(String.format("%-30.30s  %-30.30s", items.get(x), items.get(x + 1)));
-            } catch (IndexOutOfBoundsException e) {
-                lines.add(items.get(x)); // odd number of entries
-            }
-        return String.join("\n", lines);
-    }
 }
