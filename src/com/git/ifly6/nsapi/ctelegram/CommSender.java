@@ -56,7 +56,7 @@ public class CommSender {
     private static ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> job;
 
-    private final CommSenderOutput outputInterface;
+    private final CommSenderInterface outputInterface;
     private final Instant initAt = Instant.now();
     private final JTelegramKeys keys;
     private final JTelegramType telegramType;
@@ -85,7 +85,7 @@ public class CommSender {
      * @param telegramType to provide delay timings
      */
     public CommSender(JTelegramKeys keys, CommMonitor monitor, JTelegramType telegramType,
-                      CommSenderOutput anInterface) {
+                      CommSenderInterface anInterface) {
         this.keys = keys;
         this.monitor = monitor;
         this.telegramType = telegramType;
