@@ -30,6 +30,7 @@ import java.util.List;
  * Provides up-to-date view of the list of NationStates delegates. Updates every 30 minutes, per {@link
  * #DELEGATE_UPDATE_INTERVAL}. Monitor is meant to get delegates (and also to new delegates elected after
  * initialisation) for approvals. Exhausts after 36 hours.
+ * @since version 3.0 (build 13)
  */
 public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMonitor {
 

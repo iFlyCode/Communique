@@ -29,6 +29,7 @@ import java.util.logging.Logger;
  * stream of new nations to which telegrams can be dispatched. Monitor has a default update interval {@link
  * CommUpdatingMonitor#DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(Duration)}. Data is
  * only updated after the update interval elapses.
+ * @since version 3.0 (build 13)
  */
 public class CommNewNationsMonitor extends CommUpdatingMonitor implements CommMonitor {
 

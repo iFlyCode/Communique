@@ -23,5 +23,6 @@
  * <p>A lot of the data which is queried in the parser is provided via {@link com.git.ifly6.nsapi.telegram.util.JInfoCache}
  * and other classes like {@link com.git.ifly6.nsapi.NSNation} and {@link com.git.ifly6.nsapi.NSRegion}.</p>
  * @see com.git.ifly6.nsapi
+ * @since version 2.0 (build 7)
  */
 package com.git.ifly6.communique.data;

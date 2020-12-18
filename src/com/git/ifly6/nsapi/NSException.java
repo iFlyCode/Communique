@@ -18,7 +18,7 @@
 package com.git.ifly6.nsapi;
 
 /**
- * Thrown if call disagress with NationStates logic.
+ * Thrown if call disagrees with NationStates logic.
  */
 public class NSException extends RuntimeException {
 

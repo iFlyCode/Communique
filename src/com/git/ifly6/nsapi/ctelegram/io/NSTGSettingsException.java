@@ -21,6 +21,10 @@ import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 
+/**
+ * Thrown for explicit mismatches or errors from NationStates telegrams API.
+ * @since version 3.0 (build 13)
+ */
 public class NSTGSettingsException extends NSIOException {
     public NSTGSettingsException(String message) {
         super(message);

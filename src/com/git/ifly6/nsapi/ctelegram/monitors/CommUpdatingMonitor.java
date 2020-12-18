@@ -28,10 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
- * Monitors <a href="https://www.nationstates.net/cgi-bin/api.cgi?q=newnations">new nations</a> API call to provide a
- * stream of new nations to which telegrams can be dispatched. Monitor has a default update interval {@link
- * #DEFAULT_UPDATE_INTERVAL}; interval can be changed {@link #setUpdateInterval(Duration)}. Data is only updated after
- * the update interval elapses.
+ * Framework for creating monitors which update. Each monitor caches data and provides it per {@link CommMonitor};
+ * update monitors have defined update intervals where their cached data change.
+ * @since version 3.0 (build 13)
  */
 public abstract class CommUpdatingMonitor implements CommMonitor {
 

@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** Monitors approval actions related to a World Assembly proposal. */
+/**
+ * Monitors approval actions related to a World Assembly proposal.
+ * @since version 3.0 (build 13)
+ */
 public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     private boolean exhausted;

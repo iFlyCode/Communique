@@ -57,13 +57,13 @@ public class NSConnection {
     /**
      * Creates an unconnected {@code NSConnection} to query the specified URL.
      * @param urlString to query
-     * @throws MalformedURLException if {@code urlString} is invalid URL
+     * @throws NSIOException if {@code urlString} is invalid URL
      */
     public NSConnection(String urlString) {
         try {
             this.url = new URL(urlString);
         } catch (MalformedURLException e) {
-            throw new NSException(String.format("Input URL <%s> malformed", urlString), e);
+            throw new NSIOException(String.format("Input URL <%s> malformed", urlString), e);
         }
     }
 

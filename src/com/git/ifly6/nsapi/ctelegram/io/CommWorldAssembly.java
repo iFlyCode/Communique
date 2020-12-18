@@ -32,7 +32,10 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/** Gets information about the World Assembly. */
+/**
+ * Gets information about the World Assembly.
+ * @since version 3.0 (build 13)
+ */
 public class CommWorldAssembly {
 
     private CommWorldAssembly() {

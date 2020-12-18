@@ -22,7 +22,10 @@ import com.git.ifly6.nsapi.NSException;
 import java.util.List;
 
 /**
- * {@code CommMonitor}s are meant to generate data;
+ * Monitors generate a stream of recipients provided by {@link #getRecipients()} until exhausted {@link
+ * #recipientsExhausted()}. If implemented correctly, if a monitor is exhausted, calling {@link #getRecipients()} should
+ * throw {@link ExhaustedException}.
+ * @since version 3.0 (build 13)
  */
 public interface CommMonitor {
 

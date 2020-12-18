@@ -18,7 +18,7 @@
 package com.git.ifly6.nsapi;
 
 /**
- * Thrown if issue in connecting to NationStates.
+ * Thrown on issue in connecting to NationStates.
  */
 public class NSIOException extends RuntimeException {
 

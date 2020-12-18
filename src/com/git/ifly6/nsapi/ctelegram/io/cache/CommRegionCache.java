@@ -19,7 +19,9 @@ package com.git.ifly6.nsapi.ctelegram.io.cache;
 import com.git.ifly6.nsapi.NSRegion;
 
 /**
- * Caches {@link NSRegion}. Upon expiration of cache data, see {@link #EXPIRE_DURATION} updates data.
+ * Caches {@link NSRegion}. Upon expiration of cache data, see {@link CommCache#DEFAULT_EXPIRATION_DURATION} updates
+ * data.
+ * @since version 3.0 (build 13)
  */
 public class CommRegionCache extends CommCache<NSRegion> {
 

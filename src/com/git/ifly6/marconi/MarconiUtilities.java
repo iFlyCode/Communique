@@ -37,7 +37,10 @@ public class MarconiUtilities {
 
     static Path lockFile = Paths.get(System.getProperty("user.dir"), "marconi.lock");
 
-    /** Creates Marconi lock file. */
+    /**
+     * Creates Marconi lock file.
+     * @since version 3.0 (build 13)
+     */
     static void createFileLock() {
         try {
             if (!Files.exists(lockFile)) {
@@ -69,7 +72,8 @@ public class MarconiUtilities {
         }
     }
 
-    /** Creates two column string. */
+    /** Creates two column string.
+     * @since version 3.0 (build 13) */
     static String twoColumn(List<String> items) {
         List<String> lines = new ArrayList<>();
         for (int x = 0; x < items.size(); x = x + 2)

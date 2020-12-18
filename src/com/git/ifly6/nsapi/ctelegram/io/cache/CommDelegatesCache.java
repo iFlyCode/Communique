@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Caches NationStates delegates for later access. <b>Only invoke with {@link #DELEGATE_KEY}!</b> Cache expiration time
  * for this cache is thirty minutes; prefer {@link #getDelegates()}.
+ * @since version 3.0 (build 13)
  */
 public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> {
 

@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
  * <p>This class does not lazily load data. When invoking <code>apply</code>, all elements are processed
  * immediately. This class is meant to be used fluently, e.g.</p>
  * <pre>new Communique7Parser().apply(tokens).listRecipients()</pre>
+ * @since version 2 (build 7)
  * @author ifly6
  */
 public class Communique7Parser {

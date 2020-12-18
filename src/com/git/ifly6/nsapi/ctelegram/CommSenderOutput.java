@@ -17,7 +17,8 @@
 
 package com.git.ifly6.nsapi.ctelegram;
 
-/** Passes events from {@link CommSender} to implementor. */
+/** Passes events from {@link CommSender} to implementor.
+ * @since version 3.0 (build 13) */
 public interface CommSenderOutput {
 
     /**

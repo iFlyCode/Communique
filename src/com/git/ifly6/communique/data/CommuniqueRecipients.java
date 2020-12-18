@@ -20,6 +20,7 @@ package com.git.ifly6.communique.data;
 /**
  * Contains utility methods to make it less verbose to create a {@link CommuniqueRecipient}. Also provides functionality
  * to help with the fact that {@link CommuniqueRecipient}s are immutable.
+ * @since version 2.0 (build 7)
  */
 public class CommuniqueRecipients {
 

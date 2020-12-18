@@ -17,8 +17,8 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +26,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/** Monitors voters in specified regions for votes for or against a resolution at vote. */
+/**
+ * Monitors voters in specified regions for votes for or against a resolution at vote.
+ * @since version 3.0 (build 13)
+ */
 public class CommRegionalVoteMonitor extends CommAssemblyMonitor implements CommMonitor {
 
     public static final Logger LOGGER = Logger.getLogger(CommRegionalVoteMonitor.class.getName());

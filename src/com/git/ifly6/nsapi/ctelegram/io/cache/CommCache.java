@@ -28,17 +28,19 @@ import java.util.logging.Logger;
  * Caches objects which can be timestamped. Also implicitly requires, due to {@link #createNewObject(String)} that the
  * key (a string) be mappable 1:1 to the object.
  * @param <T> is time-stamped object, ie extends {@link NSTimeStamped}.
+ * @since version 3.0 (build 13)
  */
 public abstract class CommCache<T extends NSTimeStamped> {
 
     private static final Logger LOGGER = Logger.getLogger(CommCache.class.getName());
-    private Duration expirationIn;
+    public static final Duration DEFAULT_EXPIRATION_DURATION = Duration.ofMinutes(10);
 
     private Map<String, T> cache = new HashMap<>();
+    private Duration expirationIn;
 
     /** Creates empty cache with cache expiration in 10 minutes. */
     public CommCache() {
-        this.expirationIn = Duration.ofMinutes(10);
+        this.expirationIn = DEFAULT_EXPIRATION_DURATION;
     }
 
     /**

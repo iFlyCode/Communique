@@ -23,8 +23,8 @@ import java.util.function.Function;
 /**
  * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
  * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Caching nation level information with an expiration of {@link #EXPIRE_DURATION} should greatly lower
- * the number of API calls, improving performance.
+ * lots of information. Expiration duration is {@link CommCache#DEFAULT_EXPIRATION_DURATION}.
+ * @since version 3.0 (build 13)
  */
 public class CommNationCache extends CommCache<NSNation> {
 

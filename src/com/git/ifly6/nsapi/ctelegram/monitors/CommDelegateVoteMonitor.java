@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  * <p>As a concrete example. If monitoring AYE votes in the GA while ignoring initial voters this will <b>not</b> track
  * anyone who votes NAY. Nor will it mark anyone who is currently voting AYE and switches their vote to NAY. However, it
  * will mark anyone who casts a new vote AYE.</p>
+ * @since version 3.0 (build 13)
  */
 public class CommDelegateVoteMonitor extends CommAssemblyMonitor implements CommMonitor {
 

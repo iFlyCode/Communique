@@ -28,6 +28,7 @@ import java.util.List;
  * <code>RecipientType</code>, and the name. The filter type can be used to exclude, include, or simply add. The
  * recipient type can be used to specify multiple recipients, like in a region or in the set of World Assembly
  * delegates. All <code>CommuniqueRecipient</code>s have names which are reference-name safe.
+ * @since version 2.0 (build 7)
  * @author ifly6
  */
 public class CommuniqueRecipient {

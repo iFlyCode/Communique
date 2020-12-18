@@ -51,7 +51,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
-/** Command line program executing {@link com.git.ifly6.communique.ngui.Communique} configuration files. */
+/** Command line program executing {@link com.git.ifly6.communique.ngui.Communique} configuration files.
+ * @since version 1.0 (build 1) */
 public class Marconi extends AbstractCommunique implements JTelegramLogger, CommSenderOutput {
 
     private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());

@@ -25,6 +25,7 @@ import java.util.Queue;
 /**
  * A static monitor does not update or monitor much of anything. After instantiation, it contains the data it contains
  * without any changes. The contents of the class are immutable.
+ * @since version 3.0 (build 13)
  */
 public class CommStaticMonitor implements CommMonitor {
     private final List<String> allRecipients;

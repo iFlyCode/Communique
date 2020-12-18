@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Framework for monitoring World Assembly actions.
+ * @since version 3.0 (build 13)
+ */
 public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(CommAssemblyMonitor.class.getName());

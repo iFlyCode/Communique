@@ -19,6 +19,10 @@ package com.git.ifly6.nsapi;
 
 import java.time.Instant;
 
+/**
+ * Marks time-stamped objects.
+ * @since version 3.0 (build 13)
+ */
 public interface NSTimeStamped {
 
     Instant dataTimestamp();

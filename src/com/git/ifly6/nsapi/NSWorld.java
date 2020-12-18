@@ -105,7 +105,8 @@ public class NSWorld {
         return ApiUtils.ref(Arrays.asList(input));
     }
 
-    /** Thrown if the specified region tag does not exist. */
+    /** Thrown if the specified region tag does not exist.
+     * @since version 3.0 (build 13)*/
     public static class NSNoSuchTagException extends NSException {
         public NSNoSuchTagException(String message, Throwable cause) {
             super(message, cause);

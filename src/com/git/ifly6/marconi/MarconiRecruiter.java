@@ -34,15 +34,19 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/** @author ifly6 */
+/**
+ * Recruits from the command line.
+ * @author ifly6
+ * @deprecated since version 3.0 (build 13)
+ */
 @Deprecated
 public class MarconiRecruiter extends AbstractCommuniqueRecruiter implements JTelegramLogger {
 
     private static final Logger LOGGER = Logger.getLogger(MarconiRecruiter.class.getName());
     private Marconi marconi;
 
-    private static final int RECRUITMENT_DELAY = 180;
-    private static final int FIND_NEXT_TIME = 10;
+    private static final int RECRUITMENT_DELAY = 180; // seconds
+    private static final int FIND_NEXT_TIME = 10; // seconds
 
     /** @param marconi framework to piggy-back upon to send data */
     MarconiRecruiter(Marconi marconi) {
