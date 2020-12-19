@@ -17,15 +17,20 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSConnection;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Framework for creating monitors which update. Each monitor caches data and provides it per {@link CommMonitor};
@@ -79,6 +84,22 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
         this.start();
     }
 
+    /**
+     * Turns provided list, as string, in format {@code BLAH, BLAH, BLAH} into a list of strings. All elements are
+     * normalised with {@link ApiUtils#ref(List)}.
+     * @param listString to parse
+     * @return {@code List<String>} representation thereof
+     */
+    public static List<String> parseList(String listString) {
+        List<String> regions;
+        if (!listString.contains(",")) regions = Collections.singletonList(ApiUtils.ref(listString));
+        else regions = Arrays.stream(listString.split(","))
+                .map(ApiUtils::ref)
+                .filter(s -> !ApiUtils.isEmpty(s))
+                .collect(Collectors.toList());
+        return regions;
+    }
+
     @Override
     public abstract boolean recipientsExhausted();
 
@@ -98,7 +119,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      * @throws UnsupportedOperationException if start called after already started
      */
     private void start(Duration initialDelay) {
-        if (ex.isShutdown()) { // if it is shut down, create a new thread and restart
+        if (ex.isShutdown()) { // if it is shut down, make a new thread and restart
             LOGGER.info("update action executor service was shut down somehow; allocating new...");
             ex = Executors.newSingleThreadScheduledExecutor();
         }

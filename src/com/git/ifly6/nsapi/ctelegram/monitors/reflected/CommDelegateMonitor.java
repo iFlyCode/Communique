@@ -15,10 +15,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -35,13 +37,19 @@ import java.util.List;
 public class CommDelegateMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     public static final Duration DELEGATE_UPDATE_INTERVAL = Duration.ofMinutes(30);
+    private static CommDelegateMonitor instance;
+
     private static final Instant startTime = Instant.now();
 
     private int repeatedFailures = 0;
     private List<String> delegates;
 
-    public CommDelegateMonitor() {
-        super(DELEGATE_UPDATE_INTERVAL);
+    private CommDelegateMonitor() { super(DELEGATE_UPDATE_INTERVAL); }
+
+    /** One monitor for one set of delegates. */
+    public static CommDelegateMonitor getInstance() {
+        if (instance == null) instance = new CommDelegateMonitor();
+        return instance;
     }
 
     @Override

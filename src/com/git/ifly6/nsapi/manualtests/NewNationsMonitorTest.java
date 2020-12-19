@@ -17,7 +17,7 @@
 
 package com.git.ifly6.nsapi.manualtests;
 
-import com.git.ifly6.nsapi.ctelegram.monitors.CommNewNationsMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.reflected.CommNewNationsMonitor;
 
 import java.time.Instant;
 import java.util.HashMap;

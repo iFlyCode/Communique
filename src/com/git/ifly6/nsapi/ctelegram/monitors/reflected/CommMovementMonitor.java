@@ -15,9 +15,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
 import com.git.ifly6.nsapi.NSRegion;
+import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -40,24 +43,30 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     private Set<String> inhabitantsNow;
 
     /**
-     * Creates a movement monitor. Monitor starts immediately.
-     * @param r regions to monitor
-     * @param d direction of travel to check for
+     * Creates a movement monitor.
+     * @param regions   to monitor
+     * @param direction of travel to monitor
      */
-    public CommMovementMonitor(List<String> r, Direction d) {
-        this(r, d, DEFAULT_UPDATE_INTERVAL);
+    public CommMovementMonitor(List<String> regions, Direction direction) {
+        this.regions = regions;
+        this.direction = direction;
     }
 
     /**
-     * Creates a movement monitor.
-     * @param regions        to monitor
-     * @param direction      of travel to monitor
-     * @param updateInterval update interval
+     * Create method with strings for reflection.
+     * @param regionList list of regions, separated by commas
+     * @param dirString direction string {@link Direction}
+     * @return new monitor
      */
-    public CommMovementMonitor(List<String> regions, Direction direction, Duration updateInterval) {
-        super(updateInterval);
-        this.regions = regions;
-        this.direction = direction;
+    public static CommMovementMonitor create(String regionList, String dirString) {
+        List<String> regions = parseList(regionList);
+        Direction direction;
+
+        try {
+            direction = Direction.valueOf(dirString);
+        } catch (IllegalArgumentException e) { throw CommParseException.make(dirString, Direction.values(), e); }
+
+        return new CommMovementMonitor(regions, direction);
     }
 
     /** Recipients generate slowly, but never exhaust. */

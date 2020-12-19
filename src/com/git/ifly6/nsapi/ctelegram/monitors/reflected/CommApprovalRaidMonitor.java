@@ -15,11 +15,12 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.NoSuchProposalException;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommProposalCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
 import java.time.Instant;
 import java.util.ArrayList;

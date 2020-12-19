@@ -27,7 +27,7 @@ import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
-import com.git.ifly6.nsapi.ctelegram.monitors.CommNewNationsMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.reflected.CommNewNationsMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramLogger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;

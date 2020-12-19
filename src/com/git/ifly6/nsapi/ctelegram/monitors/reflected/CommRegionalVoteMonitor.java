@@ -15,10 +15,14 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommAssemblyMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
+import org.javatuples.Triplet;
 
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +59,20 @@ public class CommRegionalVoteMonitor extends CommAssemblyMonitor implements Comm
             previousVoters = voters;
             currentVoters = voters;
         }
+    }
+
+    /**
+     * Creates monitor from string input for reflection.
+     * @return new monitor
+     * @see CommAssemblyMonitor#parseStrings(String, String, String)
+     */
+    public CommRegionalVoteMonitor create(String chamber, String listString, String voting, String ignoreInitial) {
+        Triplet<CommWorldAssembly.Chamber, CommWorldAssembly.Vote, Boolean> values =
+                CommAssemblyMonitor.parseStrings(chamber, voting, ignoreInitial);
+        List<String> list = CommUpdatingMonitor.parseList(listString);
+        return new CommRegionalVoteMonitor(
+                values.getValue0(), list,
+                values.getValue1(), values.getValue2());
     }
 
     /**

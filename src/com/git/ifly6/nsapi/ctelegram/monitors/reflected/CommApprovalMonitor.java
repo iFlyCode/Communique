@@ -15,10 +15,13 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
+import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,9 +45,24 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
     /** Creates monitor to monitor provided proposal ID for specified action. */
     public CommApprovalMonitor(String proposalID, Action action) {
         this.proposalID = proposalID;
-        this.action = action;
         previousApprovers = new ArrayList<>();
         currentApprovers = new ArrayList<>();
+    }
+
+    /**
+     * Create method from string input for reflection.
+     * @param proposalID as passed
+     * @param actionString {@link Action}
+     * @return new monitor
+     */
+    public static CommApprovalMonitor create(String proposalID, String actionString) {
+        Action action;
+        try {
+            action = Action.valueOf(actionString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw CommParseException.make(actionString, Action.values(), e);
+        }
+        return new CommApprovalMonitor(proposalID, action);
     }
 
     /**

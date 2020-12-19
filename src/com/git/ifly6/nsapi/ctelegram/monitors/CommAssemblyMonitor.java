@@ -17,7 +17,12 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
+import org.apache.commons.lang3.Range;
+import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +39,8 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
     private static final Logger LOGGER = Logger.getLogger(CommAssemblyMonitor.class.getName());
     private boolean exhausted = false;
 
-    protected CommWorldAssembly.Chamber chamber;
-    protected CommWorldAssembly.Vote voting;
+    protected Chamber chamber;
+    protected Vote voting;
     private String resolutionID;
 
     protected Set<String> previousVoters;
@@ -86,4 +91,34 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
 
     /** @return set of recipients monitored. */
     protected abstract Set<String> getMonitoredRecipients();
+
+    /**
+     * Parses data from provided string
+     * @param chamber {@link Chamber}
+     * @param voting {@link Vote}
+     * @param rangeString in form {@code range(MIN,MAX)}
+     * @param ignoreInitial boolean
+     * @return internal representations in quartet
+     */
+    public static Triplet<Chamber, Vote, Boolean> parseStrings(String chamber, String voting, String ignoreInitial) {
+        Chamber chamberEnum;
+        Vote voteEnum;
+        Range<Integer> weightRange;
+        boolean boolIgnoreInitial;
+
+        try {
+            chamberEnum = Chamber.valueOf(chamber.toUpperCase());
+        } catch (IllegalArgumentException e) { throw CommParseException.make(chamber, Chamber.values(), e); }
+
+        try {
+            voteEnum = Vote.valueOf(chamber.toUpperCase());
+        } catch (IllegalArgumentException e) { throw CommParseException.make(voting, Vote.values(), e); }
+
+        if (!ignoreInitial.equalsIgnoreCase("true")
+                && !ignoreInitial.equalsIgnoreCase("false"))
+            throw CommParseException.make(ignoreInitial, new String[] {"true", "false"});
+        boolIgnoreInitial = Boolean.parseBoolean(ignoreInitial);
+
+        return new Triplet<>(chamberEnum, voteEnum, boolIgnoreInitial);
+    }
 }

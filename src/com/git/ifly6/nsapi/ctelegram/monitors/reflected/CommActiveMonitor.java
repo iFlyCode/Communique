@@ -15,11 +15,14 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
 
 import com.git.ifly6.nsapi.NSConnection;
 import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.io.IOException;
@@ -44,21 +47,38 @@ public class CommActiveMonitor extends CommUpdatingMonitor implements CommMonito
             + "q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
 
     private List<String> activeNations;
-    private boolean delegatesOnly;
+    private Mode delegateFilterMode;
 
-    public CommActiveMonitor() {
+    private CommActiveMonitor() {
         super(ACTIVE_UPDATE_INTERVAL);
     }
 
-    public CommActiveMonitor(boolean delegatesOnly) {
-        this.delegatesOnly = delegatesOnly;
+    public CommActiveMonitor(Mode delegateMode) {
+        this();
+        this.delegateFilterMode = delegateMode;
+    }
+
+    /**
+     * Create method with strings for refelction
+     * @param delegateMode {@link Mode}
+     * @return new monitor
+     */
+    public CommActiveMonitor create(String delegateMode) {
+        Mode mode;
+        try {
+            mode = Mode.valueOf(delegateMode);
+        } catch (IllegalArgumentException e) {
+            throw CommParseException.make(delegateMode, Mode.values(), e);
+        }
+
+        return new CommActiveMonitor(mode);
     }
 
     /** {@inheritDoc} Returns recipients which were recently mentioned in the Happenings API only. */
     @Override
     public List<String> getRecipients() {
         Set<String> delegates = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
-        if (delegatesOnly)
+        if (delegateFilterMode == Mode.DELEGATES_ONLY)
             return activeNations.stream()
                     .filter(delegates::contains)
                     .collect(Collectors.toList());
@@ -92,5 +112,9 @@ public class CommActiveMonitor extends CommUpdatingMonitor implements CommMonito
         } catch (IOException e) {
             throw new NSIOException("Encountered IO exception when getting active nations", e);
         }
+    }
+
+    public enum Mode {
+        DELEGATES_ONLY, ALL_NATIONS;
     }
 }

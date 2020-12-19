@@ -15,34 +15,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.manualtests;
-
-import com.git.ifly6.nsapi.ctelegram.monitors.reflected.CommMovementMonitor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-public class MovementMonitorTest {
-
-    public static void main(String[] args) throws InterruptedException {
-        List<String> regions = Arrays.asList("Europe");
-        CommMovementMonitor movementMonitor = new CommMovementMonitor(
-                regions, CommMovementMonitor.Direction.EXIT);
-
-        List<String> totalRecipients = new ArrayList<>();
-        while (totalRecipients.size() < 10) {
-            System.out.println("Waiting for data to come in...");
-            Thread.sleep((long) (movementMonitor.getUpdateInterval().toMillis() * 1.2));
-
-            System.out.println("Recipients:");
-            List<String> recipients = movementMonitor.getRecipients();
-            totalRecipients.addAll(recipients);
-
-            System.out.println(recipients);
-        }
-
-        movementMonitor.stop();
-        System.out.println("Stopped");
-    }
-}
+/**
+ * Contains {@link com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor} classes meant to be instantiated by reflection.
+ * All classes here should have a {@code create} function.
+ */
+package com.git.ifly6.nsapi.ctelegram.monitors.reflected;
