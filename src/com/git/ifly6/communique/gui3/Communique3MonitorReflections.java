@@ -39,21 +39,10 @@ public class Communique3MonitorReflections {
     private Communique3MonitorReflections() { }
 
     /**
-     * Gets names of the declared monitors
-     * @return names of the monitors, without prefixes
-     */
-    public static List<String> getMonitorStrings() {
-        return getMonitors().stream()
-                .map(Class::toString)
-                .map(s -> lastElement(s.split("\\.")))
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Lists monitors in the monitors package that are non-abstract concrete implementations.
      * @return list of monitors as classes
      */
-    public static List<Class<? extends CommMonitor>> getMonitors() {
+    public static List<Class<? extends CommMonitor>> getMonitorClasses() {
         Reflections reflections = new Reflections("com.git.ifly6.nsapi.ctelegram.monitors.reflected");
         return reflections.getSubTypesOf(CommMonitor.class).stream()
                 .filter(c -> !c.isInterface())
@@ -62,39 +51,27 @@ public class Communique3MonitorReflections {
     }
 
     /**
+     * Gets names of the declared monitors
+     * @return names of the monitors, without prefixes
+     */
+    public static List<String> getMonitorStrings() {
+        return getMonitorClasses().stream()
+                .map(Class::toString)
+                .map(s -> lastElement(s.split("\\.")))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Searches for monitor by name. Ignores case.
      * @param monitorName name to search for
      * @return class of corresponding monitor
      */
-    public static Class<? extends CommMonitor> getMonitor(String monitorName) {
-        return getMonitors().stream()
-                .filter(c -> lastElement(c.toString().split("\\.")).equalsIgnoreCase(monitorName))
+    public static Class<? extends CommMonitor> getMonitorClass(String monitorName) {
+        return getMonitorClasses().stream()
+                .filter(c -> lastElement(c.toString().split("\\."))
+                        .equalsIgnoreCase(monitorName))
                 .findFirst()
                 .orElseThrow(NoClassDefFoundError::new);
-    }
-
-    /**
-     * Filters constructors for whether they take only string parameters.
-     * @param constructors to filter
-     * @param allString    if true returns ones where all parameters are {@link String}; if false, otherwise
-     * @return matching constructors
-     */
-    @SuppressWarnings("SimplifiableConditionalExpression")
-    public static List<Constructor<?>> filterConstructors(List<Constructor<?>> constructors, boolean allString) {
-        return constructors.stream()
-                .filter(constructor -> {
-                    Class<?>[] classes = constructor.getParameterTypes();
-                    boolean allAreStrings = Arrays.stream(classes).allMatch(c -> c.equals(String.class));
-                    return allString
-                            ? allAreStrings
-                            : !allAreStrings;
-                })
-                .collect(Collectors.toList());
-    }
-
-    /** @see #filterConstructors(List, boolean) */
-    public static List<Constructor<?>> filterConstructors(Constructor<?>[] constructors, boolean allString) {
-        return filterConstructors(Arrays.asList(constructors), allString);
     }
 
     /**
@@ -104,7 +81,7 @@ public class Communique3MonitorReflections {
      * there are no parameters, returns empty list.
      */
     public static List<List<String>> getInstantiationParameters(String monitorName) {
-        Class<? extends CommMonitor> monitorClass = getMonitor(monitorName);
+        Class<? extends CommMonitor> monitorClass = getMonitorClass(monitorName);
         if (isSingleton(monitorClass))
             return new ArrayList<>();
 
@@ -132,7 +109,7 @@ public class Communique3MonitorReflections {
     private static boolean isSingleton(Class<? extends CommMonitor> monitorClass) {
         return Arrays.stream(monitorClass.getDeclaredMethods())
                 .map(Method::getName)
-                .anyMatch(s -> s.equalsIgnoreCase("getinstance"));
+                .anyMatch(s -> s.equalsIgnoreCase("getInstance"));
     }
 
     /**
@@ -145,10 +122,12 @@ public class Communique3MonitorReflections {
      */
     public static CommMonitor instantiate(String monitorName, Object[] args)
             throws CommReflectInstantiationException {
-        Class<? extends CommMonitor> monitorClass = getMonitor(monitorName);
+        Class<? extends CommMonitor> monitorClass = getMonitorClass(monitorName);
         if (isSingleton(monitorClass))
             try {
-                return (CommMonitor) monitorClass.getDeclaredMethod("getInstance").invoke(null);
+                return (CommMonitor) monitorClass
+                        .getDeclaredMethod("getInstance")
+                        .invoke(null);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new CommReflectException("Error in invoking singleton constructor method!", e);
             } catch (NoSuchMethodException | IllegalArgumentException e) {
@@ -177,14 +156,14 @@ public class Communique3MonitorReflections {
     }
 
     /** Thown when there is no create method or the wrong number of arguments are provided. */
-    private static class CommReflectInstantiationException extends Exception {
+    public static class CommReflectInstantiationException extends Exception {
         public CommReflectInstantiationException(String message) { super(message); }
 
         public CommReflectInstantiationException(String message, Throwable cause) { super(message, cause); }
     }
 
     /** Thrown when some some other reflection error occurs. */
-    private static class CommReflectException extends RuntimeException {
+    public static class CommReflectException extends RuntimeException {
         public CommReflectException(String message) { super(message); }
 
         public CommReflectException(String message, Throwable e) { super(message, e); }
