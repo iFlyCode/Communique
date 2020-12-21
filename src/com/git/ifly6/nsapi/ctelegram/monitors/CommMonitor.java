@@ -20,6 +20,7 @@ package com.git.ifly6.nsapi.ctelegram.monitors;
 import com.git.ifly6.nsapi.NSException;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 /**
  * Monitors generate a stream of recipients provided by {@link #getRecipients()} until exhausted {@link
@@ -41,7 +42,11 @@ public interface CommMonitor {
      */
     boolean recipientsExhausted();
 
-//    void setProcessingAction(Function<List<String>, List<String>>);
+    /**
+     * Counts remaining recipients, if known
+     * @return count of remaining recipients if known
+     */
+    OptionalLong remainingIfKnown();
 
     /** Thrown if calling an exhausted monitor. */
     class ExhaustedException extends NSException {

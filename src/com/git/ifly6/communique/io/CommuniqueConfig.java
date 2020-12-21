@@ -97,7 +97,7 @@ public class CommuniqueConfig implements java.io.Serializable {
      * @return <code>cRecipients</code> converted to <code>List&lt;CommuniqueRecipient&gt;</code>
      */
     public List<CommuniqueRecipient> getcRecipients() {
-        if (cRecipients == null) return null; // deal with null case
+        if (cRecipients == null) return new ArrayList<>(0); // deal with null case
 
         // use imperative for speed
         List<CommuniqueRecipient> list = new ArrayList<>(cRecipients.size());
@@ -139,8 +139,6 @@ public class CommuniqueConfig implements java.io.Serializable {
      * one in the header, to the version of the program on which it was saved.
      */
     void clean() {
-
-
         // proceeds to clean all of the fields
         cRecipients = cRecipients.stream().distinct()
                 .map(CommuniqueConfig::cleanNation)

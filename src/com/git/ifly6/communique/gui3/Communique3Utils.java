@@ -42,12 +42,13 @@ public class Communique3Utils {
     private static final Dimension SCREEN_DIMENSIONS = Toolkit.getDefaultToolkit().getScreenSize();
 
     /**
-     * Appends line to {@link JTextArea}.
+     * Appends line to {@link JTextArea}. Automatically moves the caret to the bottom.
      * @param area   to append to
      * @param object string representation thereof to append
      */
     public static void appendLine(JTextArea area, Object object) {
         area.append("\n" + object.toString());
+        area.setCaretPosition(area.getDocument().getLength());
     }
 
     /**
@@ -93,16 +94,5 @@ public class Communique3Utils {
             window.setBounds(100, 100,
                     (int) Math.round(SCREEN_DIMENSIONS.getWidth() / 2),
                     (int) Math.round(SCREEN_DIMENSIONS.getHeight() / 2));
-    }
-
-    /** Holds finish condition data. */
-    public static class FinishCondition {
-        boolean finishes;
-        int finishAt;
-
-        public FinishCondition(boolean finishes, int finishAt) {
-            this.finishes = finishes;
-            this.finishAt = finishAt;
-        }
     }
 }

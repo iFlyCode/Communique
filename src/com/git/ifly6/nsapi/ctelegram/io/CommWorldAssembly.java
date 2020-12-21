@@ -127,8 +127,8 @@ public class CommWorldAssembly {
             return IntStream.range(0, delegates.size()).boxed() // enumerate values
                     .map(i -> new Delegate(delegates.get(i), Integer.parseInt(votingWeights.get(i)))) // zip values
                     .sorted(Comparator.comparing(Delegate::getWeight) // compare by weight
-                            .reversed()                                            // make descending
-                            .thenComparing(Delegate::getName))                       // break ties by name
+                            .reversed()                               // make descending
+                            .thenComparing(Delegate::getName))        // break ties by name
                     .collect(Collectors.toList());
 
         } catch (IOException e) {

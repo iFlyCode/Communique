@@ -146,7 +146,7 @@ public enum CommuniqueApplication {
                     .resolve("log")
                     .resolve(String.format("%s-session-%s.log",
                             app.ref(),
-                            CommuniqueUtilities.getTime()));
+                            CommuniqueUtilities.getWindowsSafeDate()));
             Files.createDirectories(logLocation.getParent()); // make sure logging folder exists
             FileHandler handler = new FileHandler(logLocation.toString());
             handler.setFormatter(new SimpleFormatter());

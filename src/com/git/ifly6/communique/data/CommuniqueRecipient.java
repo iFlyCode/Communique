@@ -22,14 +22,15 @@ import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores information about a recipient. It is based on three characteristics, a <code>FilterType</code>, a
  * <code>RecipientType</code>, and the name. The filter type can be used to exclude, include, or simply add. The
  * recipient type can be used to specify multiple recipients, like in a region or in the set of World Assembly
  * delegates. All <code>CommuniqueRecipient</code>s have names which are reference-name safe.
- * @since version 2.0 (build 7)
  * @author ifly6
+ * @since version 2.0 (build 7)
  */
 public class CommuniqueRecipient {
 
@@ -46,9 +47,9 @@ public class CommuniqueRecipient {
      * Creates {@link CommuniqueRecipient}.
      */
     public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
-        this.filterType = filterType;
-        this.recipientType = recipientType;
-        this.name = ApiUtils.ref(name);    // convert to reference name
+        this.filterType = Objects.requireNonNull(filterType);
+        this.recipientType = Objects.requireNonNull(recipientType);
+        this.name = Objects.requireNonNull(ApiUtils.ref(name)); // convert to reference name
 
         // some format checking for the name
         if (name.contains(":"))
@@ -109,10 +110,8 @@ public class CommuniqueRecipient {
      * </p>
      * @return a <code>CommuniqueRecipient</code> representing that string
      */
-    public static CommuniqueRecipient parseRecipient(String s) {
-
-        String start = String.valueOf(s); // strings are immutable this is safe
-        s = s.trim();
+    public static CommuniqueRecipient parseRecipient(final String input) {
+        String s = input.trim();
 
         FilterType fType = FilterType.NORMAL; // default
         for (FilterType type : FilterType.values())
@@ -135,43 +134,34 @@ public class CommuniqueRecipient {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (filterType == null ? 0 : filterType.hashCode());
-        result = prime * result + (name == null ? 0 : name.hashCode());
-        result = prime * result + (recipientType == null ? 0 : recipientType.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CommuniqueRecipient recipient = (CommuniqueRecipient) o;
+        return filterType == recipient.filterType
+                && recipientType == recipient.recipientType
+                && name.equals(recipient.name);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        CommuniqueRecipient other = (CommuniqueRecipient) obj;
-        if (filterType != other.filterType) return false;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return recipientType == other.recipientType;
+    public int hashCode() {
+        return Objects.hash(filterType, recipientType, name);
     }
 
-    private static final String RECRUIT_FLAG = "flag:recruit";
+    /** Pre-Communique build 7 recruiter flag. */
+    private static final String OLD_RECRUIT_FLAG = "flag:recruit";
 
     /**
-     * The old include flag, which served the purpose of something like the current `+` tag, e.g. `region:Europe,
-     * +tag:wa` was a two-part flag on one line.
+     * The old include flag, which served the purpose of something like the current {@code +} tag, eg {@code
+     * region:Europe, +tag:wa} was a two-part flag on one line as {@code region:Europe -> wa:all}.
      * @see CommuniqueRecipient#translateTokens(List)
      */
     private static final String OLD_INCLUDE = "->";
 
     /**
-     * The old exclude flag was badly designed. If used simply, i.e. `--` then it would fail to work with nations that
+     * The old exclude flag was badly designed. If used simply, ie {@code --}  it would fail to work with nations that
      * have prefixed hyphens in their names. Instead, here, we use the two hyphens with spaces on both sides, which only
-     * partially solves the problem because spaces are allowed in names too. This is only done as a means to lower the
+     * partially solves the problem because spaces were allowed in names too. This is only done as a means to lower the
      * number of false positives.
      * @see CommuniqueRecipient#translateTokens(List)
      */
@@ -186,24 +176,24 @@ public class CommuniqueRecipient {
      * <th>New tag</th>
      * </tr>
      * <tr>
-     * <td><code>region:Europe</code></td>
-     * <td><code>region:Europe</code></td>
+     * <td>{@code region:Europe}</td>
+     * <td>{@code region:Europe}</td>
      * </tr>
      * <tr>
-     * <td><code>wa:all</code></td>
-     * <td><code>tag:wa</code></td>
+     * <td>{@code wa:all}</td>
+     * <td>{@code tag:wa}</td>
      * </tr>
      * <tr>
-     * <td><code>wa:delegates</code></td>
-     * <td><code>tag:delegates</code></td>
+     * <td>{@code wa:delegates}</td>
+     * <td>{@code tag:delegates}</td>
      * </tr>
      * <tr>
-     * <td><code>region:Europe -> wa:all</code></td>
-     * <td><code>region:Europe, +tag:WA/code></td>
+     * <td>{@code region:Europe -> wa:all}</td>
+     * <td>{@code region:Europe, +tag:WA}</td>
      * </tr>
      * <tr>
-     * <td><code>region:Europe -- nation:imperium_anglorum</code></td>
-     * <td><code>region:Europe, -nation:imperium_anglorum</code></td>
+     * <td>{@code region:Europe -- nation:imperium_anglorum}</td>
+     * <td>{@code region:Europe, -nation:imperium_anglorum}</td>
      * </tr>
      * </table>
      * @param oldTokens to translate
@@ -215,16 +205,16 @@ public class CommuniqueRecipient {
         for (String oldToken : oldTokens) {
 
 
-            if (oldToken.startsWith(RECRUIT_FLAG)) {
-                tokens.add(RECRUIT_FLAG);
-                if (oldToken.trim().equalsIgnoreCase(RECRUIT_FLAG)) {
+            if (oldToken.startsWith(OLD_RECRUIT_FLAG)) {
+                tokens.add(OLD_RECRUIT_FLAG);
+                if (oldToken.trim().equalsIgnoreCase(OLD_RECRUIT_FLAG)) {
                     // it's a recruit flag with nothing else
                     continue; // next
 
                 } else {
                     // otherwise, there's some other flag buried in here, we need to find it
                     // `flag:recruit` already added, remove it and continue parsing
-                    oldToken = oldToken.substring(RECRUIT_FLAG.length()).trim();
+                    oldToken = oldToken.substring(OLD_RECRUIT_FLAG.length()).trim();
                 }
             }
 
@@ -242,7 +232,7 @@ public class CommuniqueRecipient {
                     if (ApiUtils.isNotEmpty(split[0]))
                         tokens.add(translateToken(split[0].trim()));
                     if (ApiUtils.isNotEmpty(split[1]))
-                        tokens.add(translateToken(OLD_EXCLUDE + split[1].trim()));
+                        tokens.add(translateToken(OLD_EXCLUDE + split[1].trim())); // must trim!
                     continue;    // to next!
                 }
             }

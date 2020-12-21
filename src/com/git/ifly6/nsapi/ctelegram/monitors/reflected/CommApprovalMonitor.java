@@ -22,6 +22,7 @@ import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
+import com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -101,17 +102,13 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
             @Override
             public List<String> find(List<String> before, List<String> after) {
                 // elements in after that are were not in before
-                Set<String> beforeSet = new HashSet<>(before);
-                return after.stream().filter(s -> !beforeSet.contains(s))
-                        .collect(Collectors.toList());
+                return new ArrayList<>(Sets.difference(new HashSet<>(after), new HashSet<>(before)));
             }
         }, UNAPPROVED {
             @Override
             public List<String> find(List<String> before, List<String> after) {
                 // elements in before that are not in afterSet
-                Set<String> afterSet = new HashSet<>(before);
-                return before.stream().filter(s -> !afterSet.contains(s))
-                        .collect(Collectors.toList());
+                return new ArrayList<>(Sets.difference(new HashSet<>(before), new HashSet<>(after)));
             }
         };
 

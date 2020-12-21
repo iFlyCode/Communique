@@ -17,6 +17,7 @@
 package com.git.ifly6.communique.io;
 
 import com.git.ifly6.nsapi.telegram.util.JInfoCache;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,13 +49,7 @@ public enum CommuniqueProcessingAction {
     REVERSE {
         @Override
         public List<String> apply(List<String> input) {
-            for (int i = 0; i < input.size() / 2; i++) { // algorithm to quickly reverse a list
-                String original = input.get(i);
-                int other = input.size() - 1 - i;
-                input.set(i, input.get(other));
-                input.set(other, original);
-            }
-            return input; // do nothing
+            return Lists.reverse(input);
         }
 
         @Override

@@ -20,7 +20,9 @@ package com.git.ifly6.nsapi.ctelegram.monitors;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 /**
  * A static monitor does not update or monitor much of anything. After instantiation, it contains the data it contains
@@ -28,6 +30,9 @@ import java.util.Queue;
  * @since version 3.0 (build 13)
  */
 public class CommStaticMonitor implements CommMonitor {
+
+    public static final Logger LOGGER = Logger.getLogger(CommStaticMonitor.class.getName());
+
     private final List<String> allRecipients;
     private final Queue<String> recipients;
     private boolean exhausted = false;
@@ -47,8 +52,10 @@ public class CommStaticMonitor implements CommMonitor {
     @Override
     public List<String> getRecipients() {
         String nextRecipient = recipients.poll();
-        if (nextRecipient != null)
+        if (nextRecipient != null) {
+            LOGGER.info(String.format("Monitor sending <%s>; %d elements remain", nextRecipient, recipients.size()));
             return Collections.singletonList(nextRecipient);
+        }
 
         this.exhausted = true;
         throw new ExhaustedException(String.format("Static recipients (init with %d) exhausted",
@@ -59,5 +66,10 @@ public class CommStaticMonitor implements CommMonitor {
     @Override
     public boolean recipientsExhausted() {
         return exhausted;
+    }
+
+    @Override
+    public OptionalLong remainingIfKnown() {
+        return OptionalLong.of(recipients.size());
     }
 }

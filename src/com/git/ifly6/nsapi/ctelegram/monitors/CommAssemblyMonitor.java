@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.Range;
 import org.javatuples.Triplet;
 
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Framework for monitoring World Assembly actions.
@@ -58,9 +58,7 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
         }
 
         if (exhausted) throw new ExhaustedException("Assembly monitor exhausted; initialised resolution ID changed.");
-        return currentVoters.stream()
-                .filter(s -> !previousVoters.contains(s))
-                .collect(Collectors.toList());
+        return new ArrayList<>(Sets.difference(currentVoters, previousVoters));
     }
 
     @Override
@@ -96,7 +94,6 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
      * Parses data from provided string
      * @param chamber {@link Chamber}
      * @param voting {@link Vote}
-     * @param rangeString in form {@code range(MIN,MAX)}
      * @param ignoreInitial boolean
      * @return internal representations in quartet
      */

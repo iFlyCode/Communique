@@ -95,6 +95,11 @@ public class CommSender {
         outputInterface = anInterface;
     }
 
+    /** @return {@link CommMonitor} instantiating */
+    public CommMonitor getMonitor() {
+        return monitor;
+    }
+
     /** Feeds the queue until the feed limit is exceeded. Queue is fed whenever the queue is empty. */
     private void feedQueue() {
         LOGGER.fine("Feeding queue");
@@ -103,8 +108,7 @@ public class CommSender {
         int recipientsAdded = 0;
         for (String s : recipients) {
             if (recipientsAdded > feedLimit) break;
-            if (!sendQueue.contains(s) && !sentList.contains(s)) {
-                // prevent double-queueing
+            if (!sendQueue.contains(s) && !sentList.contains(s)) {  // prevent double-queueing
                 sendQueue.add(s);
                 recipientsAdded++;
                 LOGGER.finest(String.format("Fed queue element %s", s));

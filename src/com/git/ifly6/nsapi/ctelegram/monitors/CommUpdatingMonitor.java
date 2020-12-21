@@ -25,6 +25,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -102,6 +104,11 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     }
 
     @Override
+    public OptionalLong remainingIfKnown() {
+        return OptionalLong.empty();
+    }
+
+    @Override
     public abstract boolean recipientsExhausted();
 
     /**
@@ -154,16 +161,16 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
         return lastUpdate;
     }
 
-    /** @return {@link Instant} of predicted next update trigger. */
-    public Instant getNextUpdate() {
+    /** @return optional {@link Instant} of predicted next update trigger. */
+    public Optional<Instant> getNextUpdate() {
         if (job == null) {
             // there is no next update
             LOGGER.info("Asked for next update time, but there is no scheduled future update");
-            return null;
+            return Optional.empty();
         }
 
         // last update + delay
-        return lastUpdate.plusMillis(job.getDelay(TimeUnit.MILLISECONDS));
+        return Optional.of(lastUpdate.plusMillis(job.getDelay(TimeUnit.MILLISECONDS)));
     }
 
     /**

@@ -17,6 +17,8 @@
 
 package com.git.ifly6.nsapi;
 
+import com.google.common.util.concurrent.RateLimiter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,6 +40,9 @@ import java.util.stream.Collectors;
 public class NSConnection {
 
     private static final Logger LOGGER = Logger.getLogger(NSConnection.class.getName());
+
+    private static final double PERMITS_PER_SECOND = 50 / (double) 30; // 50 requests per 30 seconds
+    private static final RateLimiter limiter = RateLimiter.create(PERMITS_PER_SECOND);
 
     /** API delay in milliseconds. */
     public final static int WAIT_TIME = 610;
@@ -77,7 +82,8 @@ public class NSConnection {
      */
     public NSConnection connect() throws IOException {
         // Implement the rate limit
-        rateLimit();
+        double secondsWaited = limiter.acquire();
+        LOGGER.finest(String.format("NSConnection rate limit -> waited %.3f seconds", secondsWaited));
 
         // Create connection, add request properties
         HttpURLConnection apiConnection = (HttpURLConnection) url.openConnection();
@@ -124,18 +130,6 @@ public class NSConnection {
     public NSConnection setHeaders(Map<String, String> entries) {
         this.entries = entries;
         return this;
-    }
-
-    /**
-     * Prevents different instances from calling all at once. Each is delayed by {@value NSConnection#WAIT_TIME}
-     * milliseconds.
-     */
-    private synchronized void rateLimit() {
-        try {
-            Thread.sleep(WAIT_TIME);
-        } catch (InterruptedException e) {
-            System.err.println("Rate limit was interrupted.");
-        }
     }
 
     /**

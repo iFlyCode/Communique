@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -76,7 +77,6 @@ import java.util.stream.Collectors;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 import static com.git.ifly6.commons.CommuniqueUtilities.IS_OS_MAC;
-import static com.git.ifly6.communique.gui3.Communique3Utils.FinishCondition;
 import static com.git.ifly6.communique.gui3.Communique3Utils.appendLine;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
 
@@ -106,7 +106,7 @@ public class Communique3 implements CommSenderInterface {
     private JButton sendButton;
     private JButton stopButton;
 
-    private FinishCondition finishCondition;
+    private OptionalLong finishCondition;
     private JProgressBar progressBar;
     private JLabel progressLabel;
 
@@ -472,16 +472,17 @@ public class Communique3 implements CommSenderInterface {
 
     @Override
     public void reportSkip(String recipient) {
-        finishCondition.finishAt--;
+        finishCondition = client.getMonitor().remainingIfKnown();
     }
 
     @Override
     public void sentTo(String recipient, int numberSent) {
         EventQueue.invokeLater(() -> {
             // update text interfaces
+            finishCondition = client.getMonitor().remainingIfKnown();
             appendLine(textArea, CommuniqueRecipients.createExcludedNation(recipient));
-            progressLabel.setText(finishCondition.finishes
-                    ? String.format("%d of %d", numberSent, finishCondition.finishAt)
+            progressLabel.setText(finishCondition.isPresent()
+                    ? String.format("%d of %d", numberSent, finishCondition.getAsLong())
                     : String.format("%d sent", numberSent));
 
             // draw timer changes

@@ -16,9 +16,7 @@
  */
 package com.git.ifly6.commons;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Predicate;
@@ -50,39 +48,20 @@ public class CommuniqueUtilities {
     }
 
     /**
-     * Returns the format for the <code>getCurrentDate</code> for a <code>SimpleDateFormat</code>.
-     * @return a <code>String</code> containing <code>yyyy-MM-dd</code>
-     */
-    public static String dateFormat() {
-        return "yyyy-MM-dd";
-    }
-
-    /**
-     * Returns the format for the <code>getCurrentDateAndTimeFormat</code> for a <code>SimpleDateFormat</code>.
-     * @return a <code>String</code> containing <code>yyyy-MM-dd HH:mm:ss.SSS</code>
-     */
-    public static String dateTimeFormat() {
-        return "yyyy-MM-dd HH:mm:ss.SSS";
-    }
-
-    /**
-     * Returns a <code>String</code> stating the current date and time in the format defined by {@link
-     * CommuniqueUtilities#dateTimeFormat()}
+     * Current date and time in ISO format with 'T' -> ' '.
      * @return the date and time
      */
     public static String getDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateTimeFormat());
-        return formatter.format(LocalDateTime.now());
+        return DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                .format(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .replace('T', ' ');
     }
 
     /**
      * @return Gets a Java ISO local date time formatted with colons replaced for hyphens
      */
-    public static String getTime() {
+    public static String getWindowsSafeDate() {
         // must avoid colons in file names because windows doesn't like it apparently
-        return DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                .format(Instant.now().truncatedTo(ChronoUnit.SECONDS)) // truncate to seconds to ignore decimals
-                .replace(':', '-') // hacky, whatever
-                .replace('T', ' ');
+        return getDate().replace(':', '-');
     }
 }

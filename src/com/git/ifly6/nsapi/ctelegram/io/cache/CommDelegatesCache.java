@@ -39,9 +39,7 @@ public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> 
         super(minutes);
     }
 
-    /**
-     * Gets the one cache.
-     */
+    /** Gets the one cache. */
     public static CommDelegatesCache getInstance() {
         if (instance == null) instance = new CommDelegatesCache(Duration.ofMinutes(30));
         return instance;

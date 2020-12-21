@@ -20,8 +20,8 @@ import com.git.ifly6.nsapi.NSTimeStamped;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -35,7 +35,7 @@ public abstract class CommCache<T extends NSTimeStamped> {
     private static final Logger LOGGER = Logger.getLogger(CommCache.class.getName());
     public static final Duration DEFAULT_EXPIRATION_DURATION = Duration.ofMinutes(10);
 
-    private Map<String, T> cache = new HashMap<>();
+    private Map<String, T> cache = new ConcurrentHashMap<>();
     private Duration expirationIn;
 
     /** Creates empty cache with cache expiration in 10 minutes. */
