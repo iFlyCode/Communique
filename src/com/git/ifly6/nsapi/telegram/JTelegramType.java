@@ -21,6 +21,8 @@ import org.apache.commons.text.WordUtils;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.git.ifly6.nsapi.telegram.JTelegramConstants.DEFAULT_DURATION;
 import static com.git.ifly6.nsapi.telegram.JTelegramConstants.RECRUIT_DURATION;
@@ -43,7 +45,8 @@ public enum JTelegramType {
 
     /**
      * Custom telegram type with custom timing. Default timing is still {@link JTelegramConstants#DEFAULT_DURATION} but
-     * can be set to any desired value.
+     * can be set to any desired value. Note that when the internal value is changed, it is changed for all references
+     * to it because there is only one instance of the enum value.
      */
     CUSTOM(DEFAULT_DURATION) {
         @Override
@@ -57,7 +60,7 @@ public enum JTelegramType {
      */
     NONE(DEFAULT_DURATION) {};
 
-    Duration waitDuration;
+    protected Duration waitDuration;
 
     JTelegramType(Duration waitDuration) {
         this.waitDuration = waitDuration;
@@ -68,6 +71,8 @@ public enum JTelegramType {
     }
 
     public void setWaitDuration(Duration waitDuration) {
+        if (this != CUSTOM) throw new UnsupportedOperationException(
+                String.format("Cannot change internals of constant %s", this.toString()));
         this.waitDuration = waitDuration;
     }
 
@@ -93,11 +98,23 @@ public enum JTelegramType {
 
     /**
      * Parses telegram type.
-     * @return new telegram type
+     * @return telegram type
+     * @see JTelegramType#CUSTOM
      */
     public static JTelegramType parseType(String input) {
-        // todo parse code
-        return null;
+        try {
+            return JTelegramType.valueOf(input);
+        } catch (IllegalArgumentException ignored) { }
+
+        Matcher m = Pattern.compile("(?<=Custom \\()\\d+(?= ms\\))").matcher(input);
+        if (m.find()) { // if it matches this pattern
+            int ms = Integer.parseInt(m.group());
+            JTelegramType type = JTelegramType.CUSTOM;
+            type.setWaitDuration(Duration.ofMillis(ms));
+            return type;
+        }
+
+        throw new IllegalArgumentException(String.format("Cannot parse input %s", input));
     }
 
 }
