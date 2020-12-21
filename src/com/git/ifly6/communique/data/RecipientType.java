@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 /**
  * Defines a number of recipient types and provides methods to decompose those types into lists of
  * <code>CommuniqueRecipient</code>.
- * @since version 2.0 (build 7)
  * @author ifly6
+ * @since version 2.0 (build 7)
  */
 public enum RecipientType {
 

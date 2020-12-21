@@ -21,8 +21,10 @@ import com.git.ifly6.nsapi.NSNation;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
-/** Checks whether recipient accepts telegrams based on telegram type.
- * @since version 3.0 (build 13) */
+/**
+ * Checks whether recipient accepts telegrams based on telegram type.
+ * @since version 3.0 (build 13)
+ */
 public class CommRecipientChecker {
 
     /**

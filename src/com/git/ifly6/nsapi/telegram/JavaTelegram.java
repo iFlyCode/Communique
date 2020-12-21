@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 public class JavaTelegram {
 
     public static final Logger LOGGER = Logger.getLogger(JavaTelegram.class.getName());
-	private static volatile boolean killThread = false;
+    private static volatile boolean killThread = false;
 
     protected JTelegramKeys keys;
 
@@ -244,7 +244,7 @@ public class JavaTelegram {
 
                 else if (errorCode == ResponseCode.RATE_LIMIT_EXCEEDED)
                     util.log(formatError("Client exceeded rate limit. Check for multiple recruiter instances",
-                            recipient,i + 1, totalTelegrams));
+                            recipient, i + 1, totalTelegrams));
 
                 else if (errorCode == ResponseCode.CLIENT_NOT_REGISTERED)
                     util.log(formatError("Client key not registered with API, verify client key", recipient,
@@ -265,11 +265,11 @@ public class JavaTelegram {
                 // above should literally never happen
 
             } catch (IOException e) {
-                util.log(formatError("Error in queuing. Check your Internet connection", recipient, i + 1,totalTelegrams));
+                util.log(formatError("Error in queuing. Check your Internet connection", recipient, i + 1, totalTelegrams));
                 LOGGER.log(Level.SEVERE, "IO Exception in JavaTelegram sending thread", e);
-				LOGGER.severe("Stack trace:\n" + Arrays.stream(e.getStackTrace())
-						.map(st -> "\t" + st.toString())
-						.collect(Collectors.joining("\n")));
+                LOGGER.severe("Stack trace:\n" + Arrays.stream(e.getStackTrace())
+                        .map(st -> "\t" + st.toString())
+                        .collect(Collectors.joining("\n")));
                 e.printStackTrace();
             }
 

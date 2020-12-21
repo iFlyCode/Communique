@@ -92,8 +92,8 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
 
     /**
      * Parses data from provided string
-     * @param chamber {@link Chamber}
-     * @param voting {@link Vote}
+     * @param chamber       {@link Chamber}
+     * @param voting        {@link Vote}
      * @param ignoreInitial boolean
      * @return internal representations in quartet
      */

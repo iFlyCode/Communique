@@ -35,14 +35,14 @@ import java.util.stream.Collectors;
  * <p>This class does not lazily load data. When invoking <code>apply</code>, all elements are processed
  * immediately. This class is meant to be used fluently, e.g.</p>
  * <pre>new Communique7Parser().apply(tokens).listRecipients()</pre>
- * @since version 2 (build 7)
  * @author ifly6
+ * @since version 2 (build 7)
  */
 public class Communique7Parser {
 
     /**
-     * Declares parser build, which is based on two values: (1) the syntax of the Communique recipients
-      language and (2) the file syntax in which that information is held.
+     * Declares parser build, which is based on two values: (1) the syntax of the Communique recipients language and (2)
+     * the file syntax in which that information is held.
      */
     public static final long BUILD = 13;
 

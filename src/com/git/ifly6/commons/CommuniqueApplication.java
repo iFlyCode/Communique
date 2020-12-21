@@ -227,4 +227,4 @@ public enum CommuniqueApplication {
         }
     }
 
-    }
+}

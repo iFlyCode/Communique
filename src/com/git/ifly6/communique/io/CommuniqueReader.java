@@ -44,7 +44,8 @@ import static java.util.Arrays.asList;
  * CommuniqueReader#read()} file.
  * @see CommuniqueFileReader
  */
-@SuppressWarnings("deprecation") // CommuniqueFileReader
+@SuppressWarnings("deprecation")
+        // CommuniqueFileReader
 class CommuniqueReader {
 
     private static final Logger LOGGER = Logger.getLogger(CommuniqueReader.class.getName());

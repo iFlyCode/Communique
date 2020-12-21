@@ -55,7 +55,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     /**
      * Create method with strings for reflection.
      * @param regionList list of regions, separated by commas
-     * @param dirString direction string {@link Direction}
+     * @param dirString  direction string {@link Direction}
      * @return new monitor
      */
     public static CommMovementMonitor create(String regionList, String dirString) {

@@ -46,6 +46,7 @@ public class CommuniqueConstants {
 
     public static URI GITHUB_URI;
     public static URI FORUM_THREAD;
+
     static {
         try {
             FORUM_THREAD = new URI("https://forum.nationstates.net/viewtopic.php?f=15&t=352065");

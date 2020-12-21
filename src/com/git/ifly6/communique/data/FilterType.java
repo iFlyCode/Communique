@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 /**
  * Defines a number of filter types which can be used in {@link Communique7Parser} to effect the recipients list. All of
  * the exact definitions of what occurs are kept here.
- * @since version 2.0 (build 7)
  * @author ifly6
+ * @since version 2.0 (build 7)
  */
 public enum FilterType {
 
@@ -145,5 +145,4 @@ public enum FilterType {
                 .map(CommuniqueRecipient::getName) // get strings for matching
                 .collect(Collectors.toCollection(HashSet::new)); // for fast Set#contains()
     }
-
 }

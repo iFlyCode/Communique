@@ -187,8 +187,10 @@ public class NSRegion implements NSTimeStamped {
         return updateTime;
     }
 
-    /** Thrown if no such region exists.
-     * @since version 3.0 (build 13)*/
+    /**
+     * Thrown if no such region exists.
+     * @since version 3.0 (build 13)
+     */
     public static class NoSuchRegionException extends NSException {
         public NoSuchRegionException(String message, Throwable throwable) {
             super(message, throwable);

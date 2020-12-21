@@ -255,8 +255,10 @@ public class NSNation implements NSTimeStamped {
         return endorsingNations.size() > 0;
     }
 
-    /** Thrown if no such nation exists.
-     * @since version 3.0 (build 13) */
+    /**
+     * Thrown if no such nation exists.
+     * @since version 3.0 (build 13)
+     */
     public static class NSNoSuchNationException extends NSException {
         public NSNoSuchNationException(String message, Throwable throwable) {
             super(message, throwable);

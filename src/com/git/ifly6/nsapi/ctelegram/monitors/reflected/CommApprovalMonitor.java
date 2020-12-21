@@ -52,7 +52,7 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
 
     /**
      * Create method from string input for reflection.
-     * @param proposalID as passed
+     * @param proposalID   as passed
      * @param actionString {@link Action}
      * @return new monitor
      */
