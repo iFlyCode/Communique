@@ -38,4 +38,11 @@ public interface CommSenderInterface {
      * Defines actions to be taken when {@link CommSender} send thread terminates.
      */
     void onTerminate();
+
+    /**
+     * Tells implementor that an error occurred in the sending thread.
+     * @param m message
+     * @param e error
+     */
+    void onError(String m, Throwable e);
 }

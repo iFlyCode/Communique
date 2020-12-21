@@ -224,6 +224,11 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         System.exit(0);
     }
 
+    @Override
+    public void onError(String m, Throwable e) {
+        LOGGER.log(Level.SEVERE, m, e);
+    }
+
     /** {@inheritDoc} */
     @Override
     public CommuniqueConfig exportState() {

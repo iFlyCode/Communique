@@ -234,9 +234,15 @@ public class CommSender {
             try {
                 executeSend();
 
+            } catch (CommMonitor.ExhaustedException e) {
+                LOGGER.info("Recipients exhausted; shutting down sending facility");
+                this.outputInterface.onTerminate();
+                this.stopSend();
+
             } catch (Throwable e) {
-                LOGGER.log(Level.SEVERE, "Client sending thread encountered exception!", e);
-                LOGGER.severe("Shutting down client sending thread!");
+                final String m = "Client sending thread encountered exception! Shutting down sending thread!";
+                LOGGER.log(Level.SEVERE, m, e);
+                this.outputInterface.onError(m, e);
                 this.outputInterface.onTerminate();
                 this.stopSend();
                 e.printStackTrace();

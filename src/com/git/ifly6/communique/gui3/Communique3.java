@@ -498,6 +498,11 @@ public class Communique3 implements CommSenderInterface {
     }
 
     @Override
+    public void onError(String m, Throwable e) {
+        dialogHandler.showErrorDialog(m, e);
+    }
+
+    @Override
     public void onTerminate() {
         // todo termination actions for Communique 3
         client.stopSend();
