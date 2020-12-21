@@ -18,7 +18,7 @@
 package com.git.ifly6.nsapi.ctelegram.io;
 
 import com.git.ifly6.nsapi.NSIOException;
-import com.git.ifly6.nsapi.telegram.JTelegramConnection;
+import com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 
 /**
@@ -30,32 +30,8 @@ public class NSTGSettingsException extends NSIOException {
         super(message);
     }
 
-    public static NSTGSettingsException createException(JTelegramKeys keys, int errorCode) {
-        switch (errorCode) {
-            case JTelegramConnection.REGION_MISMATCH:
-                return new NSTGSettingsException("Region key mismatch.");
-
-            case JTelegramConnection.RATE_LIMIT_EXCEEDED:
-                return new NSTGSettingsException("Client exceeded rate limit. "
-                        + "Check form multiple recruiter instances");
-
-            case JTelegramConnection.CLIENT_NOT_REGISTERED:
-                return new NSTGSettingsException("Client key not registered with API. Client key typo?");
-
-            case JTelegramConnection.SECRET_KEY_MISMATCH:
-                return new NSTGSettingsException("Secret key mismatch. "
-                        + "Verify secret key is valid for specified telegram ID.");
-
-            case JTelegramConnection.NO_SUCH_TELEGRAM:
-                return new NSTGSettingsException(String.format("Telegram ID <%s> does not exist",
-                        keys.getTelegramId()));
-
-            case JTelegramConnection.UNKNOWN_ERROR:
-                return new NSTGSettingsException("Unknown error.");
-
-            default:
-                throw new IllegalStateException("unexpected value " + errorCode);
-        }
+    public static NSTGSettingsException createException(JTelegramKeys keys, ResponseCode errorCode) {
+        return new NSTGSettingsException(String.format("Error with keys %s; got error %s",
+                keys.toString(), errorCode.toString()));
     }
-
 }

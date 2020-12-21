@@ -29,6 +29,14 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.CLIENT_NOT_REGISTERED;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.NO_SUCH_TELEGRAM;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.QUEUED;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.RATE_LIMIT_EXCEEDED;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.REGION_MISMATCH;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.SECRET_KEY_MISMATCH;
+import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.UNKNOWN_ERROR;
+
 /**
  * {@code JTelegramConnection} connects to NationStates telegram API. This is done by creating a {@link
  * HttpURLConnection} to the appropriately generated URL with provided keys. On connection, also parses response to
@@ -38,13 +46,13 @@ public class JTelegramConnection {
 
     private static final Logger LOGGER = Logger.getLogger(JTelegramConnection.class.getName());
 
-    public static final int QUEUED = 0;
-    public static final int UNKNOWN_ERROR = 1;
-    public static final int REGION_MISMATCH = 2;
-    public static final int CLIENT_NOT_REGISTERED = 3;
-    public static final int RATE_LIMIT_EXCEEDED = 4;
-    public static final int SECRET_KEY_MISMATCH = 5;
-    public static final int NO_SUCH_TELEGRAM = 6;
+//    public static final int QUEUED = 0;
+//    public static final int UNKNOWN_ERROR = 1;
+//    public static final int REGION_MISMATCH = 2;
+//    public static final int CLIENT_NOT_REGISTERED = 3;
+//    public static final int RATE_LIMIT_EXCEEDED = 4;
+//    public static final int SECRET_KEY_MISMATCH = 5;
+//    public static final int NO_SUCH_TELEGRAM = 6;
 
     private HttpURLConnection apiConnection;
 
@@ -60,7 +68,7 @@ public class JTelegramConnection {
                 NSConnection.API_PREFIX,
                 keys.getClientKey(),
                 keys.getSecretKey(),
-                keys.getSecretKey(),
+                keys.getTelegramId(),
                 recipient);
         URL tgURL = new URL(urlString);
         apiConnection = (HttpURLConnection) tgURL.openConnection(); // always should be true
@@ -72,11 +80,11 @@ public class JTelegramConnection {
         // if doing nothing, do nothing; log everything
         if (!doNothing) {
             apiConnection.connect();
-            LOGGER.info(String.format("Connected to send TG <%s> to <%s>",
+            LOGGER.fine(String.format("Attempting to send TG <%s> to <%s>",
                     keys.getTelegramId(), recipient));
 
         } else
-            LOGGER.info(String.format("Dry run; did nothing for TG <%s> to <%s>",
+            LOGGER.fine(String.format("Dry run; did nothing for TG <%s> to <%s>",
                     keys.getTelegramId(), recipient));
     }
 
@@ -100,8 +108,7 @@ public class JTelegramConnection {
      * @return an <code>int</code> which contains an error code.
      * @throws IOException if error in queuing the telegram
      */
-    public int verify() throws IOException {
-
+    public ResponseCode verify() throws IOException {
         BufferedReader webReader = apiConnection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST
                 ? new BufferedReader(new InputStreamReader(apiConnection.getInputStream()))
                 : new BufferedReader(new InputStreamReader(apiConnection.getErrorStream()));
@@ -109,7 +116,7 @@ public class JTelegramConnection {
         webReader.close();
 
         if (response.startsWith("queued")) return QUEUED;
-        if (response.contains("API Recruitment TG rate-limit exceeded")) return RATE_LIMIT_EXCEEDED;
+        if (response.contains("ratelimit exceeded")) return RATE_LIMIT_EXCEEDED;
         if (response.contains("Region mismatch between Telegram and Client API Key")) return REGION_MISMATCH;
         if (response.contains("Client Not Registered For API")) return CLIENT_NOT_REGISTERED;
         if (response.contains("Incorrect Secret Key")) return SECRET_KEY_MISMATCH;
@@ -120,4 +127,8 @@ public class JTelegramConnection {
         return UNKNOWN_ERROR;
     }
 
+    public enum ResponseCode {
+        QUEUED, UNKNOWN_ERROR, REGION_MISMATCH, CLIENT_NOT_REGISTERED, RATE_LIMIT_EXCEEDED,
+        SECRET_KEY_MISMATCH, NO_SUCH_TELEGRAM
+    }
 }

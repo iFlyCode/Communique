@@ -156,10 +156,9 @@ public enum CommuniqueApplication {
             e.printStackTrace();
         }
 
-        // set up default exception handler
+        // set up default exception handler with root logger
         Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
-            Logger.getGlobal().log(Level.SEVERE,
-                    String.format("Exception in %s: %s", t, e.toString()), e);
+            Logger.getLogger("").log(Level.SEVERE, String.format("Exception in %s: %s", t, e.toString()), e);
             e.printStackTrace();
         });
 

@@ -22,6 +22,12 @@ package com.git.ifly6.nsapi.ctelegram;
 public interface CommSenderInterface {
 
     /**
+     * Informs implementor that a recipient was skipped.
+     * @param recipient that was skipped
+     */
+    void reportSkip(String recipient);
+
+    /**
      * Informs implementor that recipient was sent to with serial count
      * @param recipient  sent to
      * @param numberSent serial count

@@ -23,6 +23,7 @@ import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;
+import com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
@@ -41,6 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -104,11 +106,12 @@ public class CommSender {
             if (!sendQueue.contains(s) && !sentList.contains(s)) {
                 // prevent double-queueing
                 sendQueue.add(s);
+                recipientsAdded++;
                 LOGGER.finest(String.format("Fed queue element %s", s));
             }
         }
 
-        LOGGER.info(String.format("Fed queue with %d recipients", recipientsAdded));
+        LOGGER.fine(String.format("Fed queue with %d recipients", recipientsAdded));
     }
 
     /** @return feed limit, ie number of recipients taken from the monitor in each step */
@@ -150,16 +153,42 @@ public class CommSender {
         LOGGER.finer("Send starting");
         if (dryRun) LOGGER.warning("SENDING AS DRY RUN!");
 
+        // if no recipient in queue, try to get some
+        // if monitor is exhausted, it will automatically throw an exhausted exception
+        if (sendQueue.peek() == null) {
+            if (monitor.recipientsExhausted()) {
+                LOGGER.info("No recipients in queue; cannot feed as monitor is exhausted");
+                this.stopSend();
+
+                LOGGER.info("Calling interface onTerminate action");
+                this.outputInterface.onTerminate();
+                return; // end
+
+            } else {
+                // LOGGER.info("No recipients in queue; attempting to feed");
+                feedQueue();
+
+                // if still there are no recipients to queue
+                if (sendQueue.peek() == null) {
+                    LOGGER.info("Mission to feed failed; we'll get recipients next time");
+                    return;
+                }
+            }
+        }
+
         String recipient = sendQueue.poll();
         if (recipient == null)
             throw new EmptyQueueException();
 
         // if we have a recipient...
-        LOGGER.finer(String.format("Got recipient %s from queue", recipient));
+        LOGGER.info(String.format("Got recipient <%s> from queue", recipient));
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
-                LOGGER.finer(String.format("Recipient %s invalid; try next in queue", recipient));
+                LOGGER.info(String.format("Recipient <%s> invalid; trying next in queue", recipient));
+                outputInterface.reportSkip(recipient);
                 executeSend(); // try again
+                return; // do not execute further!
+
             } catch (StackOverflowError error) {
                 // might happen if cannot get recipients over and over again?
                 throw new NSIOException("Encountered stack overflow error");
@@ -171,11 +200,11 @@ public class CommSender {
             JTelegramConnection connection = new JTelegramConnection(keys, recipient, dryRun);
 
             // get response code
-            int responseCode = connection.verify();
-            LOGGER.finer(String.format("Received response code %d", responseCode));
+            ResponseCode responseCode = connection.verify();
+            LOGGER.info(String.format("Received response code %s", responseCode));
 
             // if there is an error
-            if (responseCode != JTelegramConnection.QUEUED)
+            if (responseCode != ResponseCode.QUEUED)
                 throw NSTGSettingsException.createException(keys, responseCode);
 
             // we sent to this recipient
@@ -198,37 +227,15 @@ public class CommSender {
             throw new UnsupportedOperationException("Cannot start sending after it already started");
 
         job = scheduler.scheduleWithFixedDelay(() -> {
-            // if no recipient in queue, try to get some
-            // if monitor is exhausted, it will automatically throw an exhausted exception
-
-            if (sendQueue.peek() == null) {
-                if (monitor.recipientsExhausted()) {
-                    LOGGER.info("No recipients in queue; attempting to feed");
-                    feedQueue();
-
-                    // if still there are no recipients to queue
-                    if (sendQueue.peek() == null) {
-                        LOGGER.info("Mission to feed failed; we'll get recipients next time");
-                        return;
-                    }
-
-                } else {
-                    LOGGER.info("No recipients in queue; cannot feed as monitor is exhausted");
-                    this.stopSend();
-
-                    LOGGER.info("Calling interface onTerminate action");
-                    this.outputInterface.onTerminate();
-                    return; // end
-                }
-            }
-
-            // execute send
             try {
                 executeSend();
-            } catch (EmptyQueueException e) {
-                /* Should not catch NSTGSettingsException, as if settings are wrong, you should know immediately.
-                 * Otherwise, log no recipient exception, though it shouldn't happen due to filtering above. */
-                LOGGER.warning("Exhausted loaded queue; were all queued recipients invalid?");
+
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Client sending thread encountered exception!", e);
+                LOGGER.severe("Shutting down client sending thread!");
+                this.outputInterface.onTerminate();
+                this.stopSend();
+                e.printStackTrace();
             }
         }, 0, telegramType.getWaitDuration().toMillis(), TimeUnit.MILLISECONDS);
 

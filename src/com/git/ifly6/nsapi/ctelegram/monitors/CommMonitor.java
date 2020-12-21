@@ -41,6 +41,8 @@ public interface CommMonitor {
      */
     boolean recipientsExhausted();
 
+//    void setProcessingAction(Function<List<String>, List<String>>);
+
     /** Thrown if calling an exhausted monitor. */
     class ExhaustedException extends NSException {
         public ExhaustedException(String message) {

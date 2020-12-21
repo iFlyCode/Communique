@@ -62,6 +62,7 @@ public class NSConnection {
     public NSConnection(String urlString) {
         try {
             this.url = new URL(urlString);
+            LOGGER.finest(String.format("Connecting to %s", urlString));
         } catch (MalformedURLException e) {
             throw new NSIOException(String.format("Input URL <%s> malformed", urlString), e);
         }

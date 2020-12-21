@@ -21,9 +21,10 @@ import java.time.Duration;
 
 public class JTelegramConstants {
 
-    public static final int DEFAULT_MILLIS = (int) Math.round(30.05 * 1000);
-    public static final Duration DEFAULT_DURATION = Duration.ofMillis(DEFAULT_MILLIS);
+    public static final Duration DEFAULT_DURATION = Duration.ofMillis(Math.round(30.05 * 1000L));
+    public static final Duration RECRUIT_DURATION = Duration.ofMillis(Math.round(180.05 * 1000L));
 
     private JTelegramConstants() {
     }
+
 }

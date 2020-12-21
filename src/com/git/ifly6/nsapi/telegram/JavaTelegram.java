@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.NSConnection;
 import com.git.ifly6.nsapi.NSException;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.NSNation;
+import com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode;
 import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.io.IOException;
@@ -226,33 +227,33 @@ public class JavaTelegram {
 
                 // Connect to the API
                 JTelegramConnection connection = new JTelegramConnection(keys, recipient);
-                int errorCode = connection.verify();
+                ResponseCode errorCode = connection.verify();
 
                 // Verify Status, then deal with all the possible error codes...
-                if (errorCode == JTelegramConnection.QUEUED) {
+                if (errorCode == ResponseCode.QUEUED) {
                     util.sentTo(recipient, i, totalTelegrams);
                     sentList.add(recipient);
 
-                } else if (errorCode == JTelegramConnection.REGION_MISMATCH)
+                } else if (errorCode == ResponseCode.REGION_MISMATCH)
                     util.log(formatError("Region key mismatch.", recipient, i + 1, totalTelegrams));
 
-                else if (errorCode == JTelegramConnection.RATE_LIMIT_EXCEEDED)
+                else if (errorCode == ResponseCode.RATE_LIMIT_EXCEEDED)
                     util.log(formatError("Client exceeded rate limit. Check for multiple recruiter instances", recipient,
                             i + 1, totalTelegrams));
 
-                else if (errorCode == JTelegramConnection.CLIENT_NOT_REGISTERED)
+                else if (errorCode == ResponseCode.CLIENT_NOT_REGISTERED)
                     util.log(formatError("Client key not registered with API, verify client key", recipient,
                             i + 1, totalTelegrams));
 
-                else if (errorCode == JTelegramConnection.SECRET_KEY_MISMATCH)
+                else if (errorCode == ResponseCode.SECRET_KEY_MISMATCH)
                     util.log(formatError("Secret key incorrect, verify secret key", recipient,
                             i + 1, totalTelegrams));
 
-                else if (errorCode == JTelegramConnection.NO_SUCH_TELEGRAM)
+                else if (errorCode == ResponseCode.NO_SUCH_TELEGRAM)
                     util.log(formatError("No such telegram by id: " + keys.getTelegramId(), recipient,
                             i + 1, totalTelegrams));
 
-                else if (errorCode == JTelegramConnection.UNKNOWN_ERROR)
+                else if (errorCode == ResponseCode.UNKNOWN_ERROR)
                     util.log(formatError("Unknown connection error", recipient, i + 1, totalTelegrams));
 
                 else util.log(formatError("Unknown internal error", recipient, i + 1, totalTelegrams));

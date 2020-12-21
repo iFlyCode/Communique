@@ -17,120 +17,87 @@
 
 package com.git.ifly6.nsapi.telegram;
 
+import org.apache.commons.text.WordUtils;
+
 import java.time.Duration;
 import java.util.Arrays;
 
-import static com.git.ifly6.nsapi.telegram.JTelegramConstants.DEFAULT_MILLIS;
+import static com.git.ifly6.nsapi.telegram.JTelegramConstants.DEFAULT_DURATION;
+import static com.git.ifly6.nsapi.telegram.JTelegramConstants.RECRUIT_DURATION;
 
 /**
  * Specifies different types of telegrams to be sending and their default timings and names.
  */
 public enum JTelegramType {
 
+
     /**
-     * Timing for campaign telegrams with {@link JTelegramConstants#DEFAULT_MILLIS} delay.
+     * Timing for recruitment telegrams with {@link JTelegramConstants#RECRUIT_DURATION} delay.
      */
-    CAMPAIGN {
-        @Override
-        public int getWaitTime() {
-            return (int) JTelegramConstants.DEFAULT_DURATION.toMillis();
-        }
-
-        @Override
-        public Duration getWaitDuration() {
-            return JTelegramConstants.DEFAULT_DURATION;
-        }
-
-        @Override
-        public String toString() {
-            return "Campaign";
-        }
-    },
+    RECRUIT(RECRUIT_DURATION) {},
 
     /**
-     * Timing for recruitment telegrams with wait timing at 180.05 seconds.
+     * Timing for campaign telegrams with {@link JTelegramConstants#DEFAULT_DURATION} delay.
      */
-    RECRUIT {
-        private final Duration RECRUIT_DURATION = Duration.ofMillis(Math.round(180.05 * 1000L));
-
-        @Override
-        public int getWaitTime() {
-            return (int) RECRUIT_DURATION.toMillis();
-        }
-
-        @Override
-        public Duration getWaitDuration() {
-            return RECRUIT_DURATION;
-        }
-
-        @Override
-        public String toString() {
-            return "Recruitment";
-        }
-    },
+    CAMPAIGN(DEFAULT_DURATION) {},
 
     /**
-     * Custom telegram type with custom timing. Default timing is still {@link JTelegramConstants#DEFAULT_MILLIS} but
+     * Custom telegram type with custom timing. Default timing is still {@link JTelegramConstants#DEFAULT_DURATION} but
      * can be set to any desired value.
      */
-    CUSTOM {
-        private Duration time = JTelegramConstants.DEFAULT_DURATION;
-
-        @Override
-        public int getWaitTime() {
-            return (int) time.toMillis();
-        }
-
-        @Override
-        public Duration getWaitDuration() {
-            return null;
-        }
-
-        public void setWaitDuration(Duration d) {
-            time = d;
-        }
-
+    CUSTOM(DEFAULT_DURATION) {
         @Override
         public String toString() {
-            return String.format("Custom timing at %d ms", time.toMillis());
+            return String.format("Custom (%d ms)", waitDuration.toMillis());
         }
     },
 
     /**
-     * Timing for unmarked telegrams with {@link JTelegramConstants#DEFAULT_MILLIS} delay.
+     * Timing for unmarked telegrams with {@link JTelegramConstants#DEFAULT_DURATION} delay.
      */
-    NONE {
-        @Override
-        public int getWaitTime() {
-            return DEFAULT_MILLIS;
-        }
+    NONE(DEFAULT_DURATION) {};
 
-        @Override
-        public Duration getWaitDuration() {
-            return null;
-        }
+    Duration waitDuration;
 
-        @Override
-        public String toString() {
-            return "No type";
-        }
-    };
+    JTelegramType(Duration waitDuration) {
+        this.waitDuration = waitDuration;
+    }
 
-    public abstract Duration getWaitDuration();
+    public Duration getWaitDuration() {
+        return waitDuration;
+    }
+
+    public void setWaitDuration(Duration waitDuration) {
+        this.waitDuration = waitDuration;
+    }
 
     /**
      * Wait time defined by the telegram type; in milliseconds.
      * @return wait time in milliseconds
      */
-    public abstract int getWaitTime();
+    public int getWaitTime() {
+        return (int) waitDuration.toMillis();
+    }
 
-    public abstract String toString();
+    @Override
+    public String toString() {
+        return WordUtils.capitalize(super.toString());
+    }
 
     /** Returns presets */
     public static JTelegramType[] getPresets() {
         return Arrays.stream(JTelegramType.values())
                 .filter(t -> t != JTelegramType.CUSTOM)
                 .toArray(JTelegramType[]::new);
+    }
+
+    /**
+     * Parses telegram type.
+     * @return new telegram type
+     */
+    public static JTelegramType parseType(String input) {
+        // todo parse code
+        return null;
     }
 
 }

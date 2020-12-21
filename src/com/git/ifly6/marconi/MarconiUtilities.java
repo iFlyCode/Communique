@@ -17,12 +17,12 @@
 
 package com.git.ifly6.marconi;
 
+import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +32,11 @@ public class MarconiUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(MarconiUtilities.class.getName());
 
-    static Path lockFile = Paths.get(System.getProperty("user.dir"), "marconi.lock");
+    static Path lockFile = CommuniqueApplication.APP_SUPPORT.resolve("marconi.lock");
 
     /**
-     * Creates two column string.
+     * Creates two column string, each column is 30 characters wide.
+     * @returns string with lines
      * @since version 3.0 (build 13)
      */
     protected static String twoColumn(List<String> items) {

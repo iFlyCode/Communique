@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.gui3;
 
+import com.apple.eawt.Application;
 import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Parser;
@@ -74,6 +75,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
+import static com.git.ifly6.commons.CommuniqueUtilities.IS_OS_MAC;
 import static com.git.ifly6.communique.gui3.Communique3Utils.FinishCondition;
 import static com.git.ifly6.communique.gui3.Communique3Utils.appendLine;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
@@ -229,7 +231,7 @@ public class Communique3 implements CommSenderInterface {
         mnFile.add(mntmShowDirectory);
 
         // Only add the Quit menu item if the OS is not Mac
-        if (!CommuniqueUtilities.IS_OS_MAC) {
+        if (!IS_OS_MAC) {
             mnFile.addSeparator();
             JMenuItem mntmExit = new JMenuItem("Exit");
             mntmExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, COMMAND_KEY));
@@ -402,16 +404,14 @@ public class Communique3 implements CommSenderInterface {
         JMenu mnHelp = new JMenu("Help");
         menuBar.add(mnHelp);
 
-        JMenuItem mntmAbout = new JMenuItem("About");
-        mntmAbout.addActionListener(
-                e -> CommuniqueTextDialog.createMonospacedDialog(
-                        frame,
-                        "About",
-                        CommuniqueConstants.acknowledgement,
-                        true));
-        mnHelp.add(mntmAbout);
-
-        mnHelp.addSeparator();
+        Runnable aboutRunnable = () -> CommuniqueTextDialog.createMonospacedDialog(frame, "About",
+                CommuniqueConstants.acknowledgement, true);
+        if (!IS_OS_MAC) {
+            JMenuItem mntmAbout = new JMenuItem("About");
+            mntmAbout.addActionListener(e -> aboutRunnable.run());
+            mnHelp.add(mntmAbout);
+            mnHelp.addSeparator();
+        }
 
         JMenuItem mntmDocumentation = new JMenuItem("Documentation");
         mntmDocumentation.addActionListener(event -> {
@@ -441,6 +441,22 @@ public class Communique3 implements CommSenderInterface {
                         CommuniqueConstants.getLicence(), false));
         mnHelp.add(mntmLicence);
 
+        { // handle preferences, also the object in the correct native location
+            // everything is handled by this dialog, just run it
+            Runnable prefrencesRunnable = () -> new Communique3SettingsDialog(this.frame);
+            if (IS_OS_MAC) {
+                Application app = Application.getApplication();
+                app.setPreferencesHandler(event -> prefrencesRunnable.run());
+                app.setQuitHandler((event, response) -> System.exit(0));
+                app.setAboutHandler(event -> aboutRunnable.run());
+
+            } else {
+                JMenuItem preferences = new JMenuItem("Preferences...");
+                preferences.addActionListener(e -> prefrencesRunnable.run());
+                mnFile.add(preferences);
+            }
+        }
+
         return menuBar;
     }
 
@@ -452,6 +468,11 @@ public class Communique3 implements CommSenderInterface {
         CommuniqueApplication.compressLogs();
 
         EventQueue.invokeLater(Communique3::new);
+    }
+
+    @Override
+    public void reportSkip(String recipient) {
+        finishCondition.finishAt--;
     }
 
     @Override
@@ -478,6 +499,6 @@ public class Communique3 implements CommSenderInterface {
     @Override
     public void onTerminate() {
         // todo termination actions for Communique 3
+        client.stopSend();
     }
-
 }
