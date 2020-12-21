@@ -117,7 +117,7 @@ public class Communique3 implements CommSenderInterface {
 
     public Communique3() {
         // $$$setupUI$$$(); // setup UI starts here
-        frame = new JFrame(CommuniqueApplication.generateName(CommuniqueApplication.COMMUNIQUE, false));
+        frame = new JFrame(CommuniqueApplication.COMMUNIQUE.generateName(false));
         dialogHandler = new Communique3DialogHandler(frame, LOGGER);
         configHandler = new Communique3ConfigHandler(this);
 

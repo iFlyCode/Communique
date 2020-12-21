@@ -48,58 +48,49 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
  */
 public enum CommuniqueApplication {
 
-    COMMUNIQUE {
-        @Override
-        public String displayName() {
-            return "Communiqué";
-        }
-
-        @Override
-        public String ref() {
-            return "communique";
-        }
-
-        @Override
-        public String build() {
-            return String.valueOf(Communique7Parser.BUILD);
-        }
-
-        @Override
-        public String version() {
-            return Communique7Parser.VERSION;
-        }
-
-    }, MARCONI {
-        @Override
-        public String displayName() {
-            return WordUtils.capitalize(this.ref());
-        }
-
-        @Override
-        public String ref() {
-            return "marconi";
-        }
-
-        @Override
-        public String build() {
-            return COMMUNIQUE.build();
-        }
-
-        @Override
-        public String version() {
-            return COMMUNIQUE.version();
-        }
-    };
+    COMMUNIQUE("Communiqué", "communique"),
+    MARCONI("Marconi", "marconi");
 
     private static final Logger LOGGER = Logger.getLogger(CommuniqueApplication.class.getName());
+    private String displayName;
+    private String ref;
 
-    public abstract String displayName();
+    CommuniqueApplication(String displayName, String ref) {
+        this.displayName = displayName;
+        this.ref = ref;
+    }
 
-    public abstract String ref();
+    /** @return {@link Communique7Parser#BUILD} */
+    public String build() {
+        return String.valueOf(Communique7Parser.BUILD);
+    }
 
-    public abstract String build();
+    /**
+     * Generates display name; includes build variable if {@code includeBuild}.
+     * @param includeBuild whether to include build name
+     * @return names like {@code Communiqué 2.5 (build 12)}
+     * @since version 3.0 (build 13)
+     */
+    public String generateName(boolean includeBuild) {
+        return includeBuild
+                ? MessageFormat.format("{0} {1} (build {2})", displayName(), version(), build())
+                : MessageFormat.format("{0} {1}", displayName(), version());
+    }
 
-    public abstract String version();
+    /** @return display name */
+    public String displayName() {
+        return this.displayName;
+    }
+
+    /** @return Internal reference name */
+    public String ref() {
+        return this.ref;
+    }
+
+    /** @return {@link Communique7Parser#VERSION} string */
+    public String version() {
+        return Communique7Parser.VERSION;
+    }
 
     public static final Path APP_SUPPORT = ((Supplier<Path>) () -> { // determine where the APP_SUPPORT location is
         if (CommuniqueUtilities.IS_OS_WINDOWS)
@@ -127,7 +118,7 @@ public enum CommuniqueApplication {
         if (CommuniqueUtilities.IS_OS_MAC) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name",
-                    generateName(app, false));
+                    app.generateName(false));
         }
     }
 
@@ -162,6 +153,9 @@ public enum CommuniqueApplication {
             e.printStackTrace();
         });
 
+        // log the build
+        LOGGER.info(String.format("Started up %s", app.generateName(true)));
+
         // get jar name
         return getJARName(app);
     }
@@ -187,19 +181,6 @@ public enum CommuniqueApplication {
                 systemException.printStackTrace();
             }
         }
-    }
-
-    /**
-     * Generates display name; includes build variable if {@code includeBuild}.
-     * @param app          to generate for
-     * @param includeBuild whether to include build name
-     * @return names like {@code Communiqué 2.5 (build 12)}
-     * @since version 3.0 (build 13)
-     */
-    public static String generateName(CommuniqueApplication app, boolean includeBuild) {
-        return includeBuild
-                ? MessageFormat.format("{0} {1} (build {2})", app.displayName(), app.version(), app.build())
-                : MessageFormat.format("{0} {1}", app.displayName(), app.version());
     }
 
     /** @return name of the starting executable. */
@@ -246,4 +227,4 @@ public enum CommuniqueApplication {
         }
     }
 
-}
+    }
