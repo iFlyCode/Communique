@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>Communique</groupId>
     <artifactId>Communique</artifactId>
-    <version>12_2.5</version>
+    <version>13-3.0</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <resources>
@@ -55,10 +55,10 @@
                             <minimizeJar>true</minimizeJar>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.git.ifly6.communique.ngui.Communique</mainClass>
+                                    <mainClass>com.git.ifly6.communique.gui3.Communique3</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>Communique-${project.version}</finalName>
+                            <finalName>Communique_${project.version}</finalName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
@@ -72,10 +72,10 @@
                             <minimizeJar>true</minimizeJar>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.git.ifly6.marconi.MarconiLauncher</mainClass>
+                                    <mainClass>com.git.ifly6.marconi.Marconi</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>Marconi-${project.version}</finalName>
+                            <finalName>Marconi_${project.version}</finalName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
