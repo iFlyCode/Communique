@@ -133,6 +133,22 @@ public class CommuniqueConfig implements java.io.Serializable {
     }
 
     /**
+	 * Gets processing action
+	 * @return processing action, {@link CommuniqueProcessingAction#NONE} if null
+	 */
+	public CommuniqueProcessingAction getProcessingAction() {
+		return processingAction == null ? CommuniqueProcessingAction.NONE : processingAction;
+	}
+
+	/**
+	 * Gets telegram type
+	 * @return telegram type, {@link JTelegramType#NONE} if null
+	 */
+	public JTelegramType getTelegramType() {
+		return telegramType == null ? JTelegramType.NONE : telegramType;
+	}
+
+	/**
      * Checks all the data kept in {@link CommuniqueConfig#cRecipients} and makes they are distinct and applicable to
      * save to the program. For backward compatibility, it also applies these changes to the old <code>recipients</code>
      * and the <code>sentList</code>. It also updates the <code>CommuniqueConfig</code> version <i>field</i>, not the

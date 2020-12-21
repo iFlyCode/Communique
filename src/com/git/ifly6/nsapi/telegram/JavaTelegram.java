@@ -26,9 +26,13 @@ import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * {@code JavaTelegram} coordinates handling of keys, recruitment flags, recipients, and sending.
@@ -40,7 +44,8 @@ import java.util.function.Predicate;
 @Deprecated
 public class JavaTelegram {
 
-    private static volatile boolean killThread = false;
+    public static final Logger LOGGER = Logger.getLogger(JavaTelegram.class.getName());
+	private static volatile boolean killThread = false;
 
     protected JTelegramKeys keys;
 
@@ -238,8 +243,8 @@ public class JavaTelegram {
                     util.log(formatError("Region key mismatch.", recipient, i + 1, totalTelegrams));
 
                 else if (errorCode == ResponseCode.RATE_LIMIT_EXCEEDED)
-                    util.log(formatError("Client exceeded rate limit. Check for multiple recruiter instances", recipient,
-                            i + 1, totalTelegrams));
+                    util.log(formatError("Client exceeded rate limit. Check for multiple recruiter instances",
+                            recipient,i + 1, totalTelegrams));
 
                 else if (errorCode == ResponseCode.CLIENT_NOT_REGISTERED)
                     util.log(formatError("Client key not registered with API, verify client key", recipient,
@@ -260,8 +265,11 @@ public class JavaTelegram {
                 // above should literally never happen
 
             } catch (IOException e) {
-                util.log(formatError("Error in queuing. Check your Internet connection", recipient, i + 1,
-                        totalTelegrams));
+                util.log(formatError("Error in queuing. Check your Internet connection", recipient, i + 1,totalTelegrams));
+                LOGGER.log(Level.SEVERE, "IO Exception in JavaTelegram sending thread", e);
+				LOGGER.severe("Stack trace:\n" + Arrays.stream(e.getStackTrace())
+						.map(st -> "\t" + st.toString())
+						.collect(Collectors.joining("\n")));
                 e.printStackTrace();
             }
 

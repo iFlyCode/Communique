@@ -154,7 +154,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         // Parser and expand recipients
         List<CommuniqueRecipient> cRecipients = config.getcRecipients();
         Communique7Parser parser = new Communique7Parser().apply(cRecipients);
-        List<String> expandedRecipients = config.processingAction.apply(parser.listRecipients());
+        List<String> expandedRecipients = config.getProcessingAction().apply(parser.listRecipients());
 
         // todo better way to handle flags
         CommMonitor monitor =
@@ -169,7 +169,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         System.out.println();
         System.out.printf("This should take %s to send %d telegrams%n",
                 CommuniqueUtilities.time(Math.round(expandedRecipients.size()
-                        * (config.telegramType.getWaitTime() / (double) 1000))),
+                        * (config.getTelegramType().getWaitTime() / (double) 1000))),
                 expandedRecipients.size());
 
         // allow cancel
@@ -182,7 +182,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         }
 
         // Set the client up and go.
-        client = new CommSender(config.keys, monitor, config.telegramType, this);
+        client = new CommSender(config.keys, monitor, config.getTelegramType(), this);
         client.setProcessingAction(l -> config.processingAction.apply(l));
 
         // Check for file lock and send

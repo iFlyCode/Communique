@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>Communique</groupId>
     <artifactId>Communique</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>12_2.5</version>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <resources>
@@ -40,9 +40,56 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>build-communique</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.git.ifly6.communique.ngui.Communique</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>Communique-${project.version}</finalName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-marconi</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.git.ifly6.marconi.MarconiLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>Marconi-${project.version}</finalName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.2.1</version>
+            <type>maven-plugin</type>
+        </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
