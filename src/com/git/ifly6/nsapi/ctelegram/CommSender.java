@@ -199,10 +199,15 @@ public class CommSender {
             }
 
         // if the recipient will accept our telegram...
+        JTelegramConnection connection;
         try {
             LOGGER.finer("Creating telegram connection ");
-            JTelegramConnection connection = new JTelegramConnection(keys, recipient, dryRun);
+            connection = new JTelegramConnection(keys, recipient, dryRun);
+        } catch (IOException e) { // rethrow
+            throw new NSIOException("Cannot initialise connection to telegram API", e);
+        }
 
+        try {
             // get response code
             ResponseCode responseCode = connection.verify();
             LOGGER.info(String.format("Received response code %s", responseCode));
@@ -214,11 +219,11 @@ public class CommSender {
             // we sent to this recipient
             reportSent(recipient);
             sentList.add(recipient);
-            LOGGER.info(String.format("Sent telegram to recipient %s", recipient));
 
-        } catch (IOException e) { // rethrow
-            throw new NSIOException("Encountered IO exception when connecting to NationStates", e);
+        } catch (IOException e) {
+            throw new NSIOException("Cannot get response code from telegram API", e);
         }
+
     }
 
     private void reportSent(String recipient) {
