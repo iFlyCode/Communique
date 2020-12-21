@@ -118,7 +118,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     protected abstract void updateAction();
 
     /** Starts the monitor immediately. If start is called after job already started, does nothing. */
-    private void start() {
+    public void start() {
         start(Duration.ZERO);
     }
 
@@ -137,18 +137,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
                     updateInterval.toMillis(),
                     TimeUnit.MILLISECONDS);
 
-        } else {
-            LOGGER.info("Attempted to start after job already started!");
-            throw new UnsupportedOperationException("Cannot start monitor after it already started");
         }
-    }
-
-    /**
-     * Restarts the monitor immediately. All monitors should initialise and start automatically. This method is provided
-     * to restart a stopped monitor.
-     */
-    public void restart() {
-        start();
     }
 
     /** Stops the monitor. */

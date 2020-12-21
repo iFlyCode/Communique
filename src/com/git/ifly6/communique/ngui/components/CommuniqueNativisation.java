@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 
+@Deprecated
 public class CommuniqueNativisation {
 
     private static final java.util.logging.Logger LOGGER = Logger.getLogger(CommuniqueNativisation.class.getName());

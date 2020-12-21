@@ -25,9 +25,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,25 +44,17 @@ public class CommuniqueConfig implements java.io.Serializable {
 
     public long version; // do not change to 'build'
 
-    protected boolean isRecruitment;
     public CommuniqueProcessingAction processingAction;
-
     public JTelegramKeys keys;
     public JTelegramType telegramType;
-    public String waitString;
 
     /**
-     * Holds all of the Communique recipients in <code>String</code>s so that it can be edited by hand and not as {@link
-     * CommuniqueRecipient}.
+     * Holds {@link CommuniqueRecipient}s as {@link String}s so that it can be edited by hand.
      * <p>To keep this editable by hand, the configuration system uses getters and setters to translate to and from the
      * string state representations to present to the programmer a {@link CommuniqueRecipient} API but actually store
      * everything in strings.</p>
      */
-    private ArrayList<String> cRecipients; // must be mutable, use ArrayList
-
-    // These should be deprecated, but are kept for backward compatibility
-    public String[] recipients; // consider removing
-    public String[] sentList;   // consider removing
+    private ArrayList<String> cRecipients = new ArrayList<>(); // must be mutable, use ArrayList
 
     /**
      * Empty constructor for {@link CommuniqueConfig}
@@ -73,6 +63,7 @@ public class CommuniqueConfig implements java.io.Serializable {
         this.keys = new JTelegramKeys(); // empty keys
         this.version = Communique7Parser.BUILD; // default version to current version
         this.processingAction = CommuniqueProcessingAction.NONE; // no processing action
+        this.telegramType = JTelegramType.NONE; // no telegram type
     }
 
     /**
@@ -81,20 +72,18 @@ public class CommuniqueConfig implements java.io.Serializable {
      * @param t          the type of telegrams configured to be sent
      * @param procAction is the applicable processing action
      * @param keys       are the keys
-     * @param s          for the wait string
      */
     public CommuniqueConfig(JTelegramType t, CommuniqueProcessingAction procAction,
-                            JTelegramKeys keys, String s) {
+                            JTelegramKeys keys) {
         this();
         this.telegramType = t;
         this.processingAction = procAction;
         this.keys = keys;
-        this.waitString = s;
     }
 
     /**
-     * Returns converted <code>cRecipients</code> to <code>List&lt;CommuniqueRecipient&gt;</code>
-     * @return <code>cRecipients</code> converted to <code>List&lt;CommuniqueRecipient&gt;</code>
+     * Converts internal {@link #cRecipients} to {@code List<{@link CommuniqueRecipient}>}
+     * @return converted string representation
      */
     public List<CommuniqueRecipient> getcRecipients() {
         if (cRecipients == null) return new ArrayList<>(0); // deal with null case
@@ -159,18 +148,6 @@ public class CommuniqueConfig implements java.io.Serializable {
         cRecipients = cRecipients.stream().distinct()
                 .map(CommuniqueConfig::cleanNation)
                 .collect(Collectors.toCollection(ArrayList::new));
-
-        if (Objects.nonNull(recipients) && recipients.length > 0)
-            recipients = Arrays.stream(recipients)
-                    .distinct()
-                    .map(CommuniqueConfig::cleanNation)
-                    .toArray(String[]::new);
-
-        if (Objects.nonNull(sentList) && sentList.length > 0)
-            sentList = Arrays.stream(sentList)
-                    .distinct()
-                    .map(CommuniqueConfig::cleanNation)
-                    .toArray(String[]::new);
     }
 
     /**

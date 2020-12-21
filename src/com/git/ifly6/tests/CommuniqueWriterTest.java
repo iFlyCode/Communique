@@ -35,7 +35,7 @@ public class CommuniqueWriterTest {
 
     public static void main(String[] args) throws IOException {
         CommuniqueConfig config = new CommuniqueConfig(JTelegramType.RECRUIT, CommuniqueProcessingAction.NONE,
-                new JTelegramKeys("client-key", "secret-key", "telegram-id"), "");
+                new JTelegramKeys("client-key", "secret-key", "telegram-id"));
 
         CommuniqueRecipient[] recipients = new CommuniqueRecipient[] {
                 CommuniqueRecipients.createFlag("recruit"),
@@ -49,8 +49,8 @@ public class CommuniqueWriterTest {
                 CommuniqueRecipients.createExcludedNation("excluded8"),
                 CommuniqueRecipients.createExcludedNation("excluded9")
         };
-
         config.setcRecipients(Arrays.asList(recipients));
+
         Path path = Paths.get("test-output.json");
         CommuniqueLoader loader = new CommuniqueLoader(path);
         loader.save(config);

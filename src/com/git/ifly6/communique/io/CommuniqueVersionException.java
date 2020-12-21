@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.io;
 
+@Deprecated
 public class CommuniqueVersionException extends RuntimeException {
     public CommuniqueVersionException(String message) {
         super(message);

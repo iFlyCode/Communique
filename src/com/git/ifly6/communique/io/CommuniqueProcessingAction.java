@@ -24,12 +24,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * This implements post-processing actions on the recipient list as a whole for Communique and Marconi clients. It has
  * various functions, like randomisation, reversing the order of recipients, and prioritisation of delegates.
  */
-public enum CommuniqueProcessingAction {
+public enum CommuniqueProcessingAction implements Function<List<String>, List<String>> {
 
     /** Randomises the order of recipients */
     RANDOMISE {

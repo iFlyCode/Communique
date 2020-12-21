@@ -29,6 +29,7 @@ import java.nio.file.Path;
  * Marconi}.
  * @author ifly6
  */
+@Deprecated
 public abstract class AbstractCommunique {
 
     /** @return {@link CommuniqueConfig} representing current program state. */

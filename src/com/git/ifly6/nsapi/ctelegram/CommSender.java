@@ -233,8 +233,12 @@ public class CommSender {
     }
 
     public void startSend() {
+        LOGGER.info("Starting send thread");
         if (isRunning())
             throw new UnsupportedOperationException("Cannot start sending after it already started");
+
+        if (monitor instanceof CommUpdatingMonitor)
+            ((CommUpdatingMonitor) monitor).start();
 
         job = scheduler.scheduleWithFixedDelay(() -> {
             try {
@@ -258,14 +262,6 @@ public class CommSender {
         // log sending thread creation
         LOGGER.info(String.format("Scheduled sending thread start with wait duration %d ms",
                 telegramType.getWaitDuration().toMillis()));
-    }
-
-    public void restartSend() {
-        LOGGER.fine("Restarting send thread");
-        if (monitor instanceof CommUpdatingMonitor)
-            ((CommUpdatingMonitor) monitor).restart();
-
-        this.startSend();
     }
 
     public void stopSend() {

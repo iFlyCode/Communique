@@ -36,6 +36,7 @@ import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import javax.swing.JButton;
@@ -88,6 +89,7 @@ public class Communique3 implements CommSenderInterface {
 
     public static final Logger LOGGER = Logger.getLogger(Communique3.class.getName());
     public static String jarName = "Communique_" + Communique7Parser.BUILD + ".jar";
+    private static Communique3Settings settings;
 
     private Communique3DialogHandler dialogHandler;
     private Communique3ConfigHandler configHandler;
@@ -102,7 +104,6 @@ public class Communique3 implements CommSenderInterface {
     private JFrame frame;
     private JPanel panel;
 
-    private JButton parseButton;
     private JButton sendButton;
     private JButton stopButton;
 
@@ -134,9 +135,11 @@ public class Communique3 implements CommSenderInterface {
         // on initialisation, load autosave
         config = Communique3Utils.loadAutoSave();
         initialiseTextComponents();
+        initialiseButtons();
+        initialiseAutoSaves();
     }
 
-    private void createUIComponents() {
+    private <E extends Enum<E>> void createUIComponents() {
         // combo boxes
         fieldProcessingAction = new JComboBox<>(CommuniqueProcessingAction.values());
         fieldTelegramType = new JComboBox<>(JTelegramType.getPresets());
@@ -159,11 +162,54 @@ public class Communique3 implements CommSenderInterface {
                     config.setcRecipients(recipients);
                 }));
         fieldClient.getDocument().addDocumentListener(
-                new CommuniqueDocumentListener(e -> config.keys.setClientKey(fieldClient.getText())));
+                new CommuniqueDocumentListener(e -> {
+                    config.keys.setClientKey(fieldClient.getText());
+                    if (settings.saveClientKey) settings.clientKey = fieldClient.getText();
+                }));
         fieldSecret.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setSecretKey(fieldSecret.getText())));
         fieldTelegramID.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setTelegramId(fieldTelegramID.getText())));
+    }
+
+    private void initialiseButtons() {
+        // starting status
+        stopButton.setEnabled(false);
+        sendButton.addActionListener(e -> {
+            List<String> recipients = new Communique7Parser()
+                    .apply(config.getcRecipients())
+                    .listRecipients();
+            recipients = config.getProcessingAction().apply(recipients);
+            client = new CommSender(config.keys, new CommStaticMonitor(recipients),
+                    config.telegramType, this);
+            client.startSend();
+
+            stopButton.setEnabled(true);
+            sendButton.setEnabled(false);
+        });
+        stopButton.addActionListener(e -> {
+            if (client != null)
+                client.stopSend();
+
+            sendButton.setEnabled(true);
+            stopButton.setEnabled(false);
+        });
+    }
+
+    /**
+     * Intialises a {@link Runtime#addShutdownHook(Thread)} which saves {@link Communique3Settings} and {@link
+     * Communique3Utils#saveAutoSave(CommuniqueConfig)}.
+     */
+    private void initialiseAutoSaves() {
+        settings = Communique3Settings.load();
+        CommuniqueApplication.setLogLevel(settings.loggingLevel);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                settings.save();
+            } catch (IOException ignored) { }
+            Communique3Utils.saveAutoSave(this.config);
+        }));
     }
 
     private JMenuBar createMenuBar() {
@@ -220,7 +266,8 @@ public class Communique3 implements CommSenderInterface {
         mnFile.addSeparator();
 
         JMenuItem mntmShowDirectory = new JMenuItem("Open Application Support");
-        mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
+        mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
+                COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
         mntmShowDirectory.addActionListener(e -> {
             try {
                 Desktop.getDesktop().open(APP_SUPPORT.toFile());
@@ -433,6 +480,10 @@ public class Communique3 implements CommSenderInterface {
         });
         mnHelp.add(mntmForumThread);
 
+        JMenuItem mntmUpdate = new JMenuItem("Check for updates...");
+        mntmUpdate.addActionListener((e) -> new Communique3Updater());
+        mnHelp.add(mntmUpdate);
+
         mnHelp.addSeparator();
 
         JMenuItem mntmLicence = new JMenuItem("Licence");
@@ -443,7 +494,10 @@ public class Communique3 implements CommSenderInterface {
 
         { // handle preferences, also the object in the correct native location
             // everything is handled by this dialog, just run it
-            Runnable prefrencesRunnable = () -> new Communique3SettingsDialog(this.frame);
+            Runnable prefrencesRunnable = () -> {
+                Optional<Communique3Settings> s = new Communique3SettingsDialog(this.frame, settings).getFinalSettings();
+                settings = s.orElse(settings);
+            };
             if (IS_OS_MAC) {
                 Application app = Application.getApplication();
                 app.setPreferencesHandler(event -> prefrencesRunnable.run());

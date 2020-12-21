@@ -86,7 +86,7 @@ public enum JTelegramType {
 
     @Override
     public String toString() {
-        return WordUtils.capitalize(super.toString());
+        return WordUtils.capitalize(super.toString().toLowerCase());
     }
 
     /** Returns presets */

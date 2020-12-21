@@ -58,12 +58,9 @@ public class CommuniqueFileReader {
     public CommuniqueFileReader(File file) throws FileNotFoundException, CommuniqueVersionException {
         // load the file into memory
         BufferedReader br = new BufferedReader(new FileReader(file));
-
         fileContents = br.lines().collect(Collectors.toList());
-
         if (isCompatible()) keysAndList = parseConfig();
-        else
-            throw new CommuniqueVersionException("Communiqué file build mismatch");
+        else throw new CommuniqueVersionException("Communiqué file build mismatch");
     }
 
 

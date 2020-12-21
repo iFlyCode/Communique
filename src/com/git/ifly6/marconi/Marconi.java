@@ -47,7 +47,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -132,11 +131,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
             if (commandLine.hasOption("l")) {
                 // by command line, set logger level
                 Level level = Level.parse(commandLine.getOptionValue("l"));
-                Logger rootLogger = Logger.getLogger("");
-                rootLogger.setLevel(level);
-                for (Handler handler : rootLogger.getHandlers())
-                    handler.setLevel(level);
-
+                CommuniqueApplication.setLogLevel(level);
                 System.out.printf("Set logging level to %s.%n", level);
             }
 

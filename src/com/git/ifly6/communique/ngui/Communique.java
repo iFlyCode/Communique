@@ -108,7 +108,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
     private JTextField txtClientKey;
     private JTextField txtSecretKey;
     private JTextField txtTelegramId;
-    private JTextField txtWaitTime;
     private JComboBox<CommuniqueProcessingAction> specialAction;
     private JComboBox<JTelegramType> telegramType;
     private JButton btnParse;
@@ -242,17 +241,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
             LOGGER.info(String.format("Set telegram type to %s", currentTelegramType()));
         });
 
-        JLabel lblWaitTime = new JLabel("Telegram delay");
-        lblWaitTime.setToolTipText("Delay must be in milliseconds");
-
-        txtWaitTime = CommuniqueFactory.createField(
-                "",
-                "Leave as blank, 'default', or '-' to accept defaults. Must be in milliseconds.",
-                new CommuniqueDocumentListener(e -> {
-                    config.waitString = txtWaitTime.getText().trim(); // dynamic update config
-                })
-        );
-        txtWaitTime.setColumns(10);
+        JLabel lblWaitTime = new JLabel("");
+        JLabel txtWaitTime = new JLabel("");
 
         GroupLayout gl_dataPanel = new GroupLayout(dataPanel);
         gl_dataPanel.setHorizontalGroup(
@@ -693,7 +683,8 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         }
 
         // Ask for confirmation
-        CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients, currentWaitTime());
+        CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients,
+                config.getTelegramType().getWaitTime());
         LOGGER.info("Displayed CommuniqueSendDialog");
         LOGGER.info("CommuniqueSendDialog " + (sendDialog.getValue() == 0
                 ? "cancelled"
@@ -732,9 +723,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                     LOGGER.severe("Exception in writing autosave or properties file");
                     e.printStackTrace();
                 }
-
-                // set wait time
-                client.setWaitTime(this.currentWaitTime());
 
                 // Create tracker, initialise success tracking HashMap
                 rSuccessTracker = new LinkedHashMap<>();
@@ -806,8 +794,6 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         txtSecretKey.setText(config.keys.getSecretKey());
         txtTelegramId.setText(config.keys.getTelegramId());
 
-        txtWaitTime.setText(config.waitString); // get wait string
-
         // set text from cRecipients
         txtrCode.setText(CODE_HEADER + String.join("\n", config.getcRecipientsString()));
 
@@ -831,24 +817,24 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         return telegramType.getItemAt(telegramType.getSelectedIndex());
     }
 
-    /**
-     * @return currently selected wait time if present, otherwise, defualt wait time
-     */
-    private int currentWaitTime() {
-        if (txtWaitTime.getText().trim().isEmpty()
-                || txtWaitTime.getText().equals("-")
-                || txtWaitTime.getText().equalsIgnoreCase("default")
-                || txtWaitTime.getText().equalsIgnoreCase("defaults"))
-            return currentTelegramType().getWaitTime();
-
-        try {
-            return Integer.parseInt(txtWaitTime.getText());
-        } catch (NumberFormatException e) {
-            String message = String.format("Invalid integer %s", txtWaitTime.getText());
-            Communique.this.showMessageDialog(message, CommuniqueConstants.ERROR);
-            throw new JTelegramException(message, e);
-        }
-    }
+//    /**
+//     * @return currently selected wait time if present, otherwise, defualt wait time
+//     */
+//    private int currentWaitTime() {
+//        if (txtWaitTime.getText().trim().isEmpty()
+//                || txtWaitTime.getText().equals("-")
+//                || txtWaitTime.getText().equalsIgnoreCase("default")
+//                || txtWaitTime.getText().equalsIgnoreCase("defaults"))
+//            return currentTelegramType().getWaitTime();
+//
+//        try {
+//            return Integer.parseInt(txtWaitTime.getText());
+//        } catch (NumberFormatException e) {
+//            String message = String.format("Invalid integer %s", txtWaitTime.getText());
+//            Communique.this.showMessageDialog(message, CommuniqueConstants.ERROR);
+//            throw new JTelegramException(message, e);
+//        }
+//    }
 
     /**
      * Shows and initialises the Communique Recruiter.
@@ -882,7 +868,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
         }
 
         final int ups = 20; // ups = updates per second
-        int totalTime = ups * currentWaitTime(); // est delay
+        int totalTime = ups * this.config.getTelegramType().getWaitTime(); // est delay
         progressBar.setMaximum(totalTime); // max = est delay
 
         timer = new Timer(1000 / ups, new ActionListener() {

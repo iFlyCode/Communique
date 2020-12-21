@@ -111,7 +111,7 @@ public class CommuniqueRecipient {
      * @return a <code>CommuniqueRecipient</code> representing that string
      */
     public static CommuniqueRecipient parseRecipient(final String input) {
-        String s = input.trim();
+        String s = input.trim().toLowerCase();
 
         FilterType fType = FilterType.NORMAL; // default
         for (FilterType type : FilterType.values())
@@ -204,7 +204,6 @@ public class CommuniqueRecipient {
         List<String> tokens = new ArrayList<>();
         for (String oldToken : oldTokens) {
 
-
             if (oldToken.startsWith(OLD_RECRUIT_FLAG)) {
                 tokens.add(OLD_RECRUIT_FLAG);
                 if (oldToken.trim().equalsIgnoreCase(OLD_RECRUIT_FLAG)) {
@@ -232,23 +231,24 @@ public class CommuniqueRecipient {
                     if (ApiUtils.isNotEmpty(split[0]))
                         tokens.add(translateToken(split[0].trim()));
                     if (ApiUtils.isNotEmpty(split[1]))
-                        tokens.add(translateToken(OLD_EXCLUDE + split[1].trim())); // must trim!
+                        tokens.add(translateToken(OLD_EXCLUDE + split[1])); // must trim!
                     continue;    // to next!
                 }
             }
             tokens.add(translateToken(oldToken));
 
         }
-        return tokens;
+        return ApiUtils.ref(tokens);
     }
 
     /**
      * Translates a single token from the old system to the new Communique 7 system. This method should not change any
      * Communique 7 tokens and only translate applicable Communique 6 tokens.
-     * @param oldToken in a <code>String</code> form, like "wa:delegates"
+     * @param token in a <code>String</code> form, like "wa:delegates"
      * @return the token in the Communique 7 form, which, for "wa:delegates", would turn into "tag:delegates"
      */
-    private static String translateToken(String oldToken) {
+    private static String translateToken(final String token) {
+        String oldToken = token.trim();
 
         // deal with mixed new and old tokens
         if (oldToken.startsWith("tag")) return oldToken;
@@ -262,8 +262,9 @@ public class CommuniqueRecipient {
         // translate tags which can be decomposed
         if (oldToken.equalsIgnoreCase("wa:delegates")) return "tag:delegates";
         if (oldToken.equalsIgnoreCase("wa:delegate")) return "tag:delegates";
-        if (oldToken.equalsIgnoreCase("wa:members") || oldToken.equalsIgnoreCase("wa:nations"))
-            return "tag:wa";
+        if (oldToken.equalsIgnoreCase("wa:members")
+                || oldToken.equalsIgnoreCase("wa:nations")
+                || oldToken.equalsIgnoreCase("wa:all")) return "tag:wa";
         if (oldToken.startsWith("world:new")) return "tag:new";
 
         // somewhat-direct recipient tags, like region and nation

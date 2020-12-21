@@ -35,6 +35,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -158,6 +159,17 @@ public enum CommuniqueApplication {
 
         // get jar name
         return getJARName(app);
+    }
+
+    /**
+     * Sets logging level for root logger to provided level
+     * @param level to set
+     */
+    public static void setLogLevel(Level level) {
+        Logger rootLogger = Logger.getLogger("");
+        rootLogger.setLevel(level);
+        for (Handler handler : rootLogger.getHandlers())
+            handler.setLevel(level);
     }
 
     /** Sets system look and feel; if not available, sets Nimbus. */

@@ -26,6 +26,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
@@ -37,6 +38,7 @@ import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 public class Communique3Utils {
 
     private static final Logger LOGGER = Logger.getLogger(Communique3Utils.class.getName());
+    private static final Path AUTOSAVE_PATH = APP_SUPPORT.resolve("autosave.txt");
 
     private static final Dimension MINIMUM_SIZE = new Dimension(600, 400);
     private static final Dimension SCREEN_DIMENSIONS = Toolkit.getDefaultToolkit().getScreenSize();
@@ -57,13 +59,22 @@ public class Communique3Utils {
      */
     public static CommuniqueConfig loadAutoSave() {
         if (Files.exists(APP_SUPPORT.resolve("autosave.txt"))) {
-            CommuniqueLoader loader = new CommuniqueLoader(APP_SUPPORT.resolve("autosave.txt"));
+            CommuniqueLoader loader = new CommuniqueLoader(AUTOSAVE_PATH);
             try {
-                LOGGER.info("Auto-save loaded");
+                LOGGER.info("Loading auto-save");
                 return loader.load();
-            } catch (IOException ignored) { } // pass to below
+            } catch (IOException ignored) {
+
+            }
         }
         return new CommuniqueConfig();
+    }
+
+    public static void saveAutoSave(CommuniqueConfig config) {
+        CommuniqueLoader loader = new CommuniqueLoader(AUTOSAVE_PATH);
+        try {
+            loader.save(config);
+        } catch (IOException ignored) { }
     }
 
     /**
