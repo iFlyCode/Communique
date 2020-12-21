@@ -183,7 +183,7 @@ public class NSRegion implements NSTimeStamped {
      * @return {@link Instant} of data acqisition
      */
     @Override
-    public Instant dataTimestamp() {
+    public Instant timestamp() {
         return updateTime;
     }
 

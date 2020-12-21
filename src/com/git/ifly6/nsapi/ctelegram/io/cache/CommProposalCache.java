@@ -124,7 +124,7 @@ public class CommProposalCache extends CommCache<CommProposalCache.ProposalList>
         }
 
         @Override
-        public Instant dataTimestamp() {
+        public Instant timestamp() {
             return this.timestamp;
         }
     }

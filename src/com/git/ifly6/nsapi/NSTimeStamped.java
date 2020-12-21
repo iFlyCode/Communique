@@ -25,6 +25,6 @@ import java.time.Instant;
  */
 public interface NSTimeStamped {
 
-    Instant dataTimestamp();
+    Instant timestamp();
 
 }

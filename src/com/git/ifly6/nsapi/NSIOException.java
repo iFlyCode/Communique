@@ -24,10 +24,6 @@ public class NSIOException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public NSIOException() {
-        super();
-    }
-
     public NSIOException(String message) {
         super(message);
     }

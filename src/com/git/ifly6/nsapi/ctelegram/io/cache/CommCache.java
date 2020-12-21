@@ -89,7 +89,7 @@ public abstract class CommCache<T extends NSTimeStamped> {
         T n = getOrCacheObject(s);
 
         /* If the duration between data acquisition and present is greater than ten minutes, mark expired. */
-        boolean expired = Duration.between(n.dataTimestamp(), Instant.now()).compareTo(expirationIn) > 0;
+        boolean expired = Duration.between(n.timestamp(), Instant.now()).compareTo(expirationIn) > 0;
         if (expired)
             cacheObject(s); // update cache
 

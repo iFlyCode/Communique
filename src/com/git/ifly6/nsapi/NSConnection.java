@@ -73,7 +73,7 @@ public class NSConnection {
      * @return this
      * @throws IOException   if connection fails
      * @throws NSIOException if rate limit exceeded
-     * @throws NSException   if nation does not exist or no data can be got
+     * @throws NSException   if queried element does not exist or no data can be got
      */
     public NSConnection connect() throws IOException {
         // Implement the rate limit
@@ -103,8 +103,9 @@ public class NSConnection {
             if (apiConnection.getResponseCode() == 429)
                 throw new NSIOException("Api ratelimit exceeded");
 
-            if (xml_raw.contains("Unknown nation"))
-                throw new NSException(String.format("Nation does not exist at url: %s", url.toString()));
+            if (xml_raw.contains("Unknown nation")
+                    || apiConnection.getResponseCode() == 404)
+                throw new NSException(String.format("No results for url %s", url.toString()));
 
             throw new NSException(String.format("Cannot get data from the API at url %s"
                             + "\nHTTP response code %d",
@@ -126,7 +127,8 @@ public class NSConnection {
     }
 
     /**
-     * Prevents different instances from calling all at once. Each is delayed by {@link NSConnection#WAIT_TIME}.
+     * Prevents different instances from calling all at once. Each is delayed by {@value NSConnection#WAIT_TIME}
+     * milliseconds.
      */
     private synchronized void rateLimit() {
         try {

@@ -41,6 +41,9 @@ import static com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode.UNKN
  * {@code JTelegramConnection} connects to NationStates telegram API. This is done by creating a {@link
  * HttpURLConnection} to the appropriately generated URL with provided keys. On connection, also parses response to
  * appropriate response codes.
+ * <p>Note that there are no in-built rate limits in this class! This is unlike {@link NSConnection}, which limits
+ * connections with {@link NSConnection#connect()} to every {@value NSConnection#WAIT_TIME} milliseconds. Rate limits
+ * for this class must be implemented externally.</p>
  */
 public class JTelegramConnection {
 
@@ -70,8 +73,7 @@ public class JTelegramConnection {
                 keys.getSecretKey(),
                 keys.getTelegramId(),
                 recipient);
-        URL tgURL = new URL(urlString);
-        apiConnection = (HttpURLConnection) tgURL.openConnection(); // always should be true
+        apiConnection = (HttpURLConnection) new URL(urlString).openConnection(); // always should be true
         apiConnection.setRequestProperty("User-Agent",
                 MessageFormat.format(
                         "NationStates JavaTelegram (maintained by Imperium Anglorum, used by {0})",
@@ -116,7 +118,8 @@ public class JTelegramConnection {
         webReader.close();
 
         if (response.startsWith("queued")) return QUEUED;
-        if (response.contains("ratelimit exceeded")) return RATE_LIMIT_EXCEEDED;
+        if (apiConnection.getResponseCode() == 429
+                || response.contains("ratelimit exceeded")) return RATE_LIMIT_EXCEEDED;
         if (response.contains("Region mismatch between Telegram and Client API Key")) return REGION_MISMATCH;
         if (response.contains("Client Not Registered For API")) return CLIENT_NOT_REGISTERED;
         if (response.contains("Incorrect Secret Key")) return SECRET_KEY_MISMATCH;

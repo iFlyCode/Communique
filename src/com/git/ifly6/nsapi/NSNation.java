@@ -161,7 +161,7 @@ public class NSNation implements NSTimeStamped {
      * @return the timestamp of the data contained in this object, if it was ever retrieved automatically
      */
     @Override
-    public Instant dataTimestamp() {
+    public Instant timestamp() {
         return updateTime;
     }
 

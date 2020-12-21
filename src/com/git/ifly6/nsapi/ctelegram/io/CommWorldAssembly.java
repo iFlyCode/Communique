@@ -270,7 +270,7 @@ public class CommWorldAssembly {
         }
 
         @Override
-        public Instant dataTimestamp() {
+        public Instant timestamp() {
             return timeStamp;
         }
     }

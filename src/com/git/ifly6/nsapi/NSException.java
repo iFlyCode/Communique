@@ -24,10 +24,6 @@ public class NSException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public NSException() {
-        super();
-    }
-
     public NSException(String message) {
         super(message);
     }

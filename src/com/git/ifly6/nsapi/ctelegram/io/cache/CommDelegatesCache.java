@@ -90,7 +90,7 @@ public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> 
         }
 
         @Override
-        public Instant dataTimestamp() {
+        public Instant timestamp() {
             return timestamp;
         }
     }
