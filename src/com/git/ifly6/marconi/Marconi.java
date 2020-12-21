@@ -195,7 +195,7 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
 
     @Override
     @SuppressWarnings("RedundantStringFormatCall")
-    public void reportSkip(String recipient) {
+    public void onSkip(String recipient) {
         System.out.println(String.format("Skipped recipient %s", recipient));
     }
 

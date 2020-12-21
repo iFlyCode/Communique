@@ -25,7 +25,7 @@ public interface CommSenderInterface {
      * Informs implementor that a recipient was skipped.
      * @param recipient that was skipped
      */
-    void reportSkip(String recipient);
+    void onSkip(String recipient);
 
     /**
      * Informs implementor that recipient was sent to with serial count

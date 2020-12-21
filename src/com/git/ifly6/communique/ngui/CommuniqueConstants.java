@@ -64,7 +64,7 @@ public class CommuniqueConstants {
             "Developed by ifly6, contributing to the repository at "
                     + "[github.com/iflycode/communique], also known as the nation Imperium Anglorum on "
                     + "NationStates.\n\nMy thanks to bug-reporters Tinfect, Krypton Nova, Separatist Peoples, "
-                    + "Wallenburg, and Tinhampton.";
+                    + "Wallenburg, Tinhampton, and Merni.";
 
     /**
      * Gives the licence information that is saved in the file 'licence' in this source directory.

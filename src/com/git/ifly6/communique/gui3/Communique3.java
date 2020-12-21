@@ -471,7 +471,7 @@ public class Communique3 implements CommSenderInterface {
     }
 
     @Override
-    public void reportSkip(String recipient) {
+    public void onSkip(String recipient) {
         finishCondition = client.getMonitor().remainingIfKnown();
     }
 

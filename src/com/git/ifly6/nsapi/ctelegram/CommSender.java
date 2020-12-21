@@ -26,6 +26,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramConnection;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection.ResponseCode;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
+import com.google.common.base.Throwables;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -189,7 +190,7 @@ public class CommSender {
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
                 LOGGER.info(String.format("Recipient <%s> invalid; trying next in queue", recipient));
-                outputInterface.reportSkip(recipient);
+                outputInterface.onSkip(recipient);
                 executeSend(); // try again
                 return; // do not execute further!
 
@@ -246,7 +247,7 @@ public class CommSender {
 
             } catch (Throwable e) {
                 final String m = "Client sending thread encountered exception! Shutting down sending thread!";
-                LOGGER.log(Level.SEVERE, m, e);
+                LOGGER.log(Level.SEVERE, m + "\n" + Throwables.getStackTraceAsString(e), e);
                 this.outputInterface.onError(m, e);
                 this.outputInterface.onTerminate();
                 this.stopSend();
