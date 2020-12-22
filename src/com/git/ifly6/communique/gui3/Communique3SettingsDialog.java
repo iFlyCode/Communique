@@ -18,14 +18,13 @@
 package com.git.ifly6.communique.gui3;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -47,8 +46,6 @@ public class Communique3SettingsDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox<Level> loggingBox;
-    private JCheckBox clientKeySaveBox;
-    private JTextField clientKeyField;
     private Communique3DialogHandler handler;
 
     public Communique3SettingsDialog(JFrame parent, Communique3Settings settings) {
@@ -79,6 +76,11 @@ public class Communique3SettingsDialog extends JDialog {
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         this.pack();
+
+        Communique3Utils.setupDimensions(this,
+                new Dimension(200, 150),
+                new Dimension(300,300),
+                true);
         this.setVisible(true);
     }
 
@@ -89,16 +91,11 @@ public class Communique3SettingsDialog extends JDialog {
     /** Imports settings from {@link Communique3Settings} object. */
     private void importSettings(Communique3Settings s) {
         this.loggingBox.setSelectedItem(s.loggingLevel);
-        this.clientKeySaveBox.setSelected(s.saveClientKey);
-        this.clientKeyField.setText(s.clientKey);
     }
 
     /** Exporting settings to {@link Communique3Settings} object. */
     private Communique3Settings exportSettings() {
-        return new Communique3Settings(
-                loggingBox.getItemAt(loggingBox.getSelectedIndex()),
-                clientKeyField.getText(),
-                clientKeySaveBox.isSelected());
+        return new Communique3Settings(loggingBox.getItemAt(loggingBox.getSelectedIndex()));
     }
 
     private void onOK() {

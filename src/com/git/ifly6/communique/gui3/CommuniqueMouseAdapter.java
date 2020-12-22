@@ -14,11 +14,35 @@
  * OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.git.ifly6.communique.io;
+
+package com.git.ifly6.communique.gui3;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
 
 /**
- * Thrown by {@link CommuniqueScraper} if there is no resolution in the WA chamber selected.
- * @author ifly6
+ * Consumes mouse events and only applies to {@link #mouseClicked(MouseEvent)}.
+ * @since version 3.0 (build 13)
  */
-public class NoResolutionException extends RuntimeException {
+class CommuniqueMouseAdapter extends MouseAdapter {
+
+    private Consumer<MouseEvent> consumer;
+
+    /**
+     * Constructs adapter.
+     * @param eventConsumer defines actions to be taken
+     */
+    public CommuniqueMouseAdapter(Consumer<MouseEvent> eventConsumer) {
+        consumer = eventConsumer;
+    }
+
+    /**
+     * Called on click.
+     * @param e event to be passed
+     */
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        consumer.accept(e);
+    }
 }

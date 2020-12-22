@@ -58,11 +58,19 @@ class CommuniqueRecipientTest {
                 "wa:members -- region:Europe",
                 "/imperium_anglorum",
                 "wa:delegates",
-                "wa:nations -> region:the_north_pacific"
+                "wa:nations -> region:the_north_pacific",
+                "region:the_east_pacific->wa:members",
+                "+region:Europe",
+                "+regex:[A-Z].*$"
         ));
         assertEquals(tokens, Arrays.asList(
-                "tag:wa", "-region:europe", "-nation:imperium_anglorum", "tag:delegates",
-                "tag:wa", "+region:the_north_pacific"
+                "tag:wa", "-region:europe",
+                "-nation:imperium_anglorum",
+                "tag:delegates",
+                "tag:wa", "+region:the_north_pacific",
+                "region:the_east_pacific", "+tag:wa",
+                "+region:Europe",
+                "+regex:[A-Z].*$"
         ));
     }
 

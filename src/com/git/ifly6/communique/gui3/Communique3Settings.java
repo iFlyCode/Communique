@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.gui3;
 
+import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.javatuples.Pair;
@@ -33,19 +34,16 @@ import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 
 /**
  * Holds settings information for Communique3. This is an initialisation class.
+ * @since version 3.0 (build 13)
  */
 @SuppressWarnings("unused")
 public class Communique3Settings {
     private static final Path SETTINGS_PATH = APP_SUPPORT.resolve("client_settings.properties");
 
     public Level loggingLevel; // these are technically unused; but used by reflection
-    public String clientKey;
-    public boolean saveClientKey;
 
-    public Communique3Settings(Level loggingLevel, String clientKey, boolean saveClientKey) {
+    public Communique3Settings(Level loggingLevel) {
         this.loggingLevel = loggingLevel;
-        this.clientKey = clientKey;
-        this.saveClientKey = saveClientKey;
     }
 
     public void save() throws IOException {
@@ -63,12 +61,23 @@ public class Communique3Settings {
                 nullName));
     }
 
+    /** Loads settings from file if present. Puts defaults if not. */
     public static Communique3Settings load() {
+        return load(null);
+    }
+
+    /**
+     * Loads settings from file if present, puts defaults if not, but substitutes client key from {@link
+     * CommuniqueConfig}.
+     * @param config to load from
+     * @return settings
+     */
+    public static Communique3Settings load(CommuniqueConfig config) {
         try {
             Gson gson = new Gson();
             return gson.fromJson(Files.newBufferedReader(SETTINGS_PATH), Communique3Settings.class);
         } catch (IOException e) {
-            return new Communique3Settings(Level.INFO, "CLIENT_KEY", true);
+            return new Communique3Settings(Level.INFO);
         }
     }
 

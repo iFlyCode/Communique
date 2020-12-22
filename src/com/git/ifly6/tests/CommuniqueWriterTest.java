@@ -34,8 +34,9 @@ import java.util.Arrays;
 public class CommuniqueWriterTest {
 
     public static void main(String[] args) throws IOException {
-        CommuniqueConfig config = new CommuniqueConfig(JTelegramType.RECRUIT, CommuniqueProcessingAction.NONE,
-                new JTelegramKeys("client-key", "secret-key", "telegram-id"));
+        CommuniqueConfig config = new CommuniqueConfig(
+                new JTelegramKeys("client-key", "secret-key", "telegram-id"),
+                JTelegramType.RECRUIT, CommuniqueProcessingAction.NONE, null, null);
 
         CommuniqueRecipient[] recipients = new CommuniqueRecipient[] {
                 CommuniqueRecipients.createFlag("recruit"),

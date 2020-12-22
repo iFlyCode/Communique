@@ -23,8 +23,13 @@ import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +37,7 @@ import java.util.stream.Collectors;
  * <code>CommuniqueConfig</code> creates a unified object for the storage and retrieval of configuration information
  * necessary to have persistent states between Communiqué or Marconi instances.
  */
-public class CommuniqueConfig implements java.io.Serializable {
+public class CommuniqueConfig implements Serializable {
 
     // NOTE! For backwards compatibility, do not change field names!
     private static final long serialVersionUID = Communique7Parser.BUILD;
@@ -42,11 +47,14 @@ public class CommuniqueConfig implements java.io.Serializable {
             "Communiqué configuration file. Do not edit by hand. Produced at: {0}. Communiqué build {1}",
             CommuniqueUtilities.getDate(), Communique7Parser.BUILD);
 
-    public long version; // do not change to 'build'
+    public long version = Communique7Parser.BUILD; // do not change to 'build'
 
-    public CommuniqueProcessingAction processingAction;
-    public JTelegramKeys keys;
-    public JTelegramType telegramType;
+    public JTelegramKeys keys = new JTelegramKeys(); // empty keys
+    public JTelegramType telegramType = JTelegramType.NONE; // no telegram type
+    public CommuniqueProcessingAction processingAction = CommuniqueProcessingAction.NONE; // no processing action
+
+    public Duration autoStop = null;
+    public Duration telegramDelay = null;
 
     /**
      * Holds {@link CommuniqueRecipient}s as {@link String}s so that it can be edited by hand.
@@ -54,31 +62,28 @@ public class CommuniqueConfig implements java.io.Serializable {
      * string state representations to present to the programmer a {@link CommuniqueRecipient} API but actually store
      * everything in strings.</p>
      */
-    private ArrayList<String> cRecipients = new ArrayList<>(); // must be mutable, use ArrayList
+    private ArrayList<String> cRecipients; // must be mutable, use ArrayList
+
+    /** Empty constructor for {@link CommuniqueConfig}. Takes all defaults as given. */
+    public CommuniqueConfig() { }
 
     /**
-     * Empty constructor for {@link CommuniqueConfig}
+     * Constructor for {@link CommuniqueConfig}. All the {@code {@link CommuniqueRecipient}}s should be specified after
+     * initialisation.
+     * @param keys          are the keys
+     * @param telegramType  the type of telegrams configured to be sent
+     * @param procAction    is the applicable processing action
+     * @param autoStop      duration, null if not applicable
+     * @param telegramDelay duration, null if not applicable
      */
-    public CommuniqueConfig() {
-        this.keys = new JTelegramKeys(); // empty keys
-        this.version = Communique7Parser.BUILD; // default version to current version
-        this.processingAction = CommuniqueProcessingAction.NONE; // no processing action
-        this.telegramType = JTelegramType.NONE; // no telegram type
-    }
-
-    /**
-     * Constructor for <code>{@link CommuniqueConfig}</code>s. All the
-     * <code>{@link CommuniqueRecipient}</code>s should be specified after the fact.
-     * @param t          the type of telegrams configured to be sent
-     * @param procAction is the applicable processing action
-     * @param keys       are the keys
-     */
-    public CommuniqueConfig(JTelegramType t, CommuniqueProcessingAction procAction,
-                            JTelegramKeys keys) {
+    public CommuniqueConfig(JTelegramKeys keys, JTelegramType telegramType, CommuniqueProcessingAction procAction,
+                            Duration autoStop, Duration telegramDelay) {
         this();
-        this.telegramType = t;
-        this.processingAction = procAction;
         this.keys = keys;
+        this.telegramType = telegramType;
+        this.processingAction = procAction;
+        this.autoStop = autoStop;
+        this.telegramDelay = telegramDelay;
     }
 
     /**
@@ -86,13 +91,9 @@ public class CommuniqueConfig implements java.io.Serializable {
      * @return converted string representation
      */
     public List<CommuniqueRecipient> getcRecipients() {
-        if (cRecipients == null) return new ArrayList<>(0); // deal with null case
-
-        // use imperative for speed
-        List<CommuniqueRecipient> list = new ArrayList<>(cRecipients.size());
-        for (String s : cRecipients)
-            list.add(CommuniqueRecipient.parseRecipient(s));
-        return list;
+        return cRecipients == null
+                ? new ArrayList<>(0) // deal with null case
+                : CommuniqueRecipient.parseRecipients(cRecipients);
     }
 
     /**
@@ -100,12 +101,14 @@ public class CommuniqueConfig implements java.io.Serializable {
      * @return <code>cRecipients</code>
      */
     public List<String> getcRecipientsString() {
-        return cRecipients;
+        return cRecipients == null
+                ? new ArrayList<>(Collections.singletonList(""))
+                : cRecipients;
     }
 
     /**
-     * Sets <code>cRecipients</code> with <code>List&lt;CommuniqueRecipient&gt;</code>, translates to
-     * <code>String</code> on the fly.
+     * Sets {@link #cRecipients} with {@link List} of {@link CommuniqueRecipient}, automatically translates to {@link
+     * String} on the fly.
      * @param crs {@link CommuniqueRecipient}s to set
      */
     public void setcRecipients(List<CommuniqueRecipient> crs) {
@@ -122,26 +125,8 @@ public class CommuniqueConfig implements java.io.Serializable {
     }
 
     /**
-     * Gets processing action
-     * @return processing action, {@link CommuniqueProcessingAction#NONE} if null
-     */
-    public CommuniqueProcessingAction getProcessingAction() {
-        return processingAction == null ? CommuniqueProcessingAction.NONE : processingAction;
-    }
-
-    /**
-     * Gets telegram type
-     * @return telegram type, {@link JTelegramType#NONE} if null
-     */
-    public JTelegramType getTelegramType() {
-        return telegramType == null ? JTelegramType.NONE : telegramType;
-    }
-
-    /**
-     * Checks all the data kept in {@link CommuniqueConfig#cRecipients} and makes they are distinct and applicable to
-     * save to the program. For backward compatibility, it also applies these changes to the old <code>recipients</code>
-     * and the <code>sentList</code>. It also updates the <code>CommuniqueConfig</code> version <i>field</i>, not the
-     * one in the header, to the version of the program on which it was saved.
+     * Checks all the data kept in {@link CommuniqueConfig#cRecipients}, makes they are distinct, cleans them for
+     * character errors, acting in place.
      */
     void clean() {
         // proceeds to clean all of the fields
@@ -151,12 +136,48 @@ public class CommuniqueConfig implements java.io.Serializable {
     }
 
     /**
-     * Cleans nation names that could have been prefixed accidentally in a previous version of Communique
-     * @param recipientString is the string-name of the nation
-     * @return the same with all the extra 'nation:'s removed.
+     * Cleans nation names that could have been prefixed accidentally in a previous version of Communique.
+     * @param recipientString is the string representation of the nation
+     * @return the same with all the extra '{@code nation:}'s removed.
      */
     private static String cleanNation(String recipientString) {
         return recipientString.replaceAll(":(nation:)+", ":");
     }
 
+    /**
+     * Gets processing action.
+     * @return processing action, {@link CommuniqueProcessingAction#NONE} if null
+     */
+    @Nonnull
+    public CommuniqueProcessingAction getProcessingAction() {
+        return processingAction == null ? CommuniqueProcessingAction.NONE : processingAction;
+    }
+
+    /**
+     * Gets keys.
+     * @return keys, {@link JTelegramKeys} defaults if null
+     */
+    @Nonnull
+    public JTelegramKeys getKeys() {
+        return keys == null ? new JTelegramKeys() : keys;
+    }
+
+    /**
+     * Gets telegram type.
+     * @return telegram type, {@link JTelegramType#NONE} if null
+     */
+    @Nonnull
+    public JTelegramType getTelegramType() {
+        return telegramType == null ? JTelegramType.NONE : telegramType;
+    }
+
+    @Nullable
+    public Duration getAutoStop() {
+        return autoStop;
+    }
+
+    @Nullable
+    public Duration getTelegramDelay() {
+        return telegramDelay;
+    }
 }

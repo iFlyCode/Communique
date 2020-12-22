@@ -19,14 +19,24 @@ package com.git.ifly6.communique.gui3;
 
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.styles.RoundedBalloonStyle;
 
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
@@ -63,13 +73,15 @@ public class Communique3Utils {
             try {
                 LOGGER.info("Loading auto-save");
                 return loader.load();
-            } catch (IOException ignored) {
-
-            }
+            } catch (IOException ignored) { }
         }
         return new CommuniqueConfig();
     }
 
+    /**
+     * Saves the provided {@link CommuniqueConfig} in the autosave location
+     * @param config to save
+     */
     public static void saveAutoSave(CommuniqueConfig config) {
         CommuniqueLoader loader = new CommuniqueLoader(AUTOSAVE_PATH);
         try {
@@ -78,23 +90,29 @@ public class Communique3Utils {
     }
 
     /**
-     * Sets up dimensions for provided {@link Window}.
-     * @param window to set up
+     * Gets selected element from {@link JComboBox}. This honestly should be in the standard library as an instance
+     * method. I don't know why you have to roll your own.
+     * @param box with item selected
+     * @param <T> type of object
+     * @return selected item
      */
-    public static void setupDimensions(Window window) {
-        setupDimensions(window, MINIMUM_SIZE, MINIMUM_SIZE, false);
+    public static <T> T getComboBoxSelection(JComboBox<T> box) {
+        int selection = Objects.requireNonNull(box).getSelectedIndex();
+        if (selection != -1 && selection < box.getModel().getSize()) return box.getItemAt(selection);
+        throw new IllegalArgumentException(String.format("Selection value %d is is invalid", selection));
     }
 
     /**
      * Sets up minimum dimensions for provided {@link Window}.
      * @param window      to set up
-     * @param minimumSize for window
+     * @param minimumSize of window
+     * @param initialSize of window
      * @param centering   true if centered on screen
      */
     public static void setupDimensions(Window window, Dimension minimumSize, Dimension initialSize,
                                        boolean centering) {
         window.setMinimumSize(minimumSize);
-        window.setSize(initialSize);
+        window.setPreferredSize(initialSize);
         if (centering)
             window.setBounds(
                     (int) (SCREEN_DIMENSIONS.getWidth() / 2 - initialSize.getWidth() / 2),
@@ -105,5 +123,27 @@ public class Communique3Utils {
             window.setBounds(100, 100,
                     (int) Math.round(SCREEN_DIMENSIONS.getWidth() / 2),
                     (int) Math.round(SCREEN_DIMENSIONS.getHeight() / 2));
+    }
+
+    /**
+     * Creates balloon tip with the specified message, emanating from the provided component. Tip has auto-scheduled
+     * destruction after two seconds.
+     * @param component to attach to
+     * @param message   to give
+     */
+    public static void createBalloonTip(JComponent component, String message) {
+        EventQueue.invokeLater(() -> {
+            // create
+            BalloonTip t = new BalloonTip(component, message,
+                    new RoundedBalloonStyle(5, 5,
+                            UIManager.getColor("Label.background"),
+                            Color.DARK_GRAY),
+                    false);
+
+            // schedule its doing away after 2 seconds
+            Executors.newSingleThreadScheduledExecutor().schedule(() ->
+                            EventQueue.invokeLater(t::closeBalloon),
+                    2, TimeUnit.SECONDS);
+        });
     }
 }

@@ -23,8 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Dimension;
 import java.text.MessageFormat;
 
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.GITHUB_URI;
@@ -37,22 +36,19 @@ public class Communique3Updater extends JDialog {
     private JLabel remoteVersionLabel;
     private JLabel linkLabel;
 
-    public Communique3Updater() {
+    private Communique3Updater() {
         this.setContentPane(contentPane);
         this.setModal(true);
         this.getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {onOK();}
-        });
-
-        updateVersionLabel(currentVersionLabel, CommuniqueApplication.COMMUNIQUE.generateName(true));
-        updateVersionLabel(remoteVersionLabel, getCurrentVersion());
-        linkLabel.setText(MessageFormat.format("<html><a href=\"{0}\">{0}</a></html>",
-                GITHUB_URI.toString()));
+        buttonOK.addActionListener(e -> onOK());
 
         this.pack();
-        this.setVisible(true);
+
+        Communique3Utils.setupDimensions(this,
+                new Dimension(150, 150),
+                new Dimension(250, 250),
+                true);
     }
 
     private void onOK() {
@@ -61,12 +57,27 @@ public class Communique3Updater extends JDialog {
     }
 
     private void updateVersionLabel(JLabel label, String version) {
+        // todo doesn't work!
         String updated = label.getText().replace("VERSION", version);
         label.setText(updated);
     }
 
-    private String getCurrentVersion() {
+    public static Communique3Updater create() {
+        Communique3Updater updater = new Communique3Updater();
+        updater.updateVersionLabel(
+                updater.currentVersionLabel,
+                CommuniqueApplication.COMMUNIQUE.generateName(true));
+        updater.updateVersionLabel(
+                updater.remoteVersionLabel,
+                getCurrentVersion());
+        updater.linkLabel.setText(MessageFormat.format("<html><a href=\"{0}\">{0}</a></html>",
+                GITHUB_URI.toString()));
+        updater.setVisible(true);
+        return updater;
+    }
+
+    private static String getCurrentVersion() {
         // GITHUB_URI;
-        return null;
+        return "CURRENT_VERSION";
     }
 }

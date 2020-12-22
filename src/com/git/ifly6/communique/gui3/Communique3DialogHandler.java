@@ -38,12 +38,16 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Handles dialogs for the constructing class. */
+/**
+ * Handles dialogs for the constructing class.
+ * @since version 3.0 (build 13)
+ */
 @SuppressWarnings("ClassWithMultipleLoggers")
 public class Communique3DialogHandler {
 
     private static final Logger LOGGER = Logger.getLogger(Communique3DialogHandler.class.getName());
-    private static int MAX_DIALOG_WIDTH = (int) Math.round(Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2);
+    private static int MAX_DIALOG_WIDTH = (int) Math.round(
+            Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2.5);
 
     private Frame frame;
 

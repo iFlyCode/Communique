@@ -20,10 +20,10 @@ package com.git.ifly6.communique.io;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 
 class CommuniqueWriter {
 
@@ -45,14 +45,12 @@ class CommuniqueWriter {
      * @throws IOException if there is an error in writing the file
      */
     void write() throws IOException {
+        config.clean();  // Have configuration clean itself
 
-        // Have configuration clean itself
-        config.clean();
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String response = gson.toJson(config);
-
-        Files.write(path, Arrays.asList(response.split("\n")));
+        // write to file
+        BufferedWriter bw = Files.newBufferedWriter(path);
+        Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+        gson.toJson(config, bw);
+        bw.close();
     }
-
 }

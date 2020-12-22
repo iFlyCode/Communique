@@ -424,7 +424,8 @@ public class CommuniqueRecruiter extends AbstractCommuniqueRecruiter implements 
                 secretKeyField.getText(),
                 telegramIdField.getText()
         );
-        CommuniqueConfig config = new CommuniqueConfig(JTelegramType.NONE, CommuniqueProcessingAction.NONE, keys);
+        CommuniqueConfig config = new CommuniqueConfig(keys, JTelegramType.NONE, CommuniqueProcessingAction.NONE,
+                null,null);
 
         // Create and set recipients and sent-lists
         List<CommuniqueRecipient> rList = new ArrayList<>();

@@ -57,7 +57,8 @@ public class CommuniqueSendDialog extends JDialog {
     public CommuniqueSendDialog(JFrame parent, List<String> parsedRecipients, int delay) {
         super(parent, true);
         Communique3Utils.setupDimensions(this,
-                new Dimension(500, 500), new Dimension(500, 500),
+                new Dimension(500, 500),
+                new Dimension(500, 500),
                 true);
 
         setTitle("Confirm Send");

@@ -21,6 +21,7 @@ import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,8 +37,6 @@ public class CommuniqueRecipient {
 
     public static final CommuniqueRecipient DELEGATES =
             new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "delegates");
-    public static final CommuniqueRecipient WA_MEMBERS =
-            new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "wa");
 
     private final FilterType filterType;
     private final RecipientType recipientType;
@@ -121,7 +120,7 @@ public class CommuniqueRecipient {
                 break;
             }
 
-        RecipientType rType = RecipientType.NATION; // default
+        RecipientType rType = RecipientType.NONE; // default
         for (RecipientType type : RecipientType.values())
             if (s.startsWith(type.toString())) {
                 rType = type;
@@ -131,6 +130,19 @@ public class CommuniqueRecipient {
 
         // 2017-03-30 use lastIndexOf to deal with strange name changes, can cause error in name `+region:euro:pe`
         return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));
+    }
+
+    /**
+     * Parses recipients.
+     * @param c collection to parse
+     * @return list of parsed recipients
+     * @see #parseRecipient(String)
+     */
+    public static List<CommuniqueRecipient> parseRecipients(final Collection<String> c) {
+        List<CommuniqueRecipient> parsed = new ArrayList<>(c.size());
+        for (final String e : c)
+            parsed.add(parseRecipient(e));
+        return parsed;
     }
 
     @Override
@@ -257,7 +269,7 @@ public class CommuniqueRecipient {
         // no need to use HashMap, that seems over-engineered for something this simple
         if (oldToken.startsWith("/")) return "-" + translateToken(oldToken.replaceFirst("/", "").trim());
         if (oldToken.startsWith("-- ")) return "-" + translateToken(oldToken.replaceFirst("-- ", "").trim());
-        if (oldToken.startsWith("-> ")) return "+" + translateToken(oldToken.replaceFirst("->", "").trim());
+        if (oldToken.startsWith("->")) return "+" + translateToken(oldToken.replaceFirst("->", "").trim());
 
         // translate tags which can be decomposed
         if (oldToken.equalsIgnoreCase("wa:delegates")) return "tag:delegates";

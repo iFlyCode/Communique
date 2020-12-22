@@ -24,6 +24,7 @@ import com.git.ifly6.nsapi.ctelegram.monitors.reflected.CommActiveMonitor;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class HappeningsParser {
 
     /**

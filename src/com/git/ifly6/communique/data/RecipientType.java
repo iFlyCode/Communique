@@ -18,7 +18,10 @@
 package com.git.ifly6.communique.data;
 
 import com.git.ifly6.communique.io.HappeningsParser;
+import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
@@ -43,11 +46,6 @@ public enum RecipientType {
             // return singleton list
             return Collections.singletonList(cr);
         }
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
-        }
     },
 
     // This code block must be before the REGION code block otherwise it will get substring matched over :(
@@ -67,11 +65,6 @@ public enum RecipientType {
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
         }
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
-        }
     },
 
     /**
@@ -81,14 +74,10 @@ public enum RecipientType {
     REGION {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
-            List<String> regionMembers = JInfoCache.getInstance().getRegion(cr.getName());
+            NSRegion region = CommRegionCache.getInstance().lookupObject(cr.getName());
+            List<String> regionMembers = region.getRegionMembers();
             LOGGER.info(String.format("Region %s: %d nations", cr.getName(), regionMembers.size()));
             return newRecipients(regionMembers, cr.getFilterType());
-        }
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
         }
     },
 
@@ -102,15 +91,10 @@ public enum RecipientType {
             String tag = cr.getName();
             if (tag.equals("wa")) return newRecipients(JInfoCache.getInstance().getWAMembers(), cr.getFilterType());
             if (tag.equals("delegates"))
-                return newRecipients(JInfoCache.getInstance().getDelegates(), cr.getFilterType());
+                return newRecipients(CommDelegatesCache.getInstance().getDelegates(), cr.getFilterType());
             if (tag.equals("new")) return newRecipients(NSWorld.getNew(), cr.getFilterType());
             if (tag.equals("all")) return newRecipients(JInfoCache.getInstance().getAll(), cr.getFilterType());
             throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
-        }
-
-        @Override
-        public String toString() {
-            return this.name().toLowerCase();
         }
     },
 
@@ -124,11 +108,15 @@ public enum RecipientType {
             if (tag.equals("active")) return HappeningsParser.getActiveNations();  // active
             return Collections.emptyList();
         }
+    },
+
+    /** Declares that the recipient has no recipient type. This element is parsed last. */
+    NONE {
+        @Override
+        public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) { return Collections.emptyList(); }
 
         @Override
-        public String toString() {
-            return this.name().toLowerCase();
-        }
+        public String toString() { return ""; }
     };
 
     private static final Logger LOGGER = Logger.getLogger(RecipientType.class.getName());
@@ -138,7 +126,7 @@ public enum RecipientType {
      * nomenclature.
      */
     @Override
-    public abstract String toString();
+    public String toString() { return this.name().toLowerCase(); }
 
     /**
      * Decomposes a tag into a list of <code>CommuniqueRecipient</code> which can then be more easily used.

@@ -132,6 +132,7 @@ public enum CommuniqueApplication {
     public static String setupLogger(CommuniqueApplication app) {
         // better log format
         System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tF %1$tT %4$s %2$s %5$s%6$s%n");
+
         try {
             // Add in a logging file handler
             Path logLocation = APP_SUPPORT
@@ -174,7 +175,6 @@ public enum CommuniqueApplication {
 
     /** Sets system look and feel; if not available, sets Nimbus. */
     public static void setLAF() {
-        // Set our look and feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
@@ -213,29 +213,22 @@ public enum CommuniqueApplication {
      */
     public static void compressLogs() {
         try {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(APP_SUPPORT.resolve("log"), "*.log");
             final Instant yesterday = Instant.now().minus(1, ChronoUnit.DAYS);
+            DirectoryStream<Path> stream = Files.newDirectoryStream(APP_SUPPORT.resolve("log"), "*.log");
             for (Path p : stream) {
-                try {
-                    Instant fileModified = Files.getLastModifiedTime(p).toInstant();
-                    boolean earlier = fileModified.compareTo(yesterday) < 0;
-                    if (earlier) {
-                        // write new compressed file
-                        Path newPath = p.resolveSibling(p.getFileName() + ".gz");
-                        GZIPOutputStream zipStream = new GZIPOutputStream(Files.newOutputStream(newPath, CREATE_NEW));
-                        zipStream.write(Files.readAllBytes(p));
-                        zipStream.close();
-
-                        // delete old file
-                        Files.deleteIfExists(p);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break; // better safe than sorry
+                Instant fileModified = Files.getLastModifiedTime(p).toInstant();
+                boolean earlier = fileModified.compareTo(yesterday) < 0;
+                if (earlier) {
+                    // write new compressed file
+                    Path newPath = p.resolveSibling(p.getFileName() + ".gz");
+                    GZIPOutputStream zipStream = new GZIPOutputStream(Files.newOutputStream(newPath, CREATE_NEW));
+                    zipStream.write(Files.readAllBytes(p));
+                    zipStream.close();
+                    Files.deleteIfExists(p); // delete old file if present
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, "Encountered exception in compression task", e);
         }
     }
 

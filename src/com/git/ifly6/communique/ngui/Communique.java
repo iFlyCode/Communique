@@ -28,9 +28,9 @@ import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
-import com.git.ifly6.communique.io.NoResolutionException;
 import com.git.ifly6.communique.ngui.components.CommuniqueFactory;
 import com.git.ifly6.nsapi.ApiUtils;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramLogger;
@@ -479,7 +479,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
                             .map(CommuniqueRecipient::toString)
                             .forEach(this::appendCode);
 
-                } catch (NoResolutionException nre) {
+                } catch (CommWorldAssembly.NoSuchProposalException nre) {
                     this.showMessageDialog("No resolution is at vote in that chamber, cannot import data",
                             CommuniqueConstants.ERROR);
 

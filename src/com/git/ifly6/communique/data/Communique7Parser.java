@@ -24,16 +24,15 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * <code>Communique7Parser</code> is the new parser designed for Communique 7, which implements the same way to declare
- * recipients as used in NationStates. It supersedes the old parser, {@code CommuniqueParser}, which used the custom
- * recipient declaration system in older builds of Communique.
- * <p><code>Communique7Parser</code> also provides methods to translate between the old and new Communique address
- * tokens, allowing for a seamless transition between the old and new token systems.</p>
- * <p>This class does not lazily load data. When invoking <code>apply</code>, all elements are processed
- * immediately. This class is meant to be used fluently, e.g.</p>
+ * This is the new parser designed for Communique build 7, which implements the same way to declare recipients as used
+ * in NationStates. It supersedes the old parser, {@code CommuniqueParser} (now removed), which used the custom
+ * recipient declaration system in older builds of Communique. See also {@link CommuniqueRecipient#translateTokens(List)}.
+ * <p>This class does <b>not</b> lazily load data. When invoking {@link #apply(CommuniqueRecipient)} or {@link
+ * #apply(List)}, all elements are processed immediately. This class is meant to be used fluently, e.g.</p>
  * <pre>new Communique7Parser().apply(tokens).listRecipients()</pre>
  * @author ifly6
  * @since version 2 (build 7)
@@ -54,8 +53,7 @@ public class Communique7Parser {
 
     /**
      * Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
-     * methods, either in the form of a <code>List&lt;String&gt;</code> or any number of
-     * <code>CommuniqueRecipient</code>.
+     * methods, either in the form of a {@code List<String>} or any number of {@link CommuniqueRecipient}.
      */
     public Communique7Parser() {
         recipients = new LinkedHashSet<>();
@@ -64,7 +62,7 @@ public class Communique7Parser {
     /**
      * Applies the tokens, specified in the <code>CommuniqueRecipient</code> object, to the recipients list in the
      * parser.
-     * @param token a <code>CommuniqueRecipient</code>
+     * @param token a {@link CommuniqueRecipient}
      * @return this parser
      */
     public Communique7Parser apply(CommuniqueRecipient token) throws JTelegramException {
@@ -78,7 +76,7 @@ public class Communique7Parser {
 
     /**
      * Applies the tokens to the recipients list with a specified list of tokens.
-     * @param list of <code>CommuniqueRecipient</code>s
+     * @param list of {@link CommuniqueRecipient}
      * @return this parser
      */
     public Communique7Parser apply(List<CommuniqueRecipient> list) throws JTelegramException {
@@ -87,7 +85,7 @@ public class Communique7Parser {
     }
 
     /**
-     * Applies tokens based on a variable number of <code>CommuniqueRecipient</code>s.
+     * Applies tokens based on a variable number of {@link CommuniqueRecipient}s.
      * @param tokens to apply
      * @return this parser
      */
@@ -97,7 +95,7 @@ public class Communique7Parser {
     }
 
     /**
-     * Returns a list of all the recipients in standard NationStates reference name form
+     * Returns a list of all the recipients in standard NationStates reference name form.
      * @return list of recipients
      */
     public List<String> listRecipients() {
@@ -108,10 +106,11 @@ public class Communique7Parser {
 
     /**
      * Static monitor for parsed recipients.
+     * @param processingAction to apply
      * @return static monitor for recipients
      */
-    public CommStaticMonitor getStaticMonitor() {
-        return new CommStaticMonitor(listRecipients());
+    public CommStaticMonitor getStaticMonitor(Function<List<String>, List<String>> processingAction) {
+        return new CommStaticMonitor(processingAction.apply(listRecipients()));
     }
 
 }

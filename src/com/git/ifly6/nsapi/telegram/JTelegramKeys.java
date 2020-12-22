@@ -44,12 +44,12 @@ public class JTelegramKeys {
      * constructor.
      * @param client a <code>String</code> which contains the <code>clientKey</code>
      * @param secret a <code>String</code> which contains the <code>secretKey</code>
-     * @param tgId   a <code>String</code> which contains the <code>telegramId</code>
+     * @param teleID a <code>String</code> which contains the <code>telegramId</code>
      */
-    public JTelegramKeys(String client, String secret, String tgId) {
+    public JTelegramKeys(String client, String secret, String teleID) {
         clientKey = client;
         secretKey = secret;
-        telegramId = tgId;
+        telegramId = teleID;
     }
 
     /**

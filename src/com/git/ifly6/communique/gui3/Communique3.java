@@ -28,7 +28,6 @@ import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
-import com.git.ifly6.communique.io.NoResolutionException;
 import com.git.ifly6.communique.ngui.CommuniqueConstants;
 import com.git.ifly6.communique.ngui.CommuniqueDocumentListener;
 import com.git.ifly6.communique.ngui.CommuniqueTextDialog;
@@ -36,11 +35,13 @@ import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -54,8 +55,10 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.PlainDocument;
 import javax.swing.undo.UndoManager;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.InputEvent;
@@ -70,6 +73,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -79,6 +85,7 @@ import java.util.stream.Collectors;
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 import static com.git.ifly6.commons.CommuniqueUtilities.IS_OS_MAC;
 import static com.git.ifly6.communique.gui3.Communique3Utils.appendLine;
+import static com.git.ifly6.communique.gui3.Communique3Utils.getComboBoxSelection;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
 
 /**
@@ -95,11 +102,16 @@ public class Communique3 implements CommSenderInterface {
     private Communique3ConfigHandler configHandler;
     CommSender client;
 
-    CommuniqueConfig config = new CommuniqueConfig();
+    CommuniqueConfig config;
     JTextArea textArea;
     JTextField fieldClient;
     JTextField fieldSecret;
     JTextField fieldTelegramID;
+
+    JTextField fieldAutoStop;
+    JTextField fieldTelegramDelay;
+    JComboBox<CommuniqueProcessingAction> fieldProcessingAction;
+    JComboBox<JTelegramType> fieldTelegramType;
 
     private JFrame frame;
     private JPanel panel;
@@ -111,45 +123,39 @@ public class Communique3 implements CommSenderInterface {
     private JProgressBar progressBar;
     private JLabel progressLabel;
 
-    private JTextField fieldAutoStop;
-    private JTextField fieldTelegramDelay;
-    private JComboBox<CommuniqueProcessingAction> fieldProcessingAction;
-    private JComboBox<JTelegramType> fieldTelegramType;
-
     public Communique3() {
         // $$$setupUI$$$(); // setup UI starts here
         frame = new JFrame(CommuniqueApplication.COMMUNIQUE.generateName(false));
         dialogHandler = new Communique3DialogHandler(frame, LOGGER);
         configHandler = new Communique3ConfigHandler(this);
 
-        Communique3Utils.setupDimensions(frame);
+        Communique3Utils.setupDimensions(frame,
+                new Dimension(900, 500),
+                new Dimension(600, 400),
+                false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setContentPane(this.panel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setJMenuBar(createMenuBar());
+        frame.setJMenuBar(initialiseMenuBar());
 
         frame.pack();
         frame.setVisible(true);
 
         // todo what else needs to be done in initialisation?
-        // on initialisation, load autosave
+        // on initialisation, starting loading autosave, get it here if possible
+
         config = Communique3Utils.loadAutoSave();
-        initialiseTextComponents();
+        initialiseModelComponents();
         initialiseButtons();
         initialiseAutoSaves();
     }
 
-    private <E extends Enum<E>> void createUIComponents() {
+    private void createUIComponents() {
         // combo boxes
         fieldProcessingAction = new JComboBox<>(CommuniqueProcessingAction.values());
-        fieldTelegramType = new JComboBox<>(JTelegramType.getPresets());
+        fieldTelegramType = new JComboBox<>(JTelegramType.values());
     }
 
-    private void initialiseTextComponents() {
-        Communique3Utils.appendLine(textArea, CommuniqueConstants.CODE_HEADER);
-        configHandler.importRecipients();
-        configHandler.importKeys();
-
+    private void initialiseModelComponents() {
         // text fields and areas document listeners
         textArea.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> {
@@ -164,29 +170,67 @@ public class Communique3 implements CommSenderInterface {
         fieldClient.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> {
                     config.keys.setClientKey(fieldClient.getText());
-                    if (settings.saveClientKey) settings.clientKey = fieldClient.getText();
                 }));
         fieldSecret.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setSecretKey(fieldSecret.getText())));
         fieldTelegramID.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setTelegramId(fieldTelegramID.getText())));
+
+        // autostop and telegram delay fields' listeners
+        fieldAutoStop.getDocument().addDocumentListener(new CommuniqueDocumentListener(
+                e -> {
+                    Duration duration = null;
+                    try {
+                        duration = Duration.ofMinutes(Long.parseLong(fieldAutoStop.getText()));
+                    } catch (NumberFormatException ignored) { }
+                    config.autoStop = duration;
+                }));
+        fieldTelegramDelay.getDocument().addDocumentListener(new CommuniqueDocumentListener(
+                e -> {
+                    Duration duration = null;
+                    try {
+                        double seconds = Double.parseDouble(fieldAutoStop.getText());
+                        long millis = Math.round(seconds * 1000);
+                        duration = Duration.ofMillis(millis);
+                    } catch (NumberFormatException ignored) { }
+                    config.telegramDelay = duration;
+                }));
+
+        // mouse listeners to explain these fields
+        fieldAutoStop.addMouseListener(new CommuniqueMouseAdapter(e -> {
+            Communique3Utils.createBalloonTip((JComponent) e.getComponent(),
+                    "Automatically stops sending after specified minutes");
+        }));
+        fieldTelegramDelay.addMouseListener(new CommuniqueMouseAdapter(e -> {
+            if (!e.getComponent().isEnabled()) {
+                Communique3Utils.createBalloonTip((JComponent) e.getComponent(),
+                        "Custom telegram delays require the custom telegram type");
+            }
+        }));
+
+        // implement numeric filters for these fields
+        for (JTextField field : new JTextField[] {fieldAutoStop, fieldTelegramDelay}) {
+            PlainDocument pDoc = (PlainDocument) field.getDocument();
+            pDoc.setDocumentFilter(new Communique3NumericDocumentFilter(field));
+        }
+
+        // update configuration enums
+        fieldProcessingAction.addActionListener(e ->
+                config.processingAction = getComboBoxSelection(fieldProcessingAction));
+        fieldTelegramType.addActionListener(e -> {
+            JTelegramType newType = getComboBoxSelection(fieldTelegramType);
+            config.telegramType = newType;
+            fieldTelegramDelay.setEnabled(newType == JTelegramType.CUSTOM);
+        });
+
+        // load everything
+        configHandler.setConfig(this.config);
     }
 
     private void initialiseButtons() {
         // starting status
         stopButton.setEnabled(false);
-        sendButton.addActionListener(e -> {
-            List<String> recipients = new Communique7Parser()
-                    .apply(config.getcRecipients())
-                    .listRecipients();
-            recipients = config.getProcessingAction().apply(recipients);
-            client = new CommSender(config.keys, new CommStaticMonitor(recipients),
-                    config.telegramType, this);
-            client.startSend();
-
-            stopButton.setEnabled(true);
-            sendButton.setEnabled(false);
-        });
+        sendButton.addActionListener(e -> initialiseClient());
         stopButton.addActionListener(e -> {
             if (client != null)
                 client.stopSend();
@@ -196,12 +240,40 @@ public class Communique3 implements CommSenderInterface {
         });
     }
 
+    private void initialiseClient() {
+        List<String> recipients = new Communique7Parser()
+                .apply(config.getcRecipients())
+                .listRecipients();
+        recipients = config.getProcessingAction().apply(recipients);
+        if (config.telegramDelay != null && config.telegramType == JTelegramType.CUSTOM)
+            config.telegramType.setWaitDuration(config.telegramDelay);
+
+        client = new CommSender(config.keys, new CommStaticMonitor(recipients),
+                config.telegramType, this);
+        client.startSend();
+
+        if (config.autoStop != null) { // ie 10 years is larger than config auto-stop
+            ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
+            ex.schedule(() -> {
+                client.stopSend();
+                dialogHandler.showMessageDialog(
+                        String.format("Communiqué stopped automatically after %s.",
+                                CommuniqueUtilities.time(config.autoStop.getSeconds())), // time auto-formats
+                        CommuniqueConstants.TITLE);
+
+            }, config.autoStop.toMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        stopButton.setEnabled(true);
+        sendButton.setEnabled(false);
+    }
+
     /**
      * Intialises a {@link Runtime#addShutdownHook(Thread)} which saves {@link Communique3Settings} and {@link
      * Communique3Utils#saveAutoSave(CommuniqueConfig)}.
      */
     private void initialiseAutoSaves() {
-        settings = Communique3Settings.load();
+        settings = Communique3Settings.load(config);
         CommuniqueApplication.setLogLevel(settings.loggingLevel);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -212,7 +284,7 @@ public class Communique3 implements CommSenderInterface {
         }));
     }
 
-    private JMenuBar createMenuBar() {
+    private JMenuBar initialiseMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu mnFile = new JMenu("File");
@@ -244,7 +316,7 @@ public class Communique3 implements CommSenderInterface {
             if (choice.isPresent()) {
                 try {
                     CommuniqueLoader loader = new CommuniqueLoader(choice.get());
-                    this.config = loader.load();
+                    this.configHandler.setConfig(loader.load());
                 } catch (IOException exception) {
                     dialogHandler.showErrorDialog(String.format("Cannot load file %s", choice), exception);
                 }
@@ -268,12 +340,10 @@ public class Communique3 implements CommSenderInterface {
         JMenuItem mntmShowDirectory = new JMenuItem("Open Application Support");
         mntmShowDirectory.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
                 COMMAND_KEY | InputEvent.SHIFT_DOWN_MASK));
-        mntmShowDirectory.addActionListener(e -> {
+        mntmShowDirectory.addActionListener(event -> {
             try {
                 Desktop.getDesktop().open(APP_SUPPORT.toFile());
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            } catch (IOException e) { LOGGER.log(Level.SEVERE, "Could not open app support!", e); }
         });
         mnFile.add(mntmShowDirectory);
 
@@ -374,13 +444,14 @@ public class Communique3 implements CommSenderInterface {
                     LOGGER.info("Starting scrape of NS WA voting page, " + selection);
                     String[] elements = selection.split("\\s*?");
                     try {
+                        // todo fix! doesn't work!
                         CommuniqueScraper.importAtVoteDelegates(
-                                elements[0].equals("GA") ? CommuniqueScraper.GA : CommuniqueScraper.SC,
-                                elements[1].equals("For") ? CommuniqueScraper.FOR : CommuniqueScraper.AGAINST).stream()
+                                elements[0].trim().equals("GA") ? CommuniqueScraper.GA : CommuniqueScraper.SC,
+                                elements[1].trim().equals("For") ? CommuniqueScraper.FOR : CommuniqueScraper.AGAINST).stream()
                                 .map(CommuniqueRecipient::toString)
                                 .forEach(s -> appendLine(textArea, s));
 
-                    } catch (NoResolutionException nre) {
+                    } catch (CommWorldAssembly.NoSuchProposalException nre) {
                         dialogHandler.showMessageDialog("No resolution is at vote in that chamber, cannot import data",
                                 CommuniqueConstants.ERROR);
 
@@ -481,7 +552,7 @@ public class Communique3 implements CommSenderInterface {
         mnHelp.add(mntmForumThread);
 
         JMenuItem mntmUpdate = new JMenuItem("Check for updates...");
-        mntmUpdate.addActionListener((e) -> new Communique3Updater());
+        mntmUpdate.addActionListener((e) -> Communique3Updater.create());
         mnHelp.add(mntmUpdate);
 
         mnHelp.addSeparator();
@@ -519,8 +590,11 @@ public class Communique3 implements CommSenderInterface {
         jarName = CommuniqueApplication.setupLogger(CommuniqueApplication.COMMUNIQUE);
         CommuniqueApplication.nativiseMac(CommuniqueApplication.COMMUNIQUE);
         CommuniqueApplication.setLAF();
-        CommuniqueApplication.compressLogs();
 
+        Executors.newSingleThreadExecutor().submit(() -> {
+            LOGGER.info("Starting log compression task");
+            CommuniqueApplication.compressLogs();
+        });
         EventQueue.invokeLater(Communique3::new);
     }
 
@@ -561,4 +635,5 @@ public class Communique3 implements CommSenderInterface {
         // todo termination actions for Communique 3
         client.stopSend();
     }
+
 }
