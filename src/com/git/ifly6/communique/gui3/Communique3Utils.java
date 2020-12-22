@@ -50,16 +50,17 @@ public class Communique3Utils {
     private static final Logger LOGGER = Logger.getLogger(Communique3Utils.class.getName());
     private static final Path AUTOSAVE_PATH = APP_SUPPORT.resolve("autosave.txt");
 
-    private static final Dimension MINIMUM_SIZE = new Dimension(600, 400);
     private static final Dimension SCREEN_DIMENSIONS = Toolkit.getDefaultToolkit().getScreenSize();
 
     /**
-     * Appends line to {@link JTextArea}. Automatically moves the caret to the bottom.
+     * Appends line to {@link JTextArea}. Automatically moves the caret to the bottom. If there is already a double line
+     * break in the text area, no new line will be prefixed to what is appended.
      * @param area   to append to
      * @param object string representation thereof to append
      */
     public static void appendLine(JTextArea area, Object object) {
-        area.append("\n" + object.toString());
+        boolean doubleBreaked = area.getText().endsWith("\n\n");
+        area.append((doubleBreaked ? "" : "\n") + object.toString());
         area.setCaretPosition(area.getDocument().getLength());
     }
 

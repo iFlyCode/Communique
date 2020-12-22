@@ -439,13 +439,12 @@ public class Communique3 implements CommSenderInterface {
                 String selection = (String) response.get();
 
                 if (!ApiUtils.isEmpty(selection)) {
-                    LOGGER.info("Starting scrape of NS WA voting page, " + selection);
-                    String[] elements = selection.split("\\s*?");
+                    LOGGER.info("Starting scrape of NS WA voting page: " + selection);
+                    String[] elements = selection.toLowerCase().split("\\s+?");
                     try {
-                        // todo fix! doesn't work!
-                        CommuniqueScraper.importAtVoteDelegates(
-                                elements[0].trim().equals("GA") ? CommuniqueScraper.GA : CommuniqueScraper.SC,
-                                elements[1].trim().equals("For") ? CommuniqueScraper.FOR : CommuniqueScraper.AGAINST).stream()
+                        final String chamber = elements[0].trim().equals("ga") ? CommuniqueScraper.GA : CommuniqueScraper.SC;
+                        final String side = elements[1].trim().equals("for") ? CommuniqueScraper.FOR : CommuniqueScraper.AGAINST;
+                        CommuniqueScraper.importAtVoteDelegates(chamber, side).stream()
                                 .map(CommuniqueRecipient::toString)
                                 .forEach(s -> appendLine(textArea, s));
 
