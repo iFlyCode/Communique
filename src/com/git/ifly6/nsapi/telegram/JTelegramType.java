@@ -36,29 +36,24 @@ public enum JTelegramType {
     /**
      * Timing for recruitment telegrams with {@link JTelegramConstants#RECRUIT_DURATION} delay.
      */
-    RECRUIT(RECRUIT_DURATION) {},
+    RECRUIT(RECRUIT_DURATION),
 
     /**
      * Timing for campaign telegrams with {@link JTelegramConstants#DEFAULT_DURATION} delay.
      */
-    CAMPAIGN(DEFAULT_DURATION) {},
+    CAMPAIGN(DEFAULT_DURATION),
 
     /**
      * Custom telegram type with custom timing. Default timing is still {@link JTelegramConstants#DEFAULT_DURATION} but
      * can be set to any desired value. Note that when the internal value is changed, it is changed for all references
      * to it because there is only one instance of the enum value.
      */
-    CUSTOM(DEFAULT_DURATION) {
-        @Override
-        public String toString() {
-            return String.format("Custom (%d ms)", waitDuration.toMillis());
-        }
-    },
+    CUSTOM(DEFAULT_DURATION),
 
     /**
      * Timing for unmarked telegrams with {@link JTelegramConstants#DEFAULT_DURATION} delay.
      */
-    NONE(DEFAULT_DURATION) {};
+    NONE(DEFAULT_DURATION);
 
     protected Duration waitDuration;
 
@@ -70,6 +65,12 @@ public enum JTelegramType {
         return waitDuration;
     }
 
+    /**
+     * Sets a custom wait duration; the internal enum value is mutable. However, throws error unless the object type is
+     * {@link JTelegramType#CUSTOM}.
+     * @param waitDuration to set
+     * @throws UnsupportedOperationException if called on anything other than {@link JTelegramType#CUSTOM}
+     */
     public void setWaitDuration(Duration waitDuration) {
         if (this != CUSTOM) throw new UnsupportedOperationException(
                 String.format("Cannot change internals of constant %s", this.toString()));

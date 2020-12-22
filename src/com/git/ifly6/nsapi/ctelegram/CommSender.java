@@ -19,7 +19,6 @@ package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.io.NSTGSettingsException;
-import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramConnection;
@@ -42,7 +41,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,9 +69,6 @@ public class CommSender {
 
     /** If true, does not send telegrams. */
     private boolean dryRun = false;
-
-    /** Processing action to apply to {@link CommMonitor} output. */
-    private Function<List<String>, List<String>> processingAction;
 
     /** First-in-first-out send queue. */
     private final Queue<String> sendQueue = new LinkedList<>();
@@ -105,7 +100,7 @@ public class CommSender {
     /** Feeds the queue until the feed limit is exceeded. Queue is fed whenever the queue is empty. */
     private void feedQueue() {
         LOGGER.fine("Feeding queue");
-        List<String> recipients = processingAction.apply(monitor.getRecipients());
+        List<String> recipients = monitor.getRecipients();
 
         int recipientsAdded = 0;
         for (String s : recipients) {
@@ -133,17 +128,6 @@ public class CommSender {
      */
     public void setFeedLimit(int feedLimit) {
         this.feedLimit = feedLimit;
-    }
-
-    /**
-     * Sets the processing action applied to {@link CommMonitor#getRecipients()} results when called by {@link
-     * #feedQueue()}. Processing action takes a list and returns a list. Its implementation is left extremely open-ended
-     * on purpose.
-     * @param processingAction to apply on recipients feed
-     * @see CommNationCache
-     */
-    public void setProcessingAction(Function<List<String>, List<String>> processingAction) {
-        this.processingAction = processingAction;
     }
 
     /**

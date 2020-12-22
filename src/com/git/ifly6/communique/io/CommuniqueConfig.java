@@ -24,13 +24,13 @@ import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -163,21 +163,35 @@ public class CommuniqueConfig implements Serializable {
     }
 
     /**
-     * Gets telegram type.
+     * Gets telegram type. If the type is custom, automatically gets the telegram delay and sets custom to that value.
+     * If {@link JTelegramType#CUSTOM} is set and {@link #telegramDelay} is null, sets default for {@link
+     * JTelegramType#CUSTOM}.
      * @return telegram type, {@link JTelegramType#NONE} if null
      */
     @Nonnull
     public JTelegramType getTelegramType() {
-        return telegramType == null ? JTelegramType.NONE : telegramType;
+        JTelegramType type = telegramType == null ? JTelegramType.NONE : telegramType;
+        if (type == JTelegramType.CUSTOM)
+            type.setWaitDuration(getTelegramDelay());
+
+        return type;
     }
 
-    @Nullable
-    public Duration getAutoStop() {
-        return autoStop;
+    /**
+     * Returns {@link Optional} of the autostop value. Auto-stop is a feature to automatically stop polling after the
+     * given duration.
+     * @return auto-stop value, if null, {@code T+10 years}
+     */
+    public Optional<Duration> getAutoStop() {
+        return Optional.ofNullable(autoStop);
     }
 
-    @Nullable
+    /**
+     * Returns telegram delay; if the delay is null, returns the default for the specified telegram type.
+     * @return telegram delay, defaults if null
+     */
+    @Nonnull
     public Duration getTelegramDelay() {
-        return telegramDelay;
+        return telegramDelay == null ? getTelegramType().getWaitDuration() : telegramDelay;
     }
 }

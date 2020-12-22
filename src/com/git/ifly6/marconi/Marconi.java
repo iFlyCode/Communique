@@ -178,7 +178,6 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
 
         // Set the client up and go.
         client = new CommSender(config.keys, monitor, config.getTelegramType(), this);
-        client.setProcessingAction(l -> config.processingAction.apply(l));
 
         // Check for file lock and send
         if (!MarconiUtilities.isFileLocked()) {

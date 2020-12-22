@@ -115,11 +115,10 @@ public enum CommuniqueApplication {
     }
 
     /** Nativises for Mac by putting name in screen menu bar. */
-    public static void nativiseMac(CommuniqueApplication app) {
+    public static void nativise(CommuniqueApplication app) {
         if (CommuniqueUtilities.IS_OS_MAC) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name",
-                    app.generateName(false));
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", app.generateName(false));
         }
     }
 

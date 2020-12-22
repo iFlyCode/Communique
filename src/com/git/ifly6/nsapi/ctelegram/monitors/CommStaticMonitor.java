@@ -17,11 +17,14 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
+import com.git.ifly6.communique.io.CommuniqueProcessingAction;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.Queue;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
@@ -38,19 +41,32 @@ public class CommStaticMonitor implements CommMonitor {
     private boolean exhausted = false;
 
     /**
-     * Creates a static monitor
-     * @param recipients to contain
+     * Creates a static monitor.
+     * @param recipients to pass to monitor
+     * @see #CommStaticMonitor(List, Function)
      */
     public CommStaticMonitor(List<String> recipients) {
-        allRecipients = recipients;
-        this.recipients = new LinkedList<>(allRecipients);
+        this(recipients, CommuniqueProcessingAction.NONE);
     }
 
     /**
-     * {@inheritDoc}. Recipients in a static monitor are immutable and do not change.
+     * Creates a static monitor.
+     * @param recipients to pass to monitor
+     * @param function   {@link CommuniqueProcessingAction} to apply
+     */
+    public CommStaticMonitor(List<String> recipients, Function<List<String>, List<String>> function) {
+        allRecipients = recipients;
+        this.recipients = new LinkedList<>(function.apply(allRecipients));
+    }
+
+    /**
+     * {@inheritDoc}. Internal recipients ({@link #recipients}) in a static monitor do not change. Recipients are
+     * provided one at a time, wrapped in a single element list.
      */
     @Override
     public List<String> getRecipients() {
+        // todo what's better? provide one by one or provide as a single massive list?
+        // latter would require setting up a boolean flag asking whether it has been called; if so, exhaust
         String nextRecipient = recipients.poll();
         if (nextRecipient != null) {
             LOGGER.info(String.format("Monitor sending <%s>; %d elements remain", nextRecipient, recipients.size()));

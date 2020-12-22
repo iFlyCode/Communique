@@ -123,7 +123,7 @@ public class Communique extends AbstractCommunique implements JTelegramLogger {
 
     public static void main(String[] args) {
         CommuniqueApplication.setupLogger(CommuniqueApplication.COMMUNIQUE);
-        CommuniqueApplication.nativiseMac(CommuniqueApplication.COMMUNIQUE);
+        CommuniqueApplication.nativise(CommuniqueApplication.COMMUNIQUE);
         CommuniqueApplication.setLAF(); // note that this line will also set up the static initialisation for appSupport etc
         CommuniqueApplication.compressLogs(); // compresses logs one day older than this initialisation
 

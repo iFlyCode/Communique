@@ -75,7 +75,6 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -243,24 +242,21 @@ public class Communique3 implements CommSenderInterface {
                 .apply(config.getcRecipients())
                 .listRecipients();
         recipients = config.getProcessingAction().apply(recipients);
-        if (config.telegramDelay != null && config.telegramType == JTelegramType.CUSTOM)
-            config.telegramType.setWaitDuration(config.telegramDelay);
 
         client = new CommSender(config.keys, new CommStaticMonitor(recipients),
-                config.telegramType, this);
+                config.getTelegramType(), this);
         client.startSend();
 
-        if (config.autoStop != null) { // ie 10 years is larger than config auto-stop
-            ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
-            ex.schedule(() -> {
-                client.stopSend();
-                dialogHandler.showMessageDialog(
-                        String.format("Communiqué stopped automatically after %s.",
-                                CommuniqueUtilities.time(config.autoStop.getSeconds())), // time auto-formats
-                        CommuniqueConstants.TITLE);
+        final Optional<Duration> autoStop = config.getAutoStop();
+        autoStop.ifPresent(
+                duration -> Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                    client.stopSend();
+                    dialogHandler.showMessageDialog(
+                            String.format("Communiqué stopped automatically after %s.",
+                                    CommuniqueUtilities.time(duration.getSeconds())), // time auto-formats
+                            CommuniqueConstants.TITLE);
 
-            }, config.autoStop.toMillis(), TimeUnit.MILLISECONDS);
-        }
+                }, duration.toMillis(), TimeUnit.MILLISECONDS));
 
         stopButton.setEnabled(true);
         sendButton.setEnabled(false);
@@ -583,9 +579,10 @@ public class Communique3 implements CommSenderInterface {
     }
 
     public static void main(String[] args) {
+        CommuniqueApplication.nativise(CommuniqueApplication.COMMUNIQUE); // first!
+
         // todo what else needs to be done in initialisation?
         jarName = CommuniqueApplication.setupLogger(CommuniqueApplication.COMMUNIQUE);
-        CommuniqueApplication.nativiseMac(CommuniqueApplication.COMMUNIQUE);
         CommuniqueApplication.setLAF();
 
         Executors.newSingleThreadExecutor().submit(() -> {

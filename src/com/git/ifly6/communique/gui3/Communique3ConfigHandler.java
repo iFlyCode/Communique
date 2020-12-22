@@ -22,6 +22,8 @@ import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.ngui.CommuniqueConstants;
 import com.git.ifly6.nsapi.telegram.JTelegramKeys;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -52,12 +54,15 @@ public class Communique3ConfigHandler {
 
         comm.fieldTelegramType.setSelectedItem(config.telegramType);
         comm.fieldProcessingAction.setSelectedItem(config.processingAction);
-        comm.fieldAutoStop.setText(config.autoStop != null
-                ? String.valueOf(config.autoStop.toMinutes())
-                : "");
-        comm.fieldTelegramDelay.setText(config.telegramDelay != null
-                ? String.valueOf(config.telegramDelay.getSeconds())
-                : "");
+
+        // auto-stop, fill in with duration in minutes if present. otherwise, empty string
+        final Optional<Duration> autoStop = config.getAutoStop();
+        comm.fieldAutoStop.setText(autoStop.map(duration -> String.valueOf(duration.toMinutes()))
+                .orElse(""));
+
+        // telegram delay; round to seconds. always display, it's not changeable unless in custom mode
+        double seconds = config.getTelegramDelay().toMillis() / (double) 1000;
+        comm.fieldTelegramDelay.setText(String.format("%.2f", seconds));
 
         comm.config = config;
         LOGGER.info("Imported configuration data");
