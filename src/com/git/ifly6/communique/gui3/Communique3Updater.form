@@ -49,12 +49,12 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="dab5" class="javax.swing.JLabel" binding="currentVersionLabel">
+          <component id="dab5" class="javax.swing.JLabel" binding="currentBuildLabel">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Current version is VERSION"/>
+              <text value="Current build is BUILD"/>
             </properties>
           </component>
           <vspacer id="cfd4d">
@@ -62,12 +62,12 @@
               <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <component id="36907" class="javax.swing.JLabel" binding="remoteVersionLabel">
+          <component id="36907" class="javax.swing.JLabel" binding="remoteBuildLabel">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Latest version on GitHub is VERSION"/>
+              <text value="Latest build on GitHub is BUILD"/>
             </properties>
           </component>
           <component id="e0dc2" class="javax.swing.JLabel">

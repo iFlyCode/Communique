@@ -18,37 +18,47 @@
 package com.git.ifly6.communique.gui3;
 
 import com.git.ifly6.commons.CommuniqueApplication;
+import com.git.ifly6.communique.ngui.CommuniqueConstants;
+import com.git.ifly6.nsapi.NSConnection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import java.awt.Desktop;
 import java.awt.Dimension;
-import java.text.MessageFormat;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
-import static com.git.ifly6.communique.ngui.CommuniqueConstants.GITHUB_URI;
+import static com.git.ifly6.communique.ngui.CommuniqueConstants.GITHUB_RELEASES_URI;
 
 public class Communique3Updater extends JDialog {
+
+    public static final Logger LOGGER = Logger.getLogger(Communique3Updater.class.getName());
+
     private JPanel contentPane;
     private JButton buttonOK;
 
-    private JLabel currentVersionLabel;
-    private JLabel remoteVersionLabel;
+    private JLabel currentBuildLabel;
+    private JLabel remoteBuildLabel;
     private JLabel linkLabel;
 
     private Communique3Updater() {
         this.setContentPane(contentPane);
         this.setModal(true);
         this.getRootPane().setDefaultButton(buttonOK);
+        this.setTitle(CommuniqueConstants.UPDATER);
 
         buttonOK.addActionListener(e -> onOK());
 
-        this.pack();
-
+        Dimension fixed = new Dimension(450, 150);
         Communique3Utils.setupDimensions(this,
-                new Dimension(150, 150),
-                new Dimension(250, 250),
-                true);
+                fixed, fixed, true);
     }
 
     private void onOK() {
@@ -56,28 +66,48 @@ public class Communique3Updater extends JDialog {
         dispose();
     }
 
-    private void updateVersionLabel(JLabel label, String version) {
-        // todo doesn't work!
-        String updated = label.getText().replace("VERSION", version);
-        label.setText(updated);
+    private void updateBuildLabel(JLabel label, String build) {
+        EventQueue.invokeLater(() -> {
+            String updated = label.getText().replace("BUILD", build);
+            label.setText(updated);
+        });
     }
 
     public static Communique3Updater create() {
         Communique3Updater updater = new Communique3Updater();
-        updater.updateVersionLabel(
-                updater.currentVersionLabel,
+        updater.updateBuildLabel(updater.currentBuildLabel,
                 CommuniqueApplication.COMMUNIQUE.generateName(true));
-        updater.updateVersionLabel(
-                updater.remoteVersionLabel,
-                getCurrentVersion());
-        updater.linkLabel.setText(MessageFormat.format("<html><a href=\"{0}\">{0}</a></html>",
-                GITHUB_URI.toString()));
+        Executors.newSingleThreadExecutor() // load asynchronously
+                .submit(updater::formatCurrentVersion);
+
+        updater.pack();
         updater.setVisible(true);
         return updater;
     }
 
-    private static String getCurrentVersion() {
-        // GITHUB_URI;
-        return "CURRENT_VERSION";
+    private void formatCurrentVersion() {
+        EventQueue.invokeLater(() -> {
+            linkLabel.setText(String.format("<html><a href=\"\">%s</a></html>", GITHUB_RELEASES_URI.toString()));
+            linkLabel.addMouseListener(new CommuniqueMouseAdapter(e -> {
+                try {
+                    Desktop.getDesktop().browse(GITHUB_RELEASES_URI);
+                } catch (IOException exception) { LOGGER.info("Couldn't open GitHub!"); }
+            }));
+        });
+
+        String version = "UNKNOWN";
+        try {
+            version = getCurrentVersion();
+        } catch (IOException e) { LOGGER.info("Could not get current build from GitHub!"); }
+        updateBuildLabel(remoteBuildLabel, version);
+    }
+
+    private static String getCurrentVersion() throws IOException {
+        Document doc = Jsoup.parse(new NSConnection(GITHUB_RELEASES_URI.toString()).getResponse());
+        Element e = doc.select("span.css-truncate-target").first();
+        if (e != null) {
+            return e.text();
+
+        } else throw new IOException("Could not find release tag in GitHub releases!");
     }
 }

@@ -44,15 +44,16 @@ public class CommuniqueConstants {
     public static final String INTERNET_ERROR = "NationStates appears down from your location.\n" +
             "To send any telegrams, we must be able to connect to NationStates.";
 
-    public static URI GITHUB_URI;
     public static URI FORUM_THREAD;
+    public static URI GITHUB_URI;
+    public static URI GITHUB_RELEASES_URI;
 
     static {
         try {
             FORUM_THREAD = new URI("https://forum.nationstates.net/viewtopic.php?f=15&t=352065");
             GITHUB_URI = new URL("https://github.com/ifly6/Communique").toURI();
-        } catch (URISyntaxException | MalformedURLException ignored) {
-        }
+            GITHUB_RELEASES_URI = new URL("https://github.com/ifly6/Communique/releases").toURI();
+        } catch (URISyntaxException | MalformedURLException ignored) { }
     }
 
     private static String licence;

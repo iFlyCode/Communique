@@ -80,6 +80,7 @@ public class CommSender {
 
     /** Recipients to which the telegram has already been sent are put in the sent list. */
     private Set<String> sentList = new LinkedHashSet<>(); // ordered
+    private Set<String> skipList = new LinkedHashSet<>();
 
     /**
      * Constructs a {@link CommSender}.
@@ -190,7 +191,7 @@ public class CommSender {
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
                 LOGGER.info(String.format("Recipient <%s> invalid; trying next in queue", recipient));
-                outputInterface.onSkip(recipient);
+                this.reportSkip(recipient);
                 executeSend(); // try again
                 return; // do not execute further!
 
@@ -232,6 +233,11 @@ public class CommSender {
         outputInterface.sentTo(recipient, sentList.size());
     }
 
+    public void reportSkip(String recipient) {
+        skipList.add(recipient);
+        outputInterface.onSkip(recipient);
+    }
+
     public void startSend() {
         LOGGER.info("Starting send thread");
         if (isRunning())
@@ -266,7 +272,7 @@ public class CommSender {
 
     public void stopSend() {
         LOGGER.fine("Stopping send thread");
-        if (job != null) {
+        if (job != null && !job.isDone()) {
             job.cancel(false); // must allow completion!!
             if (monitor instanceof CommUpdatingMonitor)
                 ((CommUpdatingMonitor) monitor).stop();
@@ -295,6 +301,10 @@ public class CommSender {
     public Instant nextAt() {
         if (isRunning()) return Instant.now().plus(job.getDelay(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
         throw new UnsupportedOperationException("No duration to next telegram; no telegrams are being sent");
+    }
+
+    public Set<String> getSkipList() {
+        return skipList;
     }
 
     /** Thrown if no recipient is found in the queue */

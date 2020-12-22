@@ -73,6 +73,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -140,10 +141,7 @@ public class Communique3 implements CommSenderInterface {
         frame.pack();
         frame.setVisible(true);
 
-        // todo what else needs to be done in initialisation?
-        // on initialisation, starting loading autosave, get it here if possible
-
-        config = Communique3Utils.loadAutoSave();
+        config = Communique3Utils.loadAutoSave(); // load autosave
         initialiseModelComponents();
         initialiseButtons();
         initialiseAutoSaves();
@@ -632,8 +630,27 @@ public class Communique3 implements CommSenderInterface {
 
     @Override
     public void onTerminate() {
-        // todo termination actions for Communique 3
+        LOGGER.info("Termination passed to Communique");
         client.stopSend();
+
+        Set<String> sentTo = client.getSentList();
+        Set<String> skipped = client.getSkipList();
+
+        List<String> messages = new ArrayList<>();
+        messages.add(String.format("Successful queries to %d nations.\n", sentTo.size()));
+
+        if (skipped.size() != 0) { // if there was a failure to connect,
+            messages.add("Failure to dispatch to the following nations, not auto-excluded:\n");  // add formatting,
+            skipped.forEach(s -> messages.add("- " + s));
+        }
+
+        if (sentTo.size() == 0)   // if does not contain any trues, i.e. all false
+            messages.add("\nNo successful queries. Check the log file for errors and report to author as necessary.");
+
+        CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
+                String.join("\n", messages), true);
+
+        // todo determine if UI needs resetting
     }
 
 }
