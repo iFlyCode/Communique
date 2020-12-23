@@ -15,25 +15,10 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.communique.io;
+package com.git.ifly6.nsapi.ctelegram.monitors.tokens;
 
-import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.CommuniqueRecipients;
-import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommActiveMonitor;
+import java.util.Set;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Deprecated
-public class HappeningsParser {
-
-    /**
-     * Moved to {@link CommActiveMonitor#getActiveNations()}
-     * @return nations with recent happenings information
-     */
-    public static List<CommuniqueRecipient> getActiveNations() {
-        return CommActiveMonitor.getActiveNations().stream()
-                .map(CommuniqueRecipients::createNation)
-                .collect(Collectors.toList());
-    }
+public interface CommToken {
+    Set<String> apply(Set<String> inputList);
 }

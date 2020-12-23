@@ -17,7 +17,7 @@
 
 package com.git.ifly6.nsapi.manualtests;
 
-import com.git.ifly6.nsapi.ctelegram.monitors.reflected.CommMovementMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommMovementMonitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;

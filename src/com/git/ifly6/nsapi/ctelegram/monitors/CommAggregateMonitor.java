@@ -17,41 +17,42 @@
 
 package com.git.ifly6.nsapi.ctelegram.monitors;
 
-import com.git.ifly6.nsapi.NSException;
+import com.git.ifly6.nsapi.ctelegram.monitors.tokens.CommToken;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalLong;
+import java.util.Queue;
+import java.util.Set;
 
-/**
- * Monitors generate a stream of recipients provided by {@link #getRecipients()} until exhausted {@link
- * #recipientsExhausted()}. If implemented correctly, if a monitor is exhausted, calling {@link #getRecipients()} should
- * throw {@link ExhaustedException}.
- * @since version 3.0 (build 13)
- */
-public interface CommMonitor {
+/** Aggregates multiple monitors. */
+public class CommAggregateMonitor implements CommMonitor {
 
-    /**
-     * Gets a new list of recipients.
-     * @return list of recipients
-     */
-    List<String> getRecipients();
+    private List<CommToken> tokens;
 
-    /**
-     * Returns boolean indicating whether monitor is exhausted of recipients.
-     * @return true if exhausted
-     */
-    boolean recipientsExhausted();
+    private Set<String> alreadyAdded = new HashSet<>();
+    private Queue<String> queue = new LinkedList<>();
 
-    /**
-     * Counts remaining recipients, if known
-     * @return count of remaining recipients if known
-     */
-    OptionalLong remainingIfKnown();
+    public CommAggregateMonitor(List<CommToken> tokens) {
+        this.tokens = tokens;
+    }
 
-    /** Thrown if calling an exhausted monitor. */
-    class ExhaustedException extends NSException {
-        public ExhaustedException(String message) {
-            super(message);
-        }
+    @Override
+    public List<String> getRecipients() {
+
+
+        return null;
+    }
+
+    @Override
+    public boolean recipientsExhausted() {
+
+        return false;
+    }
+
+    @Override
+    public OptionalLong remainingIfKnown() {
+        return null;
     }
 }

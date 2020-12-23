@@ -21,6 +21,7 @@ import com.git.ifly6.communique.io.HappeningsParser;
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommMembersCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 import com.git.ifly6.nsapi.telegram.util.JInfoCache;
@@ -89,11 +90,13 @@ public enum RecipientType {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
             String tag = cr.getName();
-            if (tag.equals("wa")) return newRecipients(JInfoCache.getInstance().getWAMembers(), cr.getFilterType());
+            if (tag.equals("wa"))
+                return newRecipients(CommMembersCache.getInstance().getWAMembers(), cr.getFilterType());
             if (tag.equals("delegates"))
                 return newRecipients(CommDelegatesCache.getInstance().getDelegates(), cr.getFilterType());
-            if (tag.equals("new")) return newRecipients(NSWorld.getNew(), cr.getFilterType());
-            if (tag.equals("all")) return newRecipients(JInfoCache.getInstance().getAll(), cr.getFilterType());
+            if (tag.equals("new"))
+                return newRecipients(NSWorld.getNew(), cr.getFilterType());
+
             throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
         }
     },

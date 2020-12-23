@@ -26,67 +26,67 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Caches NationStates delegates for later access. <b>Only invoke with {@link #DELEGATE_KEY}!</b> Cache expiration time
- * for this cache is thirty minutes; prefer {@link #getDelegates()}.
+ * Caches NationStates delegates for later access. <b>Only invoke with {@link #MEMBERS_KEY}!</b> Cache expiration time
+ * for this cache is thirty minutes; prefer {@link #getWAMembers()}.
  * @since version 3.0 (build 13)
  */
-public class CommDelegatesCache extends CommCache<CommDelegatesCache.Delegates> {
+public class CommMembersCache extends CommCache<CommMembersCache.Members> {
 
-    public static final String DELEGATE_KEY = "__delegates__";
-    private static CommDelegatesCache instance;
+    public static final String MEMBERS_KEY = "__members__";
+    private static CommMembersCache instance;
 
-    private CommDelegatesCache(Duration minutes) {
+    private CommMembersCache(Duration minutes) {
         super(minutes);
     }
 
     /** Gets the one cache. */
-    public static CommDelegatesCache getInstance() {
-        if (instance == null) instance = new CommDelegatesCache(Duration.ofMinutes(30));
+    public static CommMembersCache getInstance() {
+        if (instance == null) instance = new CommMembersCache(Duration.ofMinutes(30));
         return instance;
     }
 
     @Override
-    protected Delegates createNewObject(String s) {
-        return new Delegates();
+    protected Members createNewObject(String s) {
+        return new Members();
     }
 
-    /** Prefer {@link #getDelegates()}. */
+    /** Prefer {@link #getWAMembers()}. */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Override
     @Deprecated
-    public Delegates lookupObject(String s) {
-        if (s.equals(DELEGATE_KEY))
+    public Members lookupObject(String s) {
+        if (s.equals(MEMBERS_KEY))
             return super.lookupObject(s);
         throw new UnsupportedOperationException(
-                "Delegates cache only supports looking up with " + DELEGATE_KEY);
+                "Members cache only supports looking up with " + MEMBERS_KEY);
     }
 
     /**
      * Gets cached delegates list.
      * @return cached delegates list.
-     * @see Delegates
+     * @see Members
      */
-    public List<String> getDelegates() {
-        return lookupObject(DELEGATE_KEY).getDelegates();
+    public List<String> getWAMembers() {
+        return lookupObject(MEMBERS_KEY).getMembers();
     }
 
     /** Holds a time-stamped version of NationStates delegates. */
-    public static class Delegates implements NSTimeStamped {
+    public static class Members implements NSTimeStamped {
 
         private Instant timestamp;
-        private List<String> delegates;
+        private List<String> members;
 
-        public Delegates() {
+        public Members() {
             try {
-                delegates = NSWorld.getDelegates();
+                members = NSWorld.getWAMembers();
                 timestamp = Instant.now();
             } catch (IOException e) {
                 throw new NSIOException("Could not get delegates from NationStates", e);
             }
         }
 
-        public List<String> getDelegates() {
-            return delegates;
+        public List<String> getMembers() {
+            return members;
         }
 
         @Override

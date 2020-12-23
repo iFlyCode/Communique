@@ -171,6 +171,7 @@ public class CommSender {
             throw new EmptyQueueException();
 
         // if we have a recipient...
+        // todo move to comm filtered monitor
         LOGGER.info(String.format("Got recipient <%s> from queue", recipient));
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {

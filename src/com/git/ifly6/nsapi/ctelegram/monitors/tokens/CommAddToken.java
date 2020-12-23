@@ -15,43 +15,23 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.monitors.tokens;
 
-import com.git.ifly6.nsapi.NSException;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 
-import java.util.List;
-import java.util.OptionalLong;
+import java.util.Set;
 
-/**
- * Monitors generate a stream of recipients provided by {@link #getRecipients()} until exhausted {@link
- * #recipientsExhausted()}. If implemented correctly, if a monitor is exhausted, calling {@link #getRecipients()} should
- * throw {@link ExhaustedException}.
- * @since version 3.0 (build 13)
- */
-public interface CommMonitor {
+public class CommAddToken implements CommToken {
 
-    /**
-     * Gets a new list of recipients.
-     * @return list of recipients
-     */
-    List<String> getRecipients();
+    CommMonitor monitor;
 
-    /**
-     * Returns boolean indicating whether monitor is exhausted of recipients.
-     * @return true if exhausted
-     */
-    boolean recipientsExhausted();
+    public CommAddToken(CommMonitor monitor) {
+        this.monitor = monitor;
+    }
 
-    /**
-     * Counts remaining recipients, if known
-     * @return count of remaining recipients if known
-     */
-    OptionalLong remainingIfKnown();
-
-    /** Thrown if calling an exhausted monitor. */
-    class ExhaustedException extends NSException {
-        public ExhaustedException(String message) {
-            super(message);
-        }
+    @Override
+    public Set<String> apply(Set<String> inputList) {
+        inputList.addAll(monitor.getRecipients());
+        return inputList;
     }
 }

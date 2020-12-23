@@ -27,6 +27,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramType;
  */
 public class CommRecipientChecker {
 
+    // todo move this into filtered monitor? but how to do that? this isn't in scope to get the telegram type
     /**
      * Does the recipient accept our telegram? If we are recruiting and nation is not recruitable, return false. If
      * campaigning and nation is not campaign-able, return false. Otherwise, return true. Values are cached.

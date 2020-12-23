@@ -43,7 +43,7 @@ public class Communique3MonitorReflections {
      * @return list of monitors as classes
      */
     public static List<Class<? extends CommMonitor>> getMonitorClasses() {
-        Reflections reflections = new Reflections("com.git.ifly6.nsapi.ctelegram.monitors.reflected");
+        Reflections reflections = new Reflections("com.git.ifly6.nsapi.ctelegram.monitors.updaters");
         return reflections.getSubTypesOf(CommMonitor.class).stream()
                 .filter(c -> !c.isInterface())
                 .filter(c -> !Modifier.isAbstract(c.getModifiers()))
