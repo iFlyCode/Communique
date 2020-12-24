@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * #apply(List)}, all elements are processed immediately. This class is meant to be used fluently, e.g.</p>
  * <pre>new Communique7Parser().apply(tokens).listRecipients()</pre>
  * @author ifly6
- * @since version 2 (build 7)
+ * @since version 2.0 (build 7)
  */
 public class Communique7Parser {
 

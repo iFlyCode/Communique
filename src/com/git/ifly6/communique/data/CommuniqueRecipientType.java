@@ -17,13 +17,11 @@
 
 package com.git.ifly6.communique.data;
 
+import com.git.ifly6.commons.CommuniqueSplitter;
 import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.ctelegram.io.CommHappenings;
-import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
-import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
-import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommMembersCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
@@ -31,6 +29,7 @@ import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionTagCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalRaidMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommMovementMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommVoteMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
 import java.util.ArrayList;
@@ -113,7 +112,10 @@ public enum CommuniqueRecipientType {
         }
     },
 
-    /** Happenings flags. */
+    /**
+     * Happenings flags.
+     * @since version 3.0 (build 13)
+     */
     _HAPPENINGS {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
@@ -128,15 +130,17 @@ public enum CommuniqueRecipientType {
     /**
      * Nations moving into or out of a list of regions. Eg, {@code _movement:into;europe,the_north_pacific} or {@code
      * _movement:out_of;europe}.
+     * @since version 3.0 (build 13)
      */
     _MOVEMENT {
+        private final CommuniqueSplitter splitter = new CommuniqueSplitter(this.toString(), 2);
+
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            String[] tags = cr.getName().split(";\\s+");
-            String direction = tags[0];
-            String region = tags[1];
-
-            List<String> recipients = CommMovementMonitor.getOrCreate(direction, region).getRecipients();
+            final String[] tags = splitter.split(cr.getName());
+            final String direction = tags[0];
+            final String region = tags[1];
+            final List<String> recipients = CommMovementMonitor.getOrCreate(direction, region).getRecipients();
             return newRecipients(recipients, cr.getFilterType());
         }
     },
@@ -144,30 +148,38 @@ public enum CommuniqueRecipientType {
     /**
      * Delegates approving a proposal. Eg, {@code _approval:__raids__} for all approval raids, {@code
      * _approval:given_to; PROPOSAL_ID}, or {@code _approval:removed_from; PROPOSAL_ID}.
+     * @since version 3.0 (build 13)
      */
     _APPROVAL {
+        private final CommuniqueSplitter splitter = new CommuniqueSplitter(this.toString(), 2);
+
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            if (cr.getName().equalsIgnoreCase("__RAIDS__"))
+            if (cr.getName().equalsIgnoreCase("__raids__"))
                 return newRecipients(CommApprovalRaidMonitor.getInstance().getRecipients(), cr.getFilterType());
 
-            String[] tags = cr.getName().split(";\\s+");
-            String givenOrRemoved = tags[0];
-            String proposal = tags[1];
-            return newRecipients(CommApprovalMonitor.getOrCreate(givenOrRemoved, proposal).getRecipients(),
-                    cr.getFilterType());
+            final String[] tags = splitter.split(cr.getName());
+            final String givenOrRemoved = tags[0];
+            final String proposal = tags[1];
+            final List<String> recipients = CommApprovalMonitor.getOrCreate(givenOrRemoved, proposal).getRecipients();
+            return newRecipients(recipients, cr.getFilterType());
         }
     },
 
-    /** Persons voting on a proposal. Eg, {@code _voting:ga; for} */
+    /**
+     * Persons voting on a proposal. Eg, {@code _voting:ga; for}.
+     * @since version 3.0 (build 13)
+     */
     _VOTING {
+        private final CommuniqueSplitter splitter = new CommuniqueSplitter(this.toString(), 2);
+
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            final String[] split = cr.getName().split(";\\s+");
-            Chamber chamber = Chamber.valueOf(split[0].toUpperCase());
-            Vote voting = Vote.valueOf(split[1].toUpperCase());
-
-            return newRecipients(CommWorldAssembly.getVoters(chamber, voting), cr.getFilterType());
+            final String[] split = splitter.split(cr.getName());
+            final String chamber = split[0];
+            final String voting = split[1];
+            final List<String> recipients = CommVoteMonitor.getOrCreate(chamber, voting).getRecipients();
+            return newRecipients(recipients, cr.getFilterType());
         }
     },
 

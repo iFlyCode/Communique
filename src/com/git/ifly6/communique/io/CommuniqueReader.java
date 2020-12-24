@@ -45,6 +45,7 @@ import static java.util.Arrays.asList;
  * file build of the pre-JSON configuration files. The handling for this logic is done primarily in the {@link
  * CommuniqueReader#read()} file.
  * @see CommuniqueFileReader
+ * @since version 2.0 (build 7)
  */
 @SuppressWarnings("deprecation")
         // CommuniqueFileReader

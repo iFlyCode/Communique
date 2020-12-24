@@ -23,9 +23,10 @@ import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.Range;
-import org.javatuples.Triplet;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -43,8 +44,8 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
     protected Vote voting;
     private String resolutionID;
 
-    protected Set<String> previousVoters;
-    protected Set<String> currentVoters;
+    protected Set<String> previousVoters = new HashSet<>();
+    protected Set<String> currentVoters = new HashSet<>();
 
     /**
      * {@inheritDoc} Recipients are current voters were not previously voting for the position specified.
@@ -52,12 +53,14 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
      */
     @Override
     public List<String> getRecipients() {
-        if (previousVoters == null || currentVoters == null) {
+        if (currentVoters.isEmpty() || previousVoters.isEmpty()) {
             LOGGER.info("Not enough information to find any changes.");
             return new ArrayList<>();
         }
 
-        if (exhausted) throw new ExhaustedException("Assembly monitor exhausted; initialised resolution ID changed.");
+        if (exhausted)
+            throw new ExhaustedException("Assembly monitor exhausted; check logs for cause");
+
         return new ArrayList<>(Sets.difference(currentVoters, previousVoters));
     }
 
@@ -72,14 +75,20 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
 
     /** Determines whether the {@link CommAssemblyMonitor} is exhausted. */
     protected boolean determineIfExhausted() {
-        String currentProposal = CommWorldAssembly.getProposalID(this.chamber);
-        if (resolutionID != null)
-            return resolutionID.equals(currentProposal);
+        try {
+            String currentProposal = CommWorldAssembly.getProposalID(this.chamber);
+            if (resolutionID != null)
+                return resolutionID.equals(currentProposal);
 
-        // if resolutionID == null, initialise it
-        LOGGER.info(String.format("Loading proposal ID into monitor for resolution %s", currentProposal));
-        resolutionID = currentProposal;
-        return false;
+            // if resolutionID == null, initialise it
+            LOGGER.info(String.format("Loading proposal ID into monitor for resolution %s", currentProposal));
+            resolutionID = currentProposal;
+            return false;
+
+        } catch (CommWorldAssembly.NoSuchProposalException e) {
+            LOGGER.warning("No proposal at vote in chamber! Automatically exhausting monitor");
+            return true;
+        }
     }
 
     @Override
@@ -87,17 +96,19 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
         return exhausted;
     }
 
-    /** @return set of recipients monitored. */
+    /**
+     * This is only called <i>after</i> checking {@link #determineIfExhausted()}.
+     * @return set of recipients monitored.
+     */
     protected abstract Set<String> getMonitoredRecipients();
 
     /**
      * Parses data from provided string
-     * @param chamber       {@link Chamber}
-     * @param voting        {@link Vote}
-     * @param ignoreInitial boolean
+     * @param chamber {@link Chamber}
+     * @param voting  {@link Vote}
      * @return internal representations in quartet
      */
-    public static Triplet<Chamber, Vote, Boolean> parseStrings(String chamber, String voting, String ignoreInitial) {
+    public static Pair<Chamber, Vote> parseStrings(String chamber, String voting) {
         Chamber chamberEnum;
         Vote voteEnum;
         Range<Integer> weightRange;
@@ -111,11 +122,6 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
             voteEnum = Vote.valueOf(chamber.toUpperCase());
         } catch (IllegalArgumentException e) { throw CommParseException.make(voting, Vote.values(), e); }
 
-        if (!ignoreInitial.equalsIgnoreCase("true")
-                && !ignoreInitial.equalsIgnoreCase("false"))
-            throw CommParseException.make(ignoreInitial, new String[] {"true", "false"});
-        boolIgnoreInitial = Boolean.parseBoolean(ignoreInitial);
-
-        return new Triplet<>(chamberEnum, voteEnum, boolIgnoreInitial);
+        return new Pair<>(chamberEnum, voteEnum);
     }
 }

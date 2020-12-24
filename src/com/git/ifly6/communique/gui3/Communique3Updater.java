@@ -37,6 +37,12 @@ import java.util.logging.Logger;
 
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.GITHUB_RELEASES_URI;
 
+/**
+ * Shows version information scraped from GitHub alongside internal version data and provides a link to the releases
+ * page; all on request in the application. Beats the old framework where it would check automatically and display a
+ * pop-up box.
+ * @since version 3.0 (build 13)
+ */
 public class Communique3Updater extends JDialog {
 
     public static final Logger LOGGER = Logger.getLogger(Communique3Updater.class.getName());

@@ -55,10 +55,10 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
     }
 
     /**
-     * Create method from string input for reflection.
+     * Gets or creates monitor from string input.
      * @param proposalID   as passed
      * @param actionString {@link Action}
-     * @return new monitor
+     * @return existing cached instance or, if no such instance, new monitor
      */
     public static CommApprovalMonitor getOrCreate(String actionString, String proposalID) {
         Action action;

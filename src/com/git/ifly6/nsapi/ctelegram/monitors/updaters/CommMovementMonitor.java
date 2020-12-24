@@ -56,10 +56,10 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     }
 
     /**
-     * Create method with strings for reflection.
+     * Gets or creates monitor from string input.
      * @param dirString  direction string {@link Direction}
      * @param regionList list of regions, separated by commas
-     * @return new monitor
+     * @return new monitor or existing instance if already exists
      */
     public static CommMovementMonitor getOrCreate(String dirString, String regionList) {
         List<String> regions = parseList(regionList);

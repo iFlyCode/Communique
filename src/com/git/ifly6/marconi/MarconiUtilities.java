@@ -28,6 +28,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Utilities associated with Marconi.
+ * @since version 1.6 (build 6) (file initially created in build 1)
+ */
 public class MarconiUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(MarconiUtilities.class.getName());

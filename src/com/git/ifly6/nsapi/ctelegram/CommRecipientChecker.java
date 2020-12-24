@@ -17,6 +17,7 @@
 
 package com.git.ifly6.nsapi.ctelegram;
 
+import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSNation;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommNationCache;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
@@ -27,7 +28,10 @@ import com.git.ifly6.nsapi.telegram.JTelegramType;
  */
 public class CommRecipientChecker {
 
-    // todo move this into filtered monitor? but how to do that? this isn't in scope to get the telegram type
+    public static final JTelegramType[] CHECKING_TYPES = new JTelegramType[] {
+            JTelegramType.RECRUIT, JTelegramType.CAMPAIGN
+    };
+
     /**
      * Does the recipient accept our telegram? If we are recruiting and nation is not recruitable, return false. If
      * campaigning and nation is not campaign-able, return false. Otherwise, return true. Values are cached.
@@ -36,9 +40,12 @@ public class CommRecipientChecker {
      * @return true if recipient accepts telegram
      */
     public static boolean doesRecipientAccept(String r, JTelegramType t) {
-        NSNation n = CommNationCache.getInstance().lookupObject(r);
-        if (t == JTelegramType.RECRUIT) return n.isRecruitable();
-        if (t == JTelegramType.CAMPAIGN) return n.isCampaignable();
-        return true;
+        if (ApiUtils.contains(CHECKING_TYPES, t)) {
+            NSNation n = CommNationCache.getInstance().lookupObject(r); // only load if we need to check
+            if (t == JTelegramType.RECRUIT) return n.isRecruitable();
+            if (t == JTelegramType.CAMPAIGN) return n.isCampaignable();
+        }
+
+        return true; // default
     }
 }

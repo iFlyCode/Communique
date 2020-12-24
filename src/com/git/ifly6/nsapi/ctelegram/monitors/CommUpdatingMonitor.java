@@ -52,16 +52,6 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
 
     private ScheduledExecutorService ex;
     private ScheduledFuture<?> job;
-    private Runnable runnableAction = () -> {
-        try {
-            lastUpdate = Instant.now();
-            LOGGER.info("update triggered");
-            updateAction();
-        } catch (Throwable e) {
-            LOGGER.log(Level.SEVERE, "Encountered error in update!", e);
-            this.stop();
-        }
-    };
 
     /**
      * Constructs an updating monitor with {@link #DEFAULT_UPDATE_INTERVAL} which, when it starts, calls an update
@@ -111,9 +101,28 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     @Override
     public abstract boolean recipientsExhausted();
 
+    /** Things to do before calling {@link #updateAction()}. */
+    private void preUpdateAction() {
+        if (recipientsExhausted()) {
+            LOGGER.info("Recipients are exhausted; cannot update. Stopping monitor");
+            this.stop();
+
+        } else
+            try {
+                lastUpdate = Instant.now();
+                LOGGER.info("Update triggered");
+                updateAction();
+
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Encountered error in update! Shutting down monitor!", e);
+                this.stop();
+            }
+    }
+
     /**
      * {@code updateAction()} defines what the monitor should do to update. Place the necessary code in this location
      * such that when it is called at the {@link #DEFAULT_UPDATE_INTERVAL} or {@link #updateInterval} an update occurs.
+     * Before this is called, updating monitor calls {@link #preUpdateAction()} for exhaust check and general handling.
      */
     protected abstract void updateAction();
 
@@ -132,11 +141,11 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
             ex = Executors.newSingleThreadScheduledExecutor();
         }
         if (job == null || job.isDone()) {
-            job = ex.scheduleWithFixedDelay(runnableAction,
+            job = ex.scheduleWithFixedDelay(
+                    this::preUpdateAction,
                     Math.max(0, initialDelay.toMillis()), // floor initial delay to 0
                     updateInterval.toMillis(),
                     TimeUnit.MILLISECONDS);
-
         }
     }
 

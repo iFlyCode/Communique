@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  * 5's configuration files, and therefore, because it is still used to read those configuration files when necessary,
  * should not be changed.</p>
  * @see com.git.ifly6.communique.io.CommuniqueLoader
+ * @since version 1.0 (build 1)
  */
 @SuppressWarnings("DeprecatedIsStillUsed")
 @Deprecated

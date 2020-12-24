@@ -70,7 +70,10 @@ public class CommWorldAssembly {
                 + MessageFormat.format("wa={0}&q=proposals", c.getCouncilCode());
     }
 
-    /** Gets resolution ID for proposal in chamber. */
+    /**
+     * Gets resolution ID for proposal in chamber.
+     * @throws NoSuchProposalException if no proposal at vote in chamber
+     */
     public static String getProposalID(Chamber chamber) {
         try {
             NSConnection apiConnect = new NSConnection(formatResolutionURL(chamber));
@@ -79,6 +82,9 @@ public class CommWorldAssembly {
 
         } catch (IOException e) {
             throw new NSIOException("Could not connect to NationStates API", e);
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new NoSuchProposalException(String.format("No resolution at vote in chamber %s", chamber));
         }
     }
 
@@ -88,6 +94,7 @@ public class CommWorldAssembly {
      * @param chamber to look in
      * @param voting  direction to look for
      * @return voters who are voting in specified chamber with specified vote
+     * @throws NoSuchProposalException if chamber is empty
      */
     public static List<String> getVoters(Chamber chamber, Vote voting) {
         try {
@@ -100,6 +107,9 @@ public class CommWorldAssembly {
 
         } catch (IOException e) {
             throw new NSIOException("Could not connect to NationStates API", e);
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new NoSuchProposalException(String.format("No proposal at vote in chamber %s", chamber));
         }
     }
 
@@ -109,6 +119,7 @@ public class CommWorldAssembly {
      * @param chamber to look in
      * @param voting  position
      * @return names of delegates
+     * @throws NoSuchProposalException if no proposal at vote
      */
     public static List<Delegate> getDelegates(Chamber chamber, Vote voting) {
         try {
@@ -134,6 +145,9 @@ public class CommWorldAssembly {
 
         } catch (IOException e) {
             throw new NSIOException("Could not connect to NationStates API", e);
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new NoSuchProposalException(String.format("No proposal at vote in chamber %s", chamber));
         }
     }
 

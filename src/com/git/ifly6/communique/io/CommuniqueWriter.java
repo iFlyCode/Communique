@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Writes Communique configuration files.
+ * @since version 1.5 (build 5)
+ */
 class CommuniqueWriter {
 
     private Path path;

@@ -33,6 +33,10 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Handles settings for the Communique3 application as a whole.
+ * @since version 3.0 (build 13)
+ */
 public class Communique3SettingsDialog extends JDialog {
 
     public static final Logger LOGGER = Logger.getLogger(Communique3SettingsDialog.class.getName());

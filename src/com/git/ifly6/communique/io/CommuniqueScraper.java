@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  * Provides functionality to Communique to easily scrape pertinent information from the NationStates World Assembly
  * pages in line with the script rules.
  * @author ifly6
+ * @since version 2.0 (build 7)
  */
 public class CommuniqueScraper {
 
