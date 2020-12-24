@@ -45,15 +45,13 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
 
     private String proposalID;
     private Action action;
-    private List<String> previousApprovers;
-    private List<String> currentApprovers;
+    private List<String> previousApprovers = new ArrayList<>();
+    private List<String> currentApprovers = new ArrayList<>();
 
     /** Creates monitor to monitor provided proposal ID for specified action. */
     private CommApprovalMonitor(String proposalID, Action action) {
         this.proposalID = proposalID;
         this.action = action;
-        previousApprovers = new ArrayList<>();
-        currentApprovers = new ArrayList<>();
     }
 
     /**
@@ -79,7 +77,9 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
      */
     @Override
     public List<String> getRecipients() {
-        if (exhausted) throw new ExhaustedException("Proposal no longer exists; approval change stream exhausted.");
+        if (exhausted)
+            throw new ExhaustedException("Proposal no longer exists; approval change stream exhausted.");
+
         Set<String> delegateSet = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
         List<String> changedApprovers = action.find(previousApprovers, currentApprovers);
         return changedApprovers.stream()

@@ -17,6 +17,7 @@
 
 package com.git.ifly6.communique.data;
 
+import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
 import com.git.ifly6.nsapi.ctelegram.io.CommHappenings;
@@ -35,6 +36,7 @@ import com.git.ifly6.nsapi.telegram.JTelegramException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -49,8 +51,7 @@ public enum CommuniqueRecipientType {
     NATION {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            // return singleton list
-            return Collections.singletonList(cr);
+            return Collections.singletonList(cr); // return singleton list
         }
     },
 
@@ -101,7 +102,12 @@ public enum CommuniqueRecipientType {
             if (tag.equals("delegates"))
                 return newRecipients(CommDelegatesCache.getInstance().getDelegates(), cr.getFilterType());
             if (tag.equals("new"))
-                return newRecipients(NSWorld.getNew(), cr.getFilterType());
+                try {
+                    return newRecipients(NSWorld.getNew(), cr.getFilterType());
+                } catch (NSIOException e) { // in this case, we want it to ignore all errors
+                    LOGGER.info("failed to get new recipients from tag:new");
+                    return Collections.emptyList();
+                }
 
             throw createIllegalArgumentException(cr);
         }
@@ -142,7 +148,7 @@ public enum CommuniqueRecipientType {
     _APPROVAL {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            if (cr.getName().equals("__RAIDS__"))
+            if (cr.getName().equalsIgnoreCase("__RAIDS__"))
                 return newRecipients(CommApprovalRaidMonitor.getInstance().getRecipients(), cr.getFilterType());
 
             String[] tags = cr.getName().split(";\\s+");
@@ -173,6 +179,8 @@ public enum CommuniqueRecipientType {
         @Override
         public String toString() { return ""; }
     };
+
+    private static final Logger LOGGER = Logger.getLogger(CommuniqueRecipientType.class.getName());
 
     /** Recipient type prefixes should be compatible with the NationStates telegram system. */
     @Override

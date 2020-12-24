@@ -145,7 +145,7 @@ public class CommWorldAssembly {
     public static List<String> getApprovers(String proposalID) {
         final List<Proposal> proposals = getAllProposals();
         for (Proposal p : proposals)
-            if (p.id.equals(proposalID))
+            if (p.id.equalsIgnoreCase(proposalID))
                 return p.approvers;
 
         throw new NoSuchProposalException(String.format("Proposal %s does not exist", proposalID));

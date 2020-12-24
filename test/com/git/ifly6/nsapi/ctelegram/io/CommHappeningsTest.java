@@ -17,35 +17,33 @@
 
 package com.git.ifly6.nsapi.ctelegram.io;
 
-import com.git.ifly6.nsapi.NSConnection;
+import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.nsapi.NSIOException;
-import com.git.ifly6.nsapi.telegram.JTelegramException;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class CommHappenings {
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    private static final String HAPPENINGS_URL = NSConnection.API_PREFIX
-            + "q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
+class CommHappeningsTest {
 
-    /** Gets list of nations appearing in happenings right now. */
-    public static List<String> getActiveNations() throws JTelegramException {
+    @Test
+    void getActiveNations() {
         try {
-            NSConnection connection = new NSConnection(HAPPENINGS_URL).connect();
-            Matcher matcher = Pattern.compile("(?<=@@).*?(?=@@)").matcher(connection.getResponse());
+            List<String> activeNations = CommHappenings.getActiveNations();
+            assertTrue(activeNations.size() > 0);
+            assertFalse(activeNations.get(0).contains("@@"));
+            assertDoesNotThrow(
+                    () -> {
+                        for (String s : activeNations)
+                            CommuniqueRecipients.createNation(s);
+                    }
+            );
 
-            List<String> matches = new ArrayList<>();
-            while (matcher.find())
-                matches.add(matcher.group());
-
-            return matches;
-
-        } catch (IOException e) {
-            throw new NSIOException("Encountered IO exception when getting active nations", e);
+        } catch (NSIOException e) {
+            System.err.println("Cannot test for happenings, is internet broken?");
         }
     }
 }
