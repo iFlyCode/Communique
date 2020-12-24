@@ -46,7 +46,10 @@ import java.util.stream.Collectors;
  */
 public enum CommuniqueRecipientType {
 
-    /** Declares the recipient is a nation and requires no further processing in decomposition. */
+    /**
+     * Declares the recipient is a nation and requires no further processing in decomposition.
+     * @since version 2.0 (build 7)
+     */
     NATION {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
@@ -58,7 +61,7 @@ public enum CommuniqueRecipientType {
     /**
      * Declares that the recipient is a REGION TAG and that it needs decomposing into a list of regions which then is
      * decomposed into the nations therein.
-     * @since 2020-04-04
+     * @since version 2.4 (build 11) (2020-04-04)
      */
     REGION_TAG {
         @Override
@@ -76,6 +79,7 @@ public enum CommuniqueRecipientType {
     /**
      * Declares the recipient is a region, allowing for decomposition into a list of {@link CommuniqueRecipient} nations
      * in the region.
+     * @since version 2.0 (build 7)
      */
     REGION {
         @Override
@@ -91,6 +95,7 @@ public enum CommuniqueRecipientType {
     /**
      * Declares the recipient is one of various tags, which can be used to get the members of the World Assembly,
      * delegates thereof, or new nations.
+     * @since version 2.0 (build 7)
      */
     TAG {
         @Override

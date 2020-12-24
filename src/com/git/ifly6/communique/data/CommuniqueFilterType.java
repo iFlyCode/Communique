@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
  */
 public enum CommuniqueFilterType {
 
+    /**
+     * Filters out nations <b>not</b> matching the given regex.
+     * @since version 2.3 (build 10)
+     */
     REQUIRE_REGEX("+regex", true) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
@@ -43,6 +47,10 @@ public enum CommuniqueFilterType {
         }
     },
 
+    /**
+     * Filters out nations matching the given regex.
+     * @since version 2.3 (build 10)
+     */
     EXCLUDE_REGEX("-regex", true) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
@@ -59,13 +67,14 @@ public enum CommuniqueFilterType {
      * Provides equivalent functionality to the <code>+</code> command used in NationStates and the <code>-></code>
      * command used in past versions of Communique. Basically, it filter the recipients list to be an intersection of
      * the list and the token provided.
+     * @since version 2.0 (build 7)
      */
     INCLUDE("+", false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
             // match by names, not by recipient type
-            Set<String> set = toSetDecompose(provided);
+            Set<String> set = decomposeToNameSet(provided);
             return recipients.stream()
                     .filter(r -> set.contains(r.getName())) // provided nation-set contains recipient name, keep
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
@@ -74,13 +83,14 @@ public enum CommuniqueFilterType {
 
     /**
      * Excludes nations from the recipients list based on the token provided. Provides equivalent functionality as the
-     * NationStates "<code>-</code>" command (e.g. <code>-region:Europe</code>) in telegram queries.
+     * NationStates "{@code -}" prefix (e.g. {@code -region:Europe}) in telegram queries.
+     * @since version 2.0 (build 7)
      */
     EXCLUDE("-", false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
-            Set<String> set = toSetDecompose(provided);
+            Set<String> set = decomposeToNameSet(provided);
             return recipients.stream()
                     .filter(r -> !set.contains(r.getName())) // provided nation-set contains recipient name, discard
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
@@ -88,14 +98,12 @@ public enum CommuniqueFilterType {
     },
 
     /**
-     * Adds the provided <code>CommuniqueRecipient</code> to the end of the recipients list. This is the default action
-     * for <code>CommuniqueRecipient</code> tokens, unless they are declared otherwise.
-     * <p>
-     * Please note that this portion of the <code>enum</code> should be kept at the bottom of the class, or otherwise,
-     * {@link CommuniqueRecipient#parseRecipient} will break.
-     * </p>
+     * Adds the provided {@link CommuniqueRecipient} to the recipients list. This should be the default action for all
+     * such tokens.
+     * <p>This {@code enum} value must be at the bottom or {@link CommuniqueRecipient#parseRecipient} will break.</p>
+     * @since version 2.0 (build 7)
      */
-    NORMAL("",false) {
+    NORMAL("", false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
@@ -107,6 +115,12 @@ public enum CommuniqueFilterType {
     private final boolean caseSensitive;
     private final String stringRep;
 
+    /**
+     * Constructs with given final values
+     * @param stringRep     to use for parsing
+     * @param caseSensitive whether tag information is case sensitive
+     * @since version 3.0 (build 13)
+     */
     CommuniqueFilterType(String stringRep, boolean caseSensitive) {
         this.stringRep = stringRep;
         this.caseSensitive = caseSensitive;
@@ -122,18 +136,34 @@ public enum CommuniqueFilterType {
     public abstract Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                                    CommuniqueRecipient provided);
 
-    private static Set<String> toSetDecompose(CommuniqueRecipient recipient) {
-        return recipient
-                .decompose().stream() // turn it into the raw recipients
+    /**
+     * Transforms {@link CommuniqueRecipient} its decomposed set, as names.
+     * @param recipient to decompose
+     * @return decomposed, to name set
+     */
+    private static Set<String> decomposeToNameSet(CommuniqueRecipient recipient) {
+        return recipient.decompose().stream() // turn it into the raw recipients
                 .map(CommuniqueRecipient::getName) // get strings for matching
                 .collect(Collectors.toCollection(HashSet::new)); // for fast Set#contains()
     }
 
+    /**
+     * Returns string as required for {@link CommuniqueRecipient#parseRecipient(String) parser}.
+     * @return string representation
+     * @since version 2.0 (build 7)
+     */
     @Override
     public String toString() {
         return this.stringRep;
     }
 
+    /**
+     * Returns whether tag has case sensitive input. Eg {@code +regex:[A-Z].*$} is case-sensitive, while {@code
+     * +region:europe} is not. Used in {@link CommuniqueRecipient#CommuniqueRecipient(CommuniqueFilterType,
+     * CommuniqueRecipientType, String)}.
+     * @return whether tag is case sensitive
+     * @since version 3.0 (build 13)
+     */
     public boolean isCaseSensitive() {
         return caseSensitive;
     }

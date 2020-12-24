@@ -39,10 +39,14 @@ public class Communique7Parser {
     /**
      * Declares parser build, which is based on two values: (1) the syntax of the Communique recipients language and (2)
      * the file syntax in which that information is held.
+     * @since version 1.1 (build 2)
      */
     public static final long BUILD = 13;
 
-    /** Declares semantic version. */
+    /**
+     * Declares semantic version.
+     * @since version 3.0 (build 13)
+     */
     public static final String VERSION = "3.0";
 
     /** List of recipients changed by various actions and applications called by the parser. */
