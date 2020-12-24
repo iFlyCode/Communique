@@ -53,6 +53,7 @@ public class CommuniqueConfig implements Serializable {
     public JTelegramType telegramType = JTelegramType.NONE; // no telegram type
     public CommuniqueProcessingAction processingAction = CommuniqueProcessingAction.NONE; // no processing action
 
+    public boolean repeats = false;
     public Duration autoStop = null;
     public Duration telegramDelay = null;
 

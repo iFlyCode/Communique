@@ -20,6 +20,7 @@ package com.git.ifly6.nsapi.ctelegram.monitors.updaters;
 import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
+import com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 import com.google.common.collect.Sets;
@@ -30,11 +31,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache.createKey;
+
 /**
  * Monitors approval actions related to a World Assembly proposal.
  * @since version 3.0 (build 13)
  */
 public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMonitor {
+
+    private static CommPermanentCache<CommApprovalMonitor> cache = new CommPermanentCache<>();
 
     private boolean exhausted;
 
@@ -44,8 +49,9 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
     private List<String> currentApprovers;
 
     /** Creates monitor to monitor provided proposal ID for specified action. */
-    public CommApprovalMonitor(String proposalID, Action action) {
+    private CommApprovalMonitor(String proposalID, Action action) {
         this.proposalID = proposalID;
+        this.action = action;
         previousApprovers = new ArrayList<>();
         currentApprovers = new ArrayList<>();
     }
@@ -56,14 +62,14 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
      * @param actionString {@link Action}
      * @return new monitor
      */
-    public static CommApprovalMonitor create(String proposalID, String actionString) {
+    public static CommApprovalMonitor getOrCreate(String actionString, String proposalID) {
         Action action;
         try {
             action = Action.valueOf(actionString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw CommParseException.make(actionString, Action.values(), e);
-        }
-        return new CommApprovalMonitor(proposalID, action);
+        } catch (IllegalArgumentException e) { throw CommParseException.make(actionString, Action.values(), e); }
+
+        return cache.getOrCreate(createKey(proposalID, actionString),
+                () -> new CommApprovalMonitor(proposalID, action));
     }
 
     /**
@@ -98,13 +104,13 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
 
     /** Enumerates actions undertaken by delegates. */
     public enum Action {
-        APPROVED {
+        GIVEN_TO {
             @Override
             public List<String> find(List<String> before, List<String> after) {
                 // elements in after that are were not in before
                 return new ArrayList<>(Sets.difference(new HashSet<>(after), new HashSet<>(before)));
             }
-        }, UNAPPROVED {
+        }, REMOVED_FROM {
             @Override
             public List<String> find(List<String> before, List<String> after) {
                 // elements in before that are not in afterSet

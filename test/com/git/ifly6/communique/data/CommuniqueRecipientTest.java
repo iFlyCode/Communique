@@ -26,14 +26,15 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommuniqueRecipientTest {
+
+    // DO NOT RE-ORDER! testToString requires order!
     static Map<String, CommuniqueRecipient> values = ImmutableMap.of(
             "+nation:imperium_anglorum", new CommuniqueRecipient(FilterType.INCLUDE, RecipientType.NATION, "imperium_anglorum"),
             "-nation:imperium_anglorum", new CommuniqueRecipient(FilterType.EXCLUDE, RecipientType.NATION, "imperium_anglorum"),
             "+region:europe", new CommuniqueRecipient(FilterType.INCLUDE, RecipientType.REGION, "europe"),
-            "+regex:[A-Z].*", new CommuniqueRecipient(FilterType.REQUIRE_REGEX, RecipientType.NATION, "[A-Z].*"),
+            "+regex:[A-Z].*", new CommuniqueRecipient(FilterType.REQUIRE_REGEX, RecipientType.NONE, "[A-Z].*"),
             "imperium_anglorum", new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "imperium_anglorum")
     );
 
@@ -41,15 +42,20 @@ class CommuniqueRecipientTest {
     void parseRecipient() {
         for (Map.Entry<String, CommuniqueRecipient> entry : values.entrySet())
             assertEquals(
-                    CommuniqueRecipient.parseRecipient(entry.getKey()),
-                    entry.getValue());
-        for (Map.Entry<String, CommuniqueRecipient> entry : values.entrySet())
+                    entry.getValue(),
+                    CommuniqueRecipient.parseRecipient(entry.getKey()));
+        for (Map.Entry<String, CommuniqueRecipient> entry : values.entrySet()) // test if upper case
             assertEquals(
-                    CommuniqueRecipient.parseRecipient(entry.getKey().toUpperCase()),
-                    entry.getValue());
+                    entry.getValue(),
+                    CommuniqueRecipient.parseRecipient(entry.getKey().toUpperCase()));
 
-        assertThrows(IllegalArgumentException.class, () ->
-                CommuniqueRecipient.parseRecipient("nation:nation:Imperium Anglorum"));
+        assertEquals(
+                CommuniqueRecipient.parseRecipient("nation:nation:Imperium Anglorum"),
+                new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "imperium_anglorum")
+        );
+
+        String value = CommuniqueRecipient.parseRecipient("ALPHABET:15").toString();
+        System.out.println(value);
     }
 
     @Test
@@ -59,18 +65,16 @@ class CommuniqueRecipientTest {
                 "/imperium_anglorum",
                 "wa:delegates",
                 "wa:nations -> region:the_north_pacific",
-                "region:the_east_pacific->wa:members",
-                "+region:Europe",
-                "+regex:[A-Z].*$"
+                "region:the_east_pacific->wa:members"//,
+//                "+region:Europe", // old and new tokens won't be mixed
+//                "+regex:[A-Z].*$"
         ));
         assertEquals(tokens, Arrays.asList(
                 "tag:wa", "-region:europe",
                 "-nation:imperium_anglorum",
                 "tag:delegates",
                 "tag:wa", "+region:the_north_pacific",
-                "region:the_east_pacific", "+tag:wa",
-                "+region:Europe",
-                "+regex:[A-Z].*$"
+                "region:the_east_pacific", "+tag:wa"
         ));
     }
 
@@ -78,11 +82,11 @@ class CommuniqueRecipientTest {
     void testToString() {
         List<Map.Entry<String, CommuniqueRecipient>> entries = new ArrayList<>(values.entrySet());
         for (int i = 0; i < entries.size(); i++) {
-            if (i >= 5)
+            Map.Entry<String, CommuniqueRecipient> entry = entries.get(i);
+            if (!entry.getKey().contains(":"))
                 continue;
 
-            Map.Entry<String, CommuniqueRecipient> entry = entries.get(i);
-            assertEquals(entry.getValue().toString(), entry.getKey());
+            assertEquals(entry.getKey(), entry.getValue().toString());
         }
     }
 }

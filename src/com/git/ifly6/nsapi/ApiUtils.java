@@ -16,8 +16,10 @@
  */
 package com.git.ifly6.nsapi;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Utility functions for handling or parsing information from the NationStates API. See also <a
@@ -29,14 +31,14 @@ public class ApiUtils {
     }
 
     /**
-     * Changes some name into a reference name.
+     * Changes some name into a reference name. Reference names are when all letters are lower case and all spaces are
+     * substituted with underscores.
      * @param input to turn into a reference name
-     * @return reference name form of the input name
+     * @return reference name form of input
      */
+    @Nonnull
     public static String ref(String input) {
-        if (input == null)
-            throw new NullPointerException("Cannot convert null string to reference format");
-        return input.trim().toLowerCase().replaceAll("\\s", "_");
+        return Objects.requireNonNull(input).trim().toLowerCase().replaceAll("\\s", "_");
     }
 
     /**
@@ -51,6 +53,16 @@ public class ApiUtils {
                 refs.add(ApiUtils.ref(s));
 
         return refs;
+    }
+
+    /**
+     * Tests whether first string starts with the latter string; case insensitive.
+     * @param s      to test
+     * @param prefix to look for prefix
+     * @return true if prefix (case-insensitive) present; false otherwise
+     */
+    public static boolean startsWithLowerCase(String s, String prefix) {
+        return s.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
     /**

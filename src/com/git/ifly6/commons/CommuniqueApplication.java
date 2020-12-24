@@ -105,12 +105,12 @@ public enum CommuniqueApplication {
     }).get();
 
     static {
-        // try create app support directory if not existent
+        // try get or create app support directory if not existent
         try {
             Files.createDirectories(APP_SUPPORT);
         } catch (IOException e1) {
             e1.printStackTrace();
-            LOGGER.warning("Cannot create directory");
+            LOGGER.warning("Cannot get or create directory");
         }
     }
 

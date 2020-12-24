@@ -28,21 +28,10 @@ public class CommuniqueRecipients {
     private CommuniqueRecipients() {
     }
 
-    /**
-     * Creates recipient of type {@link RecipientType#NATION} from given string and with the given {@link FilterType}
-     * @param filter     to apply to construction
-     * @param nationName to target
-     * @return new recipient
-     */
     public static CommuniqueRecipient createNation(FilterType filter, String nationName) {
         return new CommuniqueRecipient(filter, RecipientType.NATION, nationName);
     }
 
-    /**
-     * Creates a nation recipient with the given name with a normal filter type
-     * @param nationName to target
-     * @return new recipient
-     */
     public static CommuniqueRecipient createNation(String nationName) {
         return createNation(FilterType.NORMAL, nationName);
     }
@@ -57,10 +46,6 @@ public class CommuniqueRecipients {
 
     public static CommuniqueRecipient createTag(FilterType filterType, String tag) {
         return new CommuniqueRecipient(filterType, RecipientType.TAG, tag);
-    }
-
-    public static CommuniqueRecipient createFlag(String flag) {
-        return new CommuniqueRecipient(FilterType.NORMAL, RecipientType.FLAG, flag);
     }
 
     /**

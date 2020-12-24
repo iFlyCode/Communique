@@ -17,6 +17,6 @@
 
 /**
  * Contains {@link com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor} classes meant to be instantiated by reflection.
- * All classes here should have a {@code create} function.
+ * All classes here should have a {@code getOrCreate} method.
  */
 package com.git.ifly6.nsapi.ctelegram.monitors.updaters;

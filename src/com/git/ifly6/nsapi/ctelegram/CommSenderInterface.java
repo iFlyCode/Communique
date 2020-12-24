@@ -24,17 +24,11 @@ package com.git.ifly6.nsapi.ctelegram;
 public interface CommSenderInterface {
 
     /**
-     * Informs implementor that a recipient was skipped.
-     * @param recipient that was skipped
-     */
-    void onSkip(String recipient);
-
-    /**
      * Informs implementor that recipient was sent to with serial count
      * @param recipient  sent to
      * @param numberSent serial count
      */
-    void sentTo(String recipient, int numberSent);
+    void processed(String recipient, int numberSent, CommSender.SendingAction action);
 
     /**
      * Defines actions to be taken when {@link CommSender} send thread terminates.

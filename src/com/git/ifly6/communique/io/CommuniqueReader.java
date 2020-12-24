@@ -95,6 +95,19 @@ class CommuniqueReader {
                         break;
                     }
 
+            // correct for removal of flag:recruit
+            final String OLD_RECRUIT_FLAG = "flag:recruit";
+            if (config.version <= 13) {
+                if (config.getcRecipientsString().contains(OLD_RECRUIT_FLAG)) {
+                    config.getcRecipientsString().replaceAll(s -> s.equalsIgnoreCase(OLD_RECRUIT_FLAG)
+                            ? "tag:new" : s);
+                    config.repeats = true;
+                }
+                if (config.getcRecipientsString().contains("flag:active"))
+                    config.getcRecipientsString().replaceAll(s -> s.equalsIgnoreCase("flag:active")
+                            ? "_happenings:active" : s);
+            }
+
             RecipientCapture capture = new Gson().fromJson(Files.newBufferedReader(path), RecipientCapture.class);
             if (config.version <= 7)
                 unifySendList(config, () -> capture);

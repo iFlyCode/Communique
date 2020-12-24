@@ -16,13 +16,14 @@
  */
 package com.git.ifly6.communique.io;
 
-import com.git.ifly6.nsapi.telegram.util.JInfoCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -36,8 +37,8 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
     RANDOMISE {
         @Override
         public List<String> apply(List<String> input) {
-            Collections.shuffle(input);
-            return input; // do nothing
+            Collections.shuffle(input, random);
+            return input;
         }
 
         @Override
@@ -62,20 +63,22 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
     /**
      * Moves all delegates in the list of recipients to the front, randomises its order, then places all other nations
      * in a random order after those delegates.
+     * <p>Internals with two lists probably is already optimal; operation is basically a splitting filter. Elements are
+     * then individually shuffled and then placed after another (delegates first).</p>
      */
     DELEGATE_PRIORITISE {
         @Override
         public List<String> apply(List<String> input) {
-            Set<String> delegates = new HashSet<>(JInfoCache.getInstance().getDelegates());
+            Set<String> delegates = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
 
             List<String> listDelegates = new ArrayList<>(); // delegates we have
             List<String> nonDelegate = new ArrayList<>(); // the rest
             for (String s : input)
-                if (delegates.contains(s)) listDelegates.add(s);
+                if (delegates.contains(s)) listDelegates.add(s); // see docs on this algorithm
                 else nonDelegate.add(s);
 
-            Collections.shuffle(listDelegates);
-            Collections.shuffle(nonDelegate);
+            Collections.shuffle(listDelegates, random);
+            Collections.shuffle(nonDelegate, random);
 
             listDelegates.addAll(nonDelegate);
             return listDelegates;
@@ -98,6 +101,9 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
             return "None";
         }
     };
+
+    /** Static randomisation seed. */
+    public static final Random random = new Random(81141418);
 
     /** Applies the processing action to the provided list, which should be of raw NationStates reference names */
     public abstract List<String> apply(List<String> input);

@@ -17,19 +17,24 @@
 
 package com.git.ifly6.communique.data;
 
-import com.git.ifly6.communique.io.HappeningsParser;
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.NSWorld;
+import com.git.ifly6.nsapi.ctelegram.io.CommHappenings;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
+import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommMembersCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
+import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionTagCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalRaidMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommMovementMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
-import com.git.ifly6.nsapi.telegram.util.JInfoCache;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -53,13 +58,13 @@ public enum RecipientType {
     /**
      * Declares that the recipient is a REGION TAG and that it needs decomposing into a list of regions which then is
      * decomposed into the nations therein.
+     * @since 2020-04-04
      */
     REGION_TAG {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
-            // new 2020-04-04
-            List<String> regions = JInfoCache.getInstance().getRegionTag(cr.getName());
-            LOGGER.info(String.format("Tag %s: %d regions", cr.getName(), regions.size()));
+            List<String> regions = CommRegionTagCache.getInstance().getRegionsWithTag(cr.getName());
+//            LOGGER.info(String.format("Tag %s: %d regions", cr.getName(), regions.size()));
             return regions.stream()
                     .map(s -> new CommuniqueRecipient(cr.getFilterType(), RecipientType.REGION, s))
                     .map(CommuniqueRecipient::decompose)
@@ -77,7 +82,8 @@ public enum RecipientType {
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) throws JTelegramException {
             NSRegion region = CommRegionCache.getInstance().lookupObject(cr.getName());
             List<String> regionMembers = region.getRegionMembers();
-            LOGGER.info(String.format("Region %s: %d nations", cr.getName(), regionMembers.size()));
+
+//            LOGGER.info(String.format("Region %s: %d nations", cr.getName(), regionMembers.size()));
             return newRecipients(regionMembers, cr.getFilterType());
         }
     },
@@ -97,19 +103,65 @@ public enum RecipientType {
             if (tag.equals("new"))
                 return newRecipients(NSWorld.getNew(), cr.getFilterType());
 
-            throw new JTelegramException("Invalid flag: \"" + cr.toString() + "\"");
+            throw createIllegalArgumentException(cr);
         }
     },
 
-    /** Declares that the recipient is an internal Commmunique flag. */
-    FLAG {
+    /** Happenings flags. */
+    _HAPPENINGS {
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
             String tag = cr.getName();
-            if (tag.equals("recruit"))
-                return Collections.emptyList(); // recruit is handled by Communique logic, not here
-            if (tag.equals("active")) return HappeningsParser.getActiveNations();  // active
-            return Collections.emptyList();
+            if (tag.equals("active")) // active nations
+                return newRecipients(CommHappenings.getActiveNations(), cr.getFilterType());
+
+            throw createIllegalArgumentException(cr);
+        }
+    },
+
+    /**
+     * Nations moving into or out of a list of regions. Eg, {@code _movement:into;europe,the_north_pacific} or {@code
+     * _movement:out_of;europe}.
+     */
+    _MOVEMENT {
+        @Override
+        public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
+            String[] tags = cr.getName().split(";\\s+");
+            String direction = tags[0];
+            String region = tags[1];
+
+            List<String> recipients = CommMovementMonitor.getOrCreate(direction, region).getRecipients();
+            return newRecipients(recipients, cr.getFilterType());
+        }
+    },
+
+    /**
+     * Delegates approving a proposal. Eg, {@code _approval:__raids__} for all approval raids, {@code
+     * _approval:given_to; PROPOSAL_ID}, or {@code _approval:removed_from; PROPOSAL_ID}.
+     */
+    _APPROVAL {
+        @Override
+        public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
+            if (cr.getName().equals("__RAIDS__"))
+                return newRecipients(CommApprovalRaidMonitor.getInstance().getRecipients(), cr.getFilterType());
+
+            String[] tags = cr.getName().split(";\\s+");
+            String givenOrRemoved = tags[0];
+            String proposal = tags[1];
+            return newRecipients(CommApprovalMonitor.getOrCreate(givenOrRemoved, proposal).getRecipients(),
+                    cr.getFilterType());
+        }
+    },
+
+    /** Persons voting on a proposal. Eg, {@code _voting:ga; for} */
+    _VOTING {
+        @Override
+        public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
+            final String[] split = cr.getName().split(";\\s+");
+            Chamber chamber = Chamber.valueOf(split[0].toUpperCase());
+            Vote voting = Vote.valueOf(split[1].toUpperCase());
+
+            return newRecipients(CommWorldAssembly.getVoters(chamber, voting), cr.getFilterType());
         }
     },
 
@@ -122,33 +174,33 @@ public enum RecipientType {
         public String toString() { return ""; }
     };
 
-    private static final Logger LOGGER = Logger.getLogger(RecipientType.class.getName());
-
-    /**
-     * Allows for the recipient type to be compatible with the NationStates telegram system by providing the same tag
-     * nomenclature.
-     */
+    /** Recipient type prefixes should be compatible with the NationStates telegram system. */
     @Override
     public String toString() { return this.name().toLowerCase(); }
 
     /**
-     * Decomposes a tag into a list of <code>CommuniqueRecipient</code> which can then be more easily used.
-     * @param cr to be decomposed
-     * @return a list of <code>CommuniqueRecipient</code>
+     * Decomposes tag into {@code List<{@link CommuniqueRecipient}>}.
+     * @param cr tag to be decomposed
+     * @return list of recipients
      */
     public abstract List<CommuniqueRecipient> decompose(CommuniqueRecipient cr);
 
     /**
-     * Translates a list of nation reference names into a list of valid <code>CommuniqueRecipient</code>s.
+     * Translates nation reference names into {@link RecipientType#NATION} {@code CommuniqueRecipient}s.
      * @param list       of nation reference names
-     * @param filterType from which to extract type data
-     * @return list of CommuniqueRecipients
+     * @param filterType from which to extract filter type data
+     * @return list of recipients
      */
     private static List<CommuniqueRecipient> newRecipients(List<String> list, FilterType filterType) {
         // we use this a lot, probably better to use a loop for speed
-        List<CommuniqueRecipient> result = new ArrayList<>();
+        List<CommuniqueRecipient> result = new ArrayList<>(list.size());
         for (String s : list)
             result.add(CommuniqueRecipients.createNation(filterType, s));
         return result;
+    }
+
+    /** Creates illegal argument exception with preformatted string. */
+    private static IllegalArgumentException createIllegalArgumentException(CommuniqueRecipient s) {
+        return new IllegalArgumentException(String.format("Invalid tag string in <%s>!", s));
     }
 }

@@ -15,34 +15,37 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.manualtests;
+package com.git.ifly6.nsapi.ctelegram.io;
 
-import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommMovementMonitor;
+import com.git.ifly6.nsapi.NSConnection;
+import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.telegram.JTelegramException;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class MovementMonitorTest {
+public class CommHappenings {
 
-    public static void main(String[] args) throws InterruptedException {
-        List<String> regions = Arrays.asList("Europe");
-        CommMovementMonitor movementMonitor = new CommMovementMonitor(
-                regions, CommMovementMonitor.Direction.OUT_OF);
+    private static final String HAPPENINGS_URL = NSConnection.API_PREFIX
+            + "q=happenings;filter=law+change+dispatch+rmb+embassy+admin+vote+resolution+member";
 
-        List<String> totalRecipients = new ArrayList<>();
-        while (totalRecipients.size() < 10) {
-            System.out.println("Waiting for data to come in...");
-            Thread.sleep((long) (movementMonitor.getUpdateInterval().toMillis() * 1.2));
+    /** Gets list of nations appearing in happenings right now. */
+    public static List<String> getActiveNations() throws JTelegramException {
+        try {
+            NSConnection connection = new NSConnection(HAPPENINGS_URL).connect();
+            Matcher matcher = Pattern.compile("@@(.*?)@@").matcher(connection.getResponse());
 
-            System.out.println("Recipients:");
-            List<String> recipients = movementMonitor.getRecipients();
-            totalRecipients.addAll(recipients);
+            List<String> matches = new ArrayList<>();
+            while (matcher.find())
+                matches.add(matcher.group());
 
-            System.out.println(recipients);
+            return matches;
+
+        } catch (IOException e) {
+            throw new NSIOException("Encountered IO exception when getting active nations", e);
         }
-
-        movementMonitor.stop();
-        System.out.println("Stopped");
     }
 }

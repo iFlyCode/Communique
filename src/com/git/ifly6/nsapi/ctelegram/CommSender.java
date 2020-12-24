@@ -64,9 +64,6 @@ public class CommSender {
     private final JTelegramType telegramType;
     private final CommMonitor monitor;
 
-    /** See {@link #setFeedLimit(int)}. */
-    private int feedLimit = Integer.MAX_VALUE;
-
     /** If true, does not send telegrams. */
     private boolean dryRun = false;
 
@@ -104,7 +101,6 @@ public class CommSender {
 
         int recipientsAdded = 0;
         for (String s : recipients) {
-            if (recipientsAdded > feedLimit) break;
             if (!sendQueue.contains(s) && !sentList.contains(s)) {  // prevent double-queueing
                 sendQueue.add(s);
                 recipientsAdded++;
@@ -113,21 +109,6 @@ public class CommSender {
         }
 
         LOGGER.fine(String.format("Fed queue with %d recipients", recipientsAdded));
-    }
-
-    /** @return feed limit, ie number of recipients taken from the monitor in each step */
-    public int getFeedLimit() {
-        return feedLimit;
-    }
-
-    /**
-     * Sets feed limit, ie number of recipients taken from monitor in each feed step. Because sender sends until queue
-     * is empty before feeding the queue, a high feed limit may force long inter-feed intervals. It also may force
-     * longer delays if the queue is exhausted when encountering a long series of recipients which refuse telegrams.
-     * @param feedLimit to apply
-     */
-    public void setFeedLimit(int feedLimit) {
-        this.feedLimit = feedLimit;
     }
 
     /**
@@ -146,6 +127,7 @@ public class CommSender {
         // if no recipient in queue, try to get some
         // if monitor is exhausted, it will automatically throw an exhausted exception
         if (sendQueue.peek() == null) {
+            LOGGER.finer("Attempting to feed queue");
             if (monitor.recipientsExhausted()) {
                 LOGGER.info("No recipients in queue; cannot feed as monitor is exhausted");
                 this.stopSend();
@@ -155,7 +137,6 @@ public class CommSender {
                 return; // end
 
             } else {
-                // LOGGER.info("No recipients in queue; attempting to feed");
                 feedQueue();
 
                 // if still there are no recipients to queue
@@ -171,12 +152,11 @@ public class CommSender {
             throw new EmptyQueueException();
 
         // if we have a recipient...
-        // todo move to comm filtered monitor
         LOGGER.info(String.format("Got recipient <%s> from queue", recipient));
         if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
             try {
                 LOGGER.info(String.format("Recipient <%s> invalid; trying next in queue", recipient));
-                this.reportSkip(recipient);
+                this.reportProcessed(recipient, SendingAction.SKIPPED);
                 executeSend(); // try again
                 return; // do not execute further!
 
@@ -204,23 +184,17 @@ public class CommSender {
                 throw NSTGSettingsException.createException(keys, responseCode);
 
             // we sent to this recipient
-            reportSent(recipient);
+            reportProcessed(recipient, SendingAction.SENT);
             sentList.add(recipient);
 
         } catch (IOException e) {
             throw new NSIOException("Cannot get response code from telegram API", e);
         }
-
     }
 
-    private void reportSent(String recipient) {
+    private void reportProcessed(String recipient, SendingAction action) {
         sentList.add(recipient);
-        outputInterface.sentTo(recipient, sentList.size());
-    }
-
-    public void reportSkip(String recipient) {
-        skipList.add(recipient);
-        outputInterface.onSkip(recipient);
+        outputInterface.processed(recipient, sentList.size() + skipList.size(), action);
     }
 
     public void startSend() {
@@ -243,8 +217,8 @@ public class CommSender {
             } catch (Throwable e) {
                 final String m = "Client sending thread encountered exception! Shutting down sending thread!";
                 LOGGER.log(Level.SEVERE, m + "\n" + Throwables.getStackTraceAsString(e), e);
-                this.outputInterface.onError(m, e);
                 this.outputInterface.onTerminate();
+                this.outputInterface.onError(m, e);
                 this.stopSend();
                 e.printStackTrace();
             }
@@ -269,6 +243,11 @@ public class CommSender {
         return sentList;
     }
 
+    /** Returns list of skipped recipients. */
+    public Set<String> getSkipList() {
+        return skipList;
+    }
+
     /** @returns {@link CommSender} initialisation time */
     public Instant getInitAt() {
         return initAt;
@@ -284,15 +263,17 @@ public class CommSender {
 
     /** @return {@link Duration} until next telegram is sent; {@code null} if not running. */
     public Instant nextAt() {
-        if (isRunning()) return Instant.now().plus(job.getDelay(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
+        if (isRunning())
+            return Instant.now().plus(job.getDelay(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);
+
         throw new UnsupportedOperationException("No duration to next telegram; no telegrams are being sent");
     }
 
-    public Set<String> getSkipList() {
-        return skipList;
-    }
-
     /** Thrown if no recipient is found in the queue */
-    public static class EmptyQueueException extends NoSuchElementException {
+    public static class EmptyQueueException extends NoSuchElementException { }
+
+    /** Indicates whether something was sent or skipped. */
+    public enum SendingAction {
+        SENT, SKIPPED
     }
 }

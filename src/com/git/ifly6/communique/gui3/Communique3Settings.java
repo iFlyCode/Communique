@@ -95,7 +95,7 @@ public class Communique3Settings {
                     return new Pair<>(false, f.getName());
             }
         } catch (IllegalAccessException e) {
-            throw new Communique3MonitorReflections.CommReflectException("Cannot check for null fields in settings!");
+            throw new CommReflectException("Cannot check for null fields in settings!");
         }
 
         return new Pair<>(true, null);
@@ -104,5 +104,10 @@ public class Communique3Settings {
     /** Thrown if there is a validity issue with Communique3's settings. */
     public static class Communique3SettingsException extends RuntimeException {
         public Communique3SettingsException(String message) { super(message); }
+    }
+
+    /** Thrown if error occurs in reflection. */
+    private static class CommReflectException extends RuntimeException {
+        public CommReflectException(String s) { super(s); }
     }
 }

@@ -83,7 +83,8 @@ public class CommWorldAssembly {
     }
 
     /**
-     * Gets voters in a chamber who are voting a certain way
+     * Gets voters in a chamber who are voting a certain way. The API returns <b>all</b> voters; including delegates.
+     * Delegates are included <b>without</b> their voting weights.
      * @param chamber to look in
      * @param voting  direction to look for
      * @return voters who are voting in specified chamber with specified vote
@@ -221,7 +222,7 @@ public class CommWorldAssembly {
         public abstract String getDelegateXMLTag();
     }
 
-    /** Enumerates World Assembly chambes. */
+    /** Enumerates World Assembly chambers. */
     public enum Chamber {
         GA {
             @Override

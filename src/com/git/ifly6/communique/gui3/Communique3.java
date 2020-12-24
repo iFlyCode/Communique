@@ -20,6 +20,7 @@ package com.git.ifly6.communique.gui3;
 import com.apple.eawt.Application;
 import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
+import com.git.ifly6.communique.data.Communique7Monitor;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
@@ -36,10 +37,10 @@ import com.git.ifly6.nsapi.NSIOException;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
-import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -119,9 +120,12 @@ public class Communique3 implements CommSenderInterface {
     private JButton sendButton;
     private JButton stopButton;
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private OptionalLong finishCondition;
+
     private JProgressBar progressBar;
     private JLabel progressLabel;
+    JCheckBox repeatBox;
 
     public Communique3() {
         // $$$setupUI$$$(); // setup UI starts here
@@ -165,15 +169,14 @@ public class Communique3 implements CommSenderInterface {
                     config.setcRecipients(recipients);
                 }));
         fieldClient.getDocument().addDocumentListener(
-                new CommuniqueDocumentListener(e -> {
-                    config.keys.setClientKey(fieldClient.getText());
-                }));
+                new CommuniqueDocumentListener(e -> config.keys.setClientKey(fieldClient.getText())));
         fieldSecret.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setSecretKey(fieldSecret.getText())));
         fieldTelegramID.getDocument().addDocumentListener(
                 new CommuniqueDocumentListener(e -> config.keys.setTelegramId(fieldTelegramID.getText())));
 
         // autostop and telegram delay fields' listeners
+        repeatBox.addActionListener(e -> config.repeats = repeatBox.isSelected());
         fieldAutoStop.getDocument().addDocumentListener(new CommuniqueDocumentListener(
                 e -> {
                     Duration duration = null;
@@ -243,7 +246,7 @@ public class Communique3 implements CommSenderInterface {
                 .listRecipients();
         recipients = config.getProcessingAction().apply(recipients);
 
-        client = new CommSender(config.keys, new CommStaticMonitor(recipients),
+        client = new CommSender(config.keys, new Communique7Monitor(config),
                 config.getTelegramType(), this);
         client.startSend();
 
@@ -593,19 +596,14 @@ public class Communique3 implements CommSenderInterface {
     }
 
     @Override
-    public void onSkip(String recipient) {
-        finishCondition = client.getMonitor().remainingIfKnown();
-    }
-
-    @Override
-    public void sentTo(String recipient, int numberSent) {
+    public void processed(String recipient, int numberProcessed, CommSender.SendingAction action) {
         EventQueue.invokeLater(() -> {
             // update text interfaces
             finishCondition = client.getMonitor().remainingIfKnown();
             appendLine(textArea, CommuniqueRecipients.createExcludedNation(recipient));
             progressLabel.setText(finishCondition.isPresent()
-                    ? String.format("%d of %d", numberSent, finishCondition.getAsLong())
-                    : String.format("%d sent", numberSent));
+                    ? String.format("%d of %d", numberProcessed, finishCondition.getAsLong())
+                    : String.format("%d sent", numberProcessed));
 
             // draw timer changes
             Duration duration = Duration.between(Instant.now(), client.nextAt());
@@ -621,6 +619,7 @@ public class Communique3 implements CommSenderInterface {
 
     @Override
     public void onError(String m, Throwable e) {
+        // do not call onTerminate; onTerminate already called by the sending thread!
         dialogHandler.showErrorDialog(m, e);
     }
 

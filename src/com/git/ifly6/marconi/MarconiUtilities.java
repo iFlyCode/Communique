@@ -62,7 +62,7 @@ public class MarconiUtilities {
                 lockFile.toFile().deleteOnExit(); // delete lock file when marconi closes!
             }
         } catch (IOException e) {
-            LOGGER.severe("Cannot create lock file!");
+            LOGGER.severe("Cannot get or create lock file!");
             e.printStackTrace();
         }
     }

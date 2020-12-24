@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public enum FilterType {
 
-    REQUIRE_REGEX {
+    REQUIRE_REGEX("+regex", true) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
@@ -41,14 +41,9 @@ public enum FilterType {
                     .filter(r -> p.matcher(r.getName()).matches()) // if matches, keep
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
-
-        @Override
-        public String toString() {
-            return "+regex";
-        }
     },
 
-    EXCLUDE_REGEX {
+    EXCLUDE_REGEX("-regex", true) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
@@ -56,11 +51,6 @@ public enum FilterType {
             return recipients.stream()
                     .filter(r -> !p.matcher(r.getName()).matches()) // if it matches, make false, so exclude
                     .collect(Collectors.toCollection(LinkedHashSet::new));
-        }
-
-        @Override
-        public String toString() {
-            return "-regex";
         }
     },
 
@@ -70,7 +60,7 @@ public enum FilterType {
      * command used in past versions of Communique. Basically, it filter the recipients list to be an intersection of
      * the list and the token provided.
      */
-    INCLUDE {
+    INCLUDE("+", false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
@@ -80,18 +70,13 @@ public enum FilterType {
                     .filter(r -> set.contains(r.getName())) // provided nation-set contains recipient name, keep
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
         }
-
-        @Override
-        public String toString() {
-            return "+";
-        }
     },
 
     /**
      * Excludes nations from the recipients list based on the token provided. Provides equivalent functionality as the
      * NationStates "<code>-</code>" command (e.g. <code>-region:Europe</code>) in telegram queries.
      */
-    EXCLUDE {
+    EXCLUDE("-", false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
@@ -99,11 +84,6 @@ public enum FilterType {
             return recipients.stream()
                     .filter(r -> !set.contains(r.getName())) // provided nation-set contains recipient name, discard
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // ordered, remove duplicates
-        }
-
-        @Override
-        public String toString() {
-            return "-";
         }
     },
 
@@ -115,19 +95,22 @@ public enum FilterType {
      * {@link CommuniqueRecipient#parseRecipient} will break.
      * </p>
      */
-    NORMAL {
+    NORMAL("",false) {
         @Override
         public Set<CommuniqueRecipient> apply(Set<CommuniqueRecipient> recipients,
                                               CommuniqueRecipient provided) {
             recipients.addAll(provided.decompose());
             return recipients;
         }
-
-        @Override
-        public String toString() {
-            return "";
-        }
     };
+
+    private final boolean caseSensitive;
+    private final String stringRep;
+
+    FilterType(String stringRep, boolean caseSensitive) {
+        this.stringRep = stringRep;
+        this.caseSensitive = caseSensitive;
+    }
 
     /**
      * Applies the provided <code>CommuniqueRecipient</code> to the provided recipients list. Without a provided
@@ -144,5 +127,14 @@ public enum FilterType {
                 .decompose().stream() // turn it into the raw recipients
                 .map(CommuniqueRecipient::getName) // get strings for matching
                 .collect(Collectors.toCollection(HashSet::new)); // for fast Set#contains()
+    }
+
+    @Override
+    public String toString() {
+        return this.stringRep;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
     }
 }

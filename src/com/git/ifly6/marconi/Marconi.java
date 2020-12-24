@@ -19,18 +19,13 @@ package com.git.ifly6.marconi;
 
 import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
+import com.git.ifly6.communique.data.Communique7Monitor;
 import com.git.ifly6.communique.data.Communique7Parser;
-import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
-import com.git.ifly6.communique.ngui.AbstractCommunique;
 import com.git.ifly6.nsapi.ctelegram.CommSender;
 import com.git.ifly6.nsapi.ctelegram.CommSenderInterface;
-import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
-import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
-import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommNewNationsMonitor;
-import com.git.ifly6.nsapi.telegram.JTelegramLogger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -49,14 +44,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 /**
- * Command line program executing {@link com.git.ifly6.communique.ngui.Communique} configuration files.
+ * Command line program executing {@link com.git.ifly6.communique.gui3.Communique3} configuration files.
  * @since version 1.0 (build 1)
  */
-public class Marconi extends AbstractCommunique implements JTelegramLogger, CommSenderInterface {
+public class Marconi implements CommSenderInterface {
 
     private static final Logger LOGGER = Logger.getLogger(Marconi.class.getName());
     private static final Options COMMAND_LINE_OPTIONS;
@@ -69,26 +63,26 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
         COMMAND_LINE_OPTIONS = options;
     }
 
+    private CommuniqueLoader loader;
     private CommuniqueConfig config;
     private CommSender client;
 
     private Marconi(Path configPath) {
+        loader = new CommuniqueLoader(configPath);
+
         // every marconi instance, on shutdown, should save files
         Runtime.getRuntime().addShutdownHook(
                 new Thread(() -> {
-                    CommuniqueConfig config = exportState();
-                    CommuniqueLoader loader = new CommuniqueLoader(configPath);
                     try {
-                        loader.save(config);
+                        loader.save(this.config);
                     } catch (IOException e) {
                         LOGGER.severe("Could not save updated configuration on shutdown!");
-                        e.printStackTrace();
                     }
                 })
         );
 
         try {
-            if (Files.exists(configPath)) this.load(configPath);
+            if (Files.exists(configPath)) config = loader.load();
             else throw new FileNotFoundException(String.format("File %s does not exist", configPath));
 
         } catch (FileNotFoundException e) {
@@ -147,25 +141,22 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
     /** Sets up checks, client, and sends telegrams. */
     private void send() {
         // Parser and expand recipients
-        List<CommuniqueRecipient> cRecipients = config.getcRecipients();
-        Communique7Parser parser = new Communique7Parser().apply(cRecipients);
-        List<String> expandedRecipients = config.getProcessingAction().apply(parser.listRecipients());
-
-        // todo better way to handle flags
-        CommMonitor monitor =
-                cRecipients.contains(CommuniqueRecipients.createFlag("recruit"))
-                        ? CommNewNationsMonitor.getInstance()
-                        : new CommStaticMonitor(expandedRecipients);
+        Communique7Monitor communique7Monitor = new Communique7Monitor(config);
+        List<String> expandedRecipients = communique7Monitor.peek();
 
         // Show the recipients in the order we are to send the telegrams.
         System.out.println();
         System.out.println(MarconiUtilities.twoColumn(expandedRecipients));
 
         System.out.println();
-        System.out.printf("This should take %s to send %d telegrams%n",
+        System.out.printf(
+                config.repeats
+                        ? "Initially %d telegrams will be sent.%n"
+                        : "In total %d telegrams will be sent.%n",
                 CommuniqueUtilities.time(Math.round(expandedRecipients.size()
                         * (config.getTelegramType().getWaitTime() / (double) 1000))),
-                expandedRecipients.size());
+                expandedRecipients.size()
+        );
 
         // allow cancel
         System.out.println("You have 3 (three) seconds to cancel.");
@@ -176,28 +167,27 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
             System.exit(0);
         }
 
-        // Set the client up and go.
-        client = new CommSender(config.keys, monitor, config.getTelegramType(), this);
+        // Set the client up and go
+        client = new CommSender(config.keys, communique7Monitor,
+                config.getTelegramType(), this);
 
         // Check for file lock and send
         if (!MarconiUtilities.isFileLocked()) {
             MarconiUtilities.createFileLock(); // create file lock
             client.startSend();
-        } else throw new RuntimeException("Cannot send, as another instance of Marconi is already sending.");
+        } else throw new RuntimeException("Cannot send! Another instance of Marconi is already sending.");
 
     }
 
     @Override
     @SuppressWarnings("RedundantStringFormatCall")
-    public void onSkip(String recipient) {
-        System.out.println(String.format("Skipped recipient %s", recipient));
-    }
-
-    @Override
-    @SuppressWarnings("RedundantStringFormatCall")
-    public void sentTo(String recipient, int numberSent) {
+    public void processed(String recipient, int numberSent, CommSender.SendingAction action) {
         config.addcRecipient(CommuniqueRecipients.createExcludedNation(recipient));
-        System.out.println(String.format("Sent telegram %s to recipient %s", numberSent, recipient));
+        if (action == CommSender.SendingAction.SENT)
+            System.out.println(String.format("Sent telegram %s to recipient %s", numberSent, recipient));
+
+        if (action == CommSender.SendingAction.SKIPPED)
+            System.out.println(String.format("Skipped recipient %s", recipient));
     }
 
     @Override
@@ -221,35 +211,5 @@ public class Marconi extends AbstractCommunique implements JTelegramLogger, Comm
     @Override
     public void onError(String m, Throwable e) {
         LOGGER.log(Level.SEVERE, m, e);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public CommuniqueConfig exportState() {
-        // Remove duplicates from the sentList as part of save action
-        config.setcRecipients(config.getcRecipients().stream()
-                .distinct()
-                .collect(Collectors.toList()));
-        return config;
-    }
-
-    /** @see com.git.ifly6.communique.ngui.AbstractCommunique#importState(com.git.ifly6.communique.io.CommuniqueConfig) */
-    @Override
-    public void importState(CommuniqueConfig config) {
-        this.config = config;
-    }
-
-    /** @see com.git.ifly6.nsapi.telegram.JTelegramLogger#log(java.lang.String) */
-    @Override
-    @Deprecated
-    public void log(String input) {
-        LOGGER.info(input);
-    }
-
-    /** @see com.git.ifly6.nsapi.telegram.JTelegramLogger#sentTo(java.lang.String, int, int) */
-    @Override
-    @Deprecated
-    public void sentTo(String nationName, int x, int length) {
-        config.addcRecipient(CommuniqueRecipients.createExcludedNation(nationName));
     }
 }

@@ -57,8 +57,8 @@ public class NSNationQueryBuilder {
     }
 
     /**
-     * Returns the relevant NS API <code>String</code> that can be used to create the relevant URL which can then call
-     * the document desired.
+     * Returns the relevant NS API {@code String} that can be used to get the relevant URL which can then call the
+     * document desired.
      * @see java.lang.Object#toString()
      */
     @Override

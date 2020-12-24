@@ -17,14 +17,11 @@
 
 package com.git.ifly6.communique.data;
 
-import com.git.ifly6.nsapi.ctelegram.monitors.CommStaticMonitor;
 import com.git.ifly6.nsapi.telegram.JTelegramException;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -49,28 +46,24 @@ public class Communique7Parser {
     public static final String VERSION = "3.0";
 
     /** List of recipients changed by various actions and applications called by the parser. */
-    private Set<CommuniqueRecipient> recipients;
+    private Set<CommuniqueRecipient> recipients = new LinkedHashSet<>();
 
     /**
      * Creates a new empty parser without any applied tokens. To actually use the parser, apply tokens using the apply
      * methods, either in the form of a {@code List<String>} or any number of {@link CommuniqueRecipient}.
      */
-    public Communique7Parser() {
-        recipients = new LinkedHashSet<>();
-    }
+    public Communique7Parser() { }
 
     /**
      * Applies the tokens, specified in the <code>CommuniqueRecipient</code> object, to the recipients list in the
      * parser.
-     * @param token a {@link CommuniqueRecipient}
+     * <p>Because everything has a filter, there is no sorting code necessary to tell everything what to do, it simply
+     * does it on its own accord, unlike the old parser. This greatly simplifies the linking logic.</p>
+     * @param cRecipient a {@link CommuniqueRecipient}
      * @return this parser
      */
-    public Communique7Parser apply(CommuniqueRecipient token) throws JTelegramException {
-        recipients = token.getFilterType().apply(recipients, token);
-        /* This is the beautiful part, because I've chained everything to a filter, this means that I don't have to
-         * write any code whatsoever to sort things into what they have to do, unlike the old parser. Now, everything is
-         * chained to an ENUM which already knows exactly what it has to do, and therefore, everything is already dealt
-         * with. */
+    public Communique7Parser apply(CommuniqueRecipient cRecipient) throws JTelegramException {
+        recipients = cRecipient.getFilterType().apply(recipients, cRecipient);
         return this;
     }
 
@@ -85,16 +78,6 @@ public class Communique7Parser {
     }
 
     /**
-     * Applies tokens based on a variable number of {@link CommuniqueRecipient}s.
-     * @param tokens to apply
-     * @return this parser
-     */
-    public Communique7Parser apply(CommuniqueRecipient... tokens) {
-        Arrays.stream(tokens).forEach(this::apply);
-        return this;
-    }
-
-    /**
      * Returns a list of all the recipients in standard NationStates reference name form.
      * @return list of recipients
      */
@@ -103,14 +86,4 @@ public class Communique7Parser {
                 .map(CommuniqueRecipient::getName)
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Static monitor for parsed recipients.
-     * @param processingAction to apply
-     * @return static monitor for recipients
-     */
-    public CommStaticMonitor getStaticMonitor(Function<List<String>, List<String>> processingAction) {
-        return new CommStaticMonitor(processingAction.apply(listRecipients()));
-    }
-
 }

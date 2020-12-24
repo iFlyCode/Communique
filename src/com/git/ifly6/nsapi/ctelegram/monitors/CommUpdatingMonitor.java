@@ -96,7 +96,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     public static List<String> parseList(String listString) {
         List<String> regions;
         if (!listString.contains(",")) regions = Collections.singletonList(ApiUtils.ref(listString));
-        else regions = Arrays.stream(listString.split(","))
+        else regions = Arrays.stream(listString.split(",\\s+"))
                 .map(ApiUtils::ref)
                 .filter(s -> !ApiUtils.isEmpty(s))
                 .collect(Collectors.toList());

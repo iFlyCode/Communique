@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import static com.git.ifly6.nsapi.ApiUtils.startsWithLowerCase;
+
 /**
  * Stores information about a recipient. It is based on three characteristics, a <code>FilterType</code>, a
  * <code>RecipientType</code>, and the name. The filter type can be used to exclude, include, or simply add. The
@@ -48,7 +50,11 @@ public class CommuniqueRecipient {
     public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
         this.filterType = Objects.requireNonNull(filterType);
         this.recipientType = Objects.requireNonNull(recipientType);
-        this.name = Objects.requireNonNull(ApiUtils.ref(name)); // convert to reference name
+
+        name = name.trim(); // always trim
+        this.name = this.filterType.isCaseSensitive() // force lower case if not case-sensitive
+                ? Objects.requireNonNull(name)
+                : Objects.requireNonNull(ApiUtils.ref(name));
 
         // some format checking for the name
         if (name.contains(":"))
@@ -109,24 +115,29 @@ public class CommuniqueRecipient {
      * </p>
      * @return a <code>CommuniqueRecipient</code> representing that string
      */
-    public static CommuniqueRecipient parseRecipient(final String input) {
-        String s = input.trim().toLowerCase();
+    public static CommuniqueRecipient parseRecipient(String s) {
+        // 2020-12-24 do not put a toLowerCase here: it breaks case-sensitive regex input!
 
         FilterType fType = FilterType.NORMAL; // default
         for (FilterType type : FilterType.values())
-            if (s.startsWith(type.toString())) {
+            if (startsWithLowerCase(s, type.toString())) {
                 fType = type;
-                s = s.substring(type.toString().length());
+                s = s.substring(type.toString().length()); // +1 removes colon
                 break;
             }
 
         RecipientType rType = RecipientType.NONE; // default
         for (RecipientType type : RecipientType.values())
-            if (s.startsWith(type.toString())) {
+            if (startsWithLowerCase(s, type.toString())) {
                 rType = type;
                 s = s.substring(type.toString().length());
                 break;
             }
+
+        // 2020-12-24 insert override for RecipientType.NONE -> NATION if FilterType.NORMAL
+        // this is to correctly parse input like `imperium_anglorum` without tags
+        if (fType == FilterType.NORMAL && rType == RecipientType.NONE)
+            rType = RecipientType.NATION;
 
         // 2017-03-30 use lastIndexOf to deal with strange name changes, can cause error in name `+region:euro:pe`
         return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));

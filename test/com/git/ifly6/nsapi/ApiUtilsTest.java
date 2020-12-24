@@ -17,10 +17,10 @@
 
 package com.git.ifly6.nsapi;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,13 +29,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApiUtilsTest {
-    Map<String, String> values = ImmutableMap.of(
-            "region:EuRoPe", "region:europe",
-            "imperium anglorum", "imperium_anglorum",
-            "panem Et circensus", "panem_et_circensus",
-            "        pax", "pax",
-            "IO SATURNALIA", "io_saturnalia"
-    );
+
+    static Map<String, String> values = new HashMap<>();
+
+    static {
+        values.put("region:EuRoPe", "region:europe");
+        values.put("imperium anglorum", "imperium_anglorum");
+        values.put("panem Et circensus", "panem_et_circensus");
+        values.put("        pax", "pax");
+        values.put("IO SATURNALIA", "io_saturnalia");
+        values.put("IO  SATURNALIA", "io__saturnalia");
+    }
 
     @Test
     void ref() {
@@ -46,7 +50,8 @@ class ApiUtilsTest {
 
     @Test
     void testRef() {
-        assertEquals(ApiUtils.ref(new ArrayList<>(values.keySet())), values.values());
+        assertEquals(ApiUtils.ref(new ArrayList<>(values.keySet())),
+                new ArrayList<>(values.values()));
     }
 
     @Test

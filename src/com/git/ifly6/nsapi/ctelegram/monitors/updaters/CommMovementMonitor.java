@@ -19,6 +19,7 @@ package com.git.ifly6.nsapi.ctelegram.monitors.updaters;
 
 import com.git.ifly6.nsapi.NSRegion;
 import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
+import com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
 
@@ -35,6 +36,8 @@ import java.util.stream.Collectors;
  * @since version 3.0 (build 13)
  */
 public class CommMovementMonitor extends CommUpdatingMonitor implements CommMonitor {
+
+    private static CommPermanentCache<CommMovementMonitor> cache = new CommPermanentCache<>();
 
     private List<String> regions;
     private Direction direction;
@@ -54,11 +57,11 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
 
     /**
      * Create method with strings for reflection.
-     * @param regionList list of regions, separated by commas
      * @param dirString  direction string {@link Direction}
+     * @param regionList list of regions, separated by commas
      * @return new monitor
      */
-    public static CommMovementMonitor create(String regionList, String dirString) {
+    public static CommMovementMonitor getOrCreate(String dirString, String regionList) {
         List<String> regions = parseList(regionList);
         Direction direction;
 
@@ -66,7 +69,8 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
             direction = Direction.valueOf(dirString);
         } catch (IllegalArgumentException e) { throw CommParseException.make(dirString, Direction.values(), e); }
 
-        return new CommMovementMonitor(regions, direction);
+        return cache.getOrCreate(CommPermanentCache.createKey(regionList, dirString),
+                () -> new CommMovementMonitor(regions, direction));
     }
 
     /** Recipients generate slowly, but never exhaust. */
@@ -115,7 +119,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
 
     public enum Direction {
 
-        ENTER {
+        INTO {
             /** {@inheritDoc} Something that enters present after but not present before. */
             @Override
             public List<String> apply(Set<String> before, Set<String> after) {
@@ -125,7 +129,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
             }
         },
 
-        EXIT {
+        OUT_OF {
             /** {@inheritDoc} Something that exits is present before, but not after. */
             @Override
             public List<String> apply(Set<String> before, Set<String> after) {

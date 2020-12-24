@@ -54,6 +54,7 @@ public class Communique3ConfigHandler {
 
         comm.fieldTelegramType.setSelectedItem(config.telegramType);
         comm.fieldProcessingAction.setSelectedItem(config.processingAction);
+        comm.repeatBox.setSelected(config.repeats);
 
         // auto-stop, fill in with duration in minutes if present. otherwise, empty string
         final Optional<Duration> autoStop = config.getAutoStop();

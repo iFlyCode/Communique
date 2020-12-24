@@ -24,7 +24,8 @@ import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 
 /**
- * Filters out numeric documents.
+ * Filters out numeric documents. Adapted from this StackOverflow <a href="https://stackoverflow.com/a/11093360/2741091">
+ * answer</a>.
  * @since version 3.0 (build 13)
  */
 public class Communique3NumericDocumentFilter extends DocumentFilter {
@@ -37,7 +38,7 @@ public class Communique3NumericDocumentFilter extends DocumentFilter {
     }
 
     private boolean isStringValid(String text) {
-        return text.matches("^[0-9\\.]*$");
+        return text.matches("^[0-9.]*$"); // apparently \\. is redundant
     }
 
     private void showErrorMessage() {

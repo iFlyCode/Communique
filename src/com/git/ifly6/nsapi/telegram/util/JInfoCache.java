@@ -33,6 +33,7 @@ import java.util.Map;
  * <p>Note that all of these functions require file-system and Internet access to download and parse the files provided
  * by the NationStates API.</p>
  */
+@Deprecated
 public class JInfoCache {
 
     public static JInfoCache instance;
