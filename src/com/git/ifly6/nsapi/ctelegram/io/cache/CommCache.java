@@ -16,6 +16,7 @@
  */
 package com.git.ifly6.nsapi.ctelegram.io.cache;
 
+import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSTimeStamped;
 
 import java.time.Duration;
@@ -86,6 +87,7 @@ public abstract class CommCache<T extends NSTimeStamped> {
      * @return {@link NSTimeStamped} with reasonably up-to-date cached data
      */
     public T lookupObject(String s) {
+        s = ApiUtils.ref(s); // normalise input
         T n = getOrCacheObject(s);
 
         /* If the duration between data acquisition and present is greater than ten minutes, mark expired. */

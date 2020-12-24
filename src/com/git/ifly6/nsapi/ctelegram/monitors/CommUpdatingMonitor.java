@@ -78,8 +78,8 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     }
 
     /**
-     * Turns provided list, as string, in format {@code BLAH, BLAH, BLAH} into a list of strings. All elements are
-     * normalised with {@link ApiUtils#ref(List)}.
+     * Turns provided list, as string, in format {@code BLAH, BLAH, BLAH} into a list of strings. Splits only on commas.
+     * All elements are normalised with {@link ApiUtils#ref(List)}.
      * @param listString to parse
      * @return {@code List<String>} representation thereof
      */
