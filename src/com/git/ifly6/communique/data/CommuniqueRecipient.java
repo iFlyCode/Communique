@@ -38,16 +38,16 @@ import static com.git.ifly6.nsapi.ApiUtils.startsWithLowerCase;
 public class CommuniqueRecipient {
 
     public static final CommuniqueRecipient DELEGATES =
-            new CommuniqueRecipient(FilterType.NORMAL, RecipientType.TAG, "delegates");
+            new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.TAG, "delegates");
 
-    private final FilterType filterType;
-    private final RecipientType recipientType;
+    private final CommuniqueFilterType filterType;
+    private final CommuniqueRecipientType recipientType;
     private final String name;
 
     /**
      * Creates {@link CommuniqueRecipient}.
      */
-    public CommuniqueRecipient(FilterType filterType, RecipientType recipientType, String name) {
+    public CommuniqueRecipient(CommuniqueFilterType filterType, CommuniqueRecipientType recipientType, String name) {
         this.filterType = Objects.requireNonNull(filterType);
         this.recipientType = Objects.requireNonNull(recipientType);
 
@@ -70,18 +70,18 @@ public class CommuniqueRecipient {
     }
 
     /**
-     * Returns the type of the filter or token, defined in {@link com.git.ifly6.communique.data.FilterType FilterType}.
+     * Returns the type of the filter or token, defined in {@link CommuniqueFilterType FilterType}.
      * @return the type of filter or token
      */
-    public FilterType getFilterType() {
+    public CommuniqueFilterType getFilterType() {
         return filterType;
     }
 
     /**
-     * Returns the type of the recipient, defined in {@link com.git.ifly6.communique.data.RecipientType RecipientType}.
+     * Returns the type of the recipient, defined in {@link CommuniqueRecipientType RecipientType}.
      * @return the type of recipient
      */
-    public RecipientType getRecipientType() {
+    public CommuniqueRecipientType getRecipientType() {
         return recipientType;
     }
 
@@ -97,7 +97,7 @@ public class CommuniqueRecipient {
 
     /**
      * Decomposes a tag to its constituent nations. All decompositions are done in {@link
-     * com.git.ifly6.communique.data.RecipientType RecipientType} class.
+     * CommuniqueRecipientType RecipientType} class.
      * @return a list of <code>CommuniqueRecipient</code>s
      */
     public List<CommuniqueRecipient> decompose() throws JTelegramException {
@@ -118,16 +118,16 @@ public class CommuniqueRecipient {
     public static CommuniqueRecipient parseRecipient(String s) {
         // 2020-12-24 do not put a toLowerCase here: it breaks case-sensitive regex input!
 
-        FilterType fType = FilterType.NORMAL; // default
-        for (FilterType type : FilterType.values())
+        CommuniqueFilterType fType = CommuniqueFilterType.NORMAL; // default
+        for (CommuniqueFilterType type : CommuniqueFilterType.values())
             if (startsWithLowerCase(s, type.toString())) {
                 fType = type;
                 s = s.substring(type.toString().length()); // +1 removes colon
                 break;
             }
 
-        RecipientType rType = RecipientType.NONE; // default
-        for (RecipientType type : RecipientType.values())
+        CommuniqueRecipientType rType = CommuniqueRecipientType.NONE; // default
+        for (CommuniqueRecipientType type : CommuniqueRecipientType.values())
             if (startsWithLowerCase(s, type.toString())) {
                 rType = type;
                 s = s.substring(type.toString().length());
@@ -136,8 +136,8 @@ public class CommuniqueRecipient {
 
         // 2020-12-24 insert override for RecipientType.NONE -> NATION if FilterType.NORMAL
         // this is to correctly parse input like `imperium_anglorum` without tags
-        if (fType == FilterType.NORMAL && rType == RecipientType.NONE)
-            rType = RecipientType.NATION;
+        if (fType == CommuniqueFilterType.NORMAL && rType == CommuniqueRecipientType.NONE)
+            rType = CommuniqueRecipientType.NATION;
 
         // 2017-03-30 use lastIndexOf to deal with strange name changes, can cause error in name `+region:euro:pe`
         return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));

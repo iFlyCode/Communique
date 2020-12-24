@@ -39,6 +39,7 @@ class ApiUtilsTest {
         values.put("        pax", "pax");
         values.put("IO SATURNALIA", "io_saturnalia");
         values.put("IO  SATURNALIA", "io__saturnalia");
+        values.put("  IO  oPAlIA  ", "io__opalia");
     }
 
     @Test

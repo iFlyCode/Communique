@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @author ifly6
  * @since version 2.0 (build 7)
  */
-public enum FilterType {
+public enum CommuniqueFilterType {
 
     REQUIRE_REGEX("+regex", true) {
         @Override
@@ -107,14 +107,14 @@ public enum FilterType {
     private final boolean caseSensitive;
     private final String stringRep;
 
-    FilterType(String stringRep, boolean caseSensitive) {
+    CommuniqueFilterType(String stringRep, boolean caseSensitive) {
         this.stringRep = stringRep;
         this.caseSensitive = caseSensitive;
     }
 
     /**
      * Applies the provided <code>CommuniqueRecipient</code> to the provided recipients list. Without a provided
-     * <code>enum</code> state, this defaults to {@link FilterType#NORMAL}.
+     * <code>enum</code> state, this defaults to {@link CommuniqueFilterType#NORMAL}.
      * @param recipients upon which the token is to be applied
      * @param provided   token
      * @return recipients after the token is applied

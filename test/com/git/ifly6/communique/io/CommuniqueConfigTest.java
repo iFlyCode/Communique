@@ -18,8 +18,8 @@
 package com.git.ifly6.communique.io;
 
 import com.git.ifly6.communique.data.CommuniqueRecipient;
-import com.git.ifly6.communique.data.FilterType;
-import com.git.ifly6.communique.data.RecipientType;
+import com.git.ifly6.communique.data.CommuniqueFilterType;
+import com.git.ifly6.communique.data.CommuniqueRecipientType;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 import org.junit.jupiter.api.Test;
 
@@ -37,9 +37,9 @@ class CommuniqueConfigTest {
     static {
         config = new CommuniqueConfig();
         crs = Arrays.asList(
-                new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "imperium anglorum"),
-                new CommuniqueRecipient(FilterType.INCLUDE, RecipientType.REGION, "europe"),
-                new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "transilia")
+                new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "imperium anglorum"),
+                new CommuniqueRecipient(CommuniqueFilterType.INCLUDE, CommuniqueRecipientType.REGION, "europe"),
+                new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "transilia")
         );
 
         config.telegramType = null;
@@ -76,7 +76,7 @@ class CommuniqueConfigTest {
         // nation:nation:nation removal test
         CommuniqueConfig config = new CommuniqueConfig();
         CommuniqueRecipient bonkered =
-                new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "transilia");
+                new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "transilia");
 
         try {
             Field nameField = CommuniqueRecipient.class.getDeclaredField("name");

@@ -31,11 +31,11 @@ class CommuniqueRecipientTest {
 
     // DO NOT RE-ORDER! testToString requires order!
     static Map<String, CommuniqueRecipient> values = ImmutableMap.of(
-            "+nation:imperium_anglorum", new CommuniqueRecipient(FilterType.INCLUDE, RecipientType.NATION, "imperium_anglorum"),
-            "-nation:imperium_anglorum", new CommuniqueRecipient(FilterType.EXCLUDE, RecipientType.NATION, "imperium_anglorum"),
-            "+region:europe", new CommuniqueRecipient(FilterType.INCLUDE, RecipientType.REGION, "europe"),
-            "+regex:[A-Z].*", new CommuniqueRecipient(FilterType.REQUIRE_REGEX, RecipientType.NONE, "[A-Z].*"),
-            "imperium_anglorum", new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "imperium_anglorum")
+            "+nation:imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.INCLUDE, CommuniqueRecipientType.NATION, "imperium_anglorum"),
+            "-nation:imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.EXCLUDE, CommuniqueRecipientType.NATION, "imperium_anglorum"),
+            "+region:europe", new CommuniqueRecipient(CommuniqueFilterType.INCLUDE, CommuniqueRecipientType.REGION, "europe"),
+            "+regex:[A-Z].*", new CommuniqueRecipient(CommuniqueFilterType.REQUIRE_REGEX, CommuniqueRecipientType.NONE, "[A-Z].*"),
+            "imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "imperium_anglorum")
     );
 
     @Test
@@ -51,7 +51,7 @@ class CommuniqueRecipientTest {
 
         assertEquals(
                 CommuniqueRecipient.parseRecipient("nation:nation:Imperium Anglorum"),
-                new CommuniqueRecipient(FilterType.NORMAL, RecipientType.NATION, "imperium_anglorum")
+                new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "imperium_anglorum")
         );
 
         String value = CommuniqueRecipient.parseRecipient("ALPHABET:15").toString();

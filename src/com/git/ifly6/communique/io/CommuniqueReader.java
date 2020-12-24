@@ -21,7 +21,7 @@ import com.git.ifly6.communique.CommuniqueFileReader;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
-import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.CommuniqueFilterType;
 import com.git.ifly6.nsapi.telegram.JTelegramType;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -158,7 +158,7 @@ class CommuniqueReader {
                 List<String> recipients = CommuniqueRecipient.translateTokens(asList(capture.recipients));
                 list.addAll(recipients.stream()    // add all recipients
                         .map(CommuniqueRecipient::parseRecipient)
-                        .map(r -> CommuniqueRecipients.setFilter(r, FilterType.NORMAL))
+                        .map(r -> CommuniqueRecipients.setFilter(r, CommuniqueFilterType.NORMAL))
                         .collect(Collectors.toList()));
             }
 

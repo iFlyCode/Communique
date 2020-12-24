@@ -28,36 +28,36 @@ public class CommuniqueRecipients {
     private CommuniqueRecipients() {
     }
 
-    public static CommuniqueRecipient createNation(FilterType filter, String nationName) {
-        return new CommuniqueRecipient(filter, RecipientType.NATION, nationName);
+    public static CommuniqueRecipient createNation(CommuniqueFilterType filter, String nationName) {
+        return new CommuniqueRecipient(filter, CommuniqueRecipientType.NATION, nationName);
     }
 
     public static CommuniqueRecipient createNation(String nationName) {
-        return createNation(FilterType.NORMAL, nationName);
+        return createNation(CommuniqueFilterType.NORMAL, nationName);
     }
 
     public static CommuniqueRecipient createExcludedNation(String nationName) {
-        return createNation(FilterType.EXCLUDE, nationName);
+        return createNation(CommuniqueFilterType.EXCLUDE, nationName);
     }
 
-    public static CommuniqueRecipient createRegion(FilterType filterType, String regionName) {
-        return new CommuniqueRecipient(filterType, RecipientType.REGION, regionName);
+    public static CommuniqueRecipient createRegion(CommuniqueFilterType filterType, String regionName) {
+        return new CommuniqueRecipient(filterType, CommuniqueRecipientType.REGION, regionName);
     }
 
-    public static CommuniqueRecipient createTag(FilterType filterType, String tag) {
-        return new CommuniqueRecipient(filterType, RecipientType.TAG, tag);
+    public static CommuniqueRecipient createTag(CommuniqueFilterType filterType, String tag) {
+        return new CommuniqueRecipient(filterType, CommuniqueRecipientType.TAG, tag);
     }
 
     /**
-     * Creates new recipient with copied {@link RecipientType} and name, but with {@link FilterType#EXCLUDE}
+     * Creates new recipient with copied {@link CommuniqueRecipientType} and name, but with {@link CommuniqueFilterType#EXCLUDE}
      * @param recipient holding name and type
      * @return the recipient, excluded
      */
     public static CommuniqueRecipient exclude(CommuniqueRecipient recipient) {
-        return new CommuniqueRecipient(FilterType.EXCLUDE, recipient.getRecipientType(), recipient.getName());
+        return new CommuniqueRecipient(CommuniqueFilterType.EXCLUDE, recipient.getRecipientType(), recipient.getName());
     }
 
-    public static CommuniqueRecipient setFilter(CommuniqueRecipient recipient, FilterType filterType) {
+    public static CommuniqueRecipient setFilter(CommuniqueRecipient recipient, CommuniqueFilterType filterType) {
         return new CommuniqueRecipient(filterType, recipient.getRecipientType(), recipient.getName());
     }
 

@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * @author ifly6
  * @since version 2.0 (build 7)
  */
-public enum RecipientType {
+public enum CommuniqueRecipientType {
 
     /** Declares the recipient is a nation and requires no further processing in decomposition. */
     NATION {
@@ -66,7 +66,7 @@ public enum RecipientType {
             List<String> regions = CommRegionTagCache.getInstance().getRegionsWithTag(cr.getName());
 //            LOGGER.info(String.format("Tag %s: %d regions", cr.getName(), regions.size()));
             return regions.stream()
-                    .map(s -> new CommuniqueRecipient(cr.getFilterType(), RecipientType.REGION, s))
+                    .map(s -> new CommuniqueRecipient(cr.getFilterType(), CommuniqueRecipientType.REGION, s))
                     .map(CommuniqueRecipient::decompose)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
@@ -186,12 +186,12 @@ public enum RecipientType {
     public abstract List<CommuniqueRecipient> decompose(CommuniqueRecipient cr);
 
     /**
-     * Translates nation reference names into {@link RecipientType#NATION} {@code CommuniqueRecipient}s.
+     * Translates nation reference names into {@link CommuniqueRecipientType#NATION} {@code CommuniqueRecipient}s.
      * @param list       of nation reference names
      * @param filterType from which to extract filter type data
      * @return list of recipients
      */
-    private static List<CommuniqueRecipient> newRecipients(List<String> list, FilterType filterType) {
+    private static List<CommuniqueRecipient> newRecipients(List<String> list, CommuniqueFilterType filterType) {
         // we use this a lot, probably better to use a loop for speed
         List<CommuniqueRecipient> result = new ArrayList<>(list.size());
         for (String s : list)

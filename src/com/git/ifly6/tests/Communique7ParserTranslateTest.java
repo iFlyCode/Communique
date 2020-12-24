@@ -20,7 +20,7 @@ package com.git.ifly6.tests;
 import com.git.ifly6.communique.data.Communique7Parser;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
-import com.git.ifly6.communique.data.FilterType;
+import com.git.ifly6.communique.data.CommuniqueFilterType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,10 +37,10 @@ public class Communique7ParserTranslateTest {
         System.out.print("[translate], [parser]?\t");
         String input = scan.nextLine();
 
-        assert translate("wa:members").equals(CommuniqueRecipients.createTag(FilterType.NORMAL, "wa"));
-        assert translate("region:Europe").equals(CommuniqueRecipients.createRegion(FilterType.NORMAL, "Europe"));
-        assert translate("/region:Europe").equals(CommuniqueRecipients.createRegion(FilterType.EXCLUDE, "Europe"));
-        assert translate("/wa:delegates").equals(CommuniqueRecipients.createTag(FilterType.EXCLUDE, "delegates"));
+        assert translate("wa:members").equals(CommuniqueRecipients.createTag(CommuniqueFilterType.NORMAL, "wa"));
+        assert translate("region:Europe").equals(CommuniqueRecipients.createRegion(CommuniqueFilterType.NORMAL, "Europe"));
+        assert translate("/region:Europe").equals(CommuniqueRecipients.createRegion(CommuniqueFilterType.EXCLUDE, "Europe"));
+        assert translate("/wa:delegates").equals(CommuniqueRecipients.createTag(CommuniqueFilterType.EXCLUDE, "delegates"));
 
         if ("translate".equals(input)) {
 
