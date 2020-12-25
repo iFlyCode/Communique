@@ -206,10 +206,7 @@ public enum CommuniqueApplication {
         }
     }
 
-    /**
-     * Compresses logs present in the application support {@code log} sub-folder if they are older than a day with
-     * GZIP.
-     */
+    /** Compresses logs in the application support {@code log} sub-folder if they are older than a day. */
     public static void compressLogs() {
         try {
             final Instant yesterday = Instant.now().minus(1, ChronoUnit.DAYS);
