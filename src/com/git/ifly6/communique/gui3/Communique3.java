@@ -86,6 +86,7 @@ import java.util.stream.Collectors;
 
 import static com.git.ifly6.commons.CommuniqueApplication.APP_SUPPORT;
 import static com.git.ifly6.commons.CommuniqueUtilities.IS_OS_MAC;
+import static com.git.ifly6.communique.gui3.Communique3ConfigHandler.durationAsSeconds;
 import static com.git.ifly6.communique.gui3.Communique3Utils.appendLine;
 import static com.git.ifly6.communique.gui3.Communique3Utils.getComboBoxSelection;
 import static com.git.ifly6.communique.ngui.CommuniqueConstants.COMMAND_KEY;
@@ -216,12 +217,13 @@ public class Communique3 implements CommSenderInterface {
         }
 
         // update configuration enums
-        fieldProcessingAction.addActionListener(e ->
-                config.processingAction = getComboBoxSelection(fieldProcessingAction));
+        fieldProcessingAction.addActionListener(e -> {
+            config.processingAction = getComboBoxSelection(fieldProcessingAction);
+        });
         fieldTelegramType.addActionListener(e -> {
-            JTelegramType newType = getComboBoxSelection(fieldTelegramType);
-            config.telegramType = newType;
-            fieldTelegramDelay.setEnabled(newType == JTelegramType.CUSTOM);
+            config.telegramType = getComboBoxSelection(fieldTelegramType);
+            fieldTelegramDelay.setEnabled(config.telegramType == JTelegramType.CUSTOM);
+            fieldTelegramDelay.setText(durationAsSeconds(config.getTelegramDelay())); // tg delay gets custom setting
         });
 
         // load everything

@@ -26,6 +26,8 @@ import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommMembersCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionCache;
 import com.git.ifly6.nsapi.ctelegram.io.cache.CommRegionTagCache;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
+import com.git.ifly6.nsapi.ctelegram.monitors.CommWaitingMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommApprovalRaidMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.updaters.CommMovementMonitor;
@@ -142,11 +144,11 @@ public enum CommuniqueRecipientType {
 
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            final String[] tags = splitter.split(cr.getName());
-            final String direction = tags[0];
-            final String region = tags[1];
-            final List<String> recipients = CommMovementMonitor.getOrCreate(direction, region).getRecipients();
-            return newRecipients(recipients, cr.getFilterType());
+            String[] tags = splitter.split(cr.getName());
+            String direction = tags[0];
+            String region = tags[1];
+            CommMonitor monitor = new CommWaitingMonitor(CommMovementMonitor.getOrCreate(direction, region));
+            return newRecipients(monitor.getRecipients(), cr.getFilterType());
         }
     },
 
@@ -163,11 +165,11 @@ public enum CommuniqueRecipientType {
             if (cr.getName().equalsIgnoreCase("__raids__"))
                 return newRecipients(CommApprovalRaidMonitor.getInstance().getRecipients(), cr.getFilterType());
 
-            final String[] tags = splitter.split(cr.getName());
-            final String givenOrRemoved = tags[0];
-            final String proposal = tags[1];
-            final List<String> recipients = CommApprovalMonitor.getOrCreate(givenOrRemoved, proposal).getRecipients();
-            return newRecipients(recipients, cr.getFilterType());
+            String[] tags = splitter.split(cr.getName());
+            String givenOrRemoved = tags[0];
+            String proposal = tags[1];
+            CommMonitor monitor = new CommWaitingMonitor(CommApprovalMonitor.getOrCreate(givenOrRemoved, proposal));
+            return newRecipients(monitor.getRecipients(), cr.getFilterType());
         }
     },
 
@@ -180,11 +182,11 @@ public enum CommuniqueRecipientType {
 
         @Override
         public List<CommuniqueRecipient> decompose(CommuniqueRecipient cr) {
-            final String[] split = splitter.split(cr.getName());
-            final String chamber = split[0];
-            final String voting = split[1];
-            final List<String> recipients = CommVoteMonitor.getOrCreate(chamber, voting).getRecipients();
-            return newRecipients(recipients, cr.getFilterType());
+            String[] split = splitter.split(cr.getName());
+            String chamber = split[0];
+            String voting = split[1];
+            CommMonitor monitor = new CommWaitingMonitor(CommVoteMonitor.getOrCreate(chamber, voting));
+            return newRecipients(monitor.getRecipients(), cr.getFilterType());
         }
     },
 

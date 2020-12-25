@@ -22,7 +22,6 @@ import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.Range;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -44,6 +43,7 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
     protected Vote voting;
     private String resolutionID;
 
+    // todo fix bug that something might be missed due to comm7parse'mnt'r's low send rate
     protected Set<String> previousVoters = new HashSet<>();
     protected Set<String> currentVoters = new HashSet<>();
 
@@ -53,11 +53,6 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
      */
     @Override
     public List<String> getRecipients() {
-        if (currentVoters.isEmpty() || previousVoters.isEmpty()) {
-            LOGGER.info("Not enough information to find any changes.");
-            return new ArrayList<>();
-        }
-
         if (exhausted)
             throw new ExhaustedException("Assembly monitor exhausted; check logs for cause");
 
@@ -78,7 +73,7 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
         try {
             String currentProposal = CommWorldAssembly.getProposalID(this.chamber);
             if (resolutionID != null)
-                return resolutionID.equals(currentProposal);
+                return !resolutionID.equals(currentProposal); // must be NOT this; this is when it is NOT exhausted!
 
             // if resolutionID == null, initialise it
             LOGGER.info(String.format("Loading proposal ID into monitor for resolution %s", currentProposal));
@@ -111,15 +106,13 @@ public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements
     public static Pair<Chamber, Vote> parseStrings(String chamber, String voting) {
         Chamber chamberEnum;
         Vote voteEnum;
-        Range<Integer> weightRange;
-        boolean boolIgnoreInitial;
 
         try {
             chamberEnum = Chamber.valueOf(chamber.toUpperCase());
         } catch (IllegalArgumentException e) { throw CommParseException.make(chamber, Chamber.values(), e); }
 
         try {
-            voteEnum = Vote.valueOf(chamber.toUpperCase());
+            voteEnum = Vote.valueOf(voting.toUpperCase());
         } catch (IllegalArgumentException e) { throw CommParseException.make(voting, Vote.values(), e); }
 
         return new Pair<>(chamberEnum, voteEnum);

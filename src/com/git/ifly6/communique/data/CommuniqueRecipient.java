@@ -54,7 +54,7 @@ public class CommuniqueRecipient {
         name = name.trim(); // always trim
         this.name = this.filterType.isCaseSensitive() // force lower case if not case-sensitive
                 ? Objects.requireNonNull(name)
-                : Objects.requireNonNull(ApiUtils.ref(name));
+                : Objects.requireNonNull(name.toLowerCase());
 
         // some format checking for the name
         if (name.contains(":"))
@@ -115,8 +115,9 @@ public class CommuniqueRecipient {
      * </p>
      * @return a <code>CommuniqueRecipient</code> representing that string
      */
-    public static CommuniqueRecipient parseRecipient(String s) {
+    public static CommuniqueRecipient parseRecipient(final String rawInput) {
         // 2020-12-24 do not put a toLowerCase here: it breaks case-sensitive regex input!
+        String s = rawInput;
 
         CommuniqueFilterType fType = CommuniqueFilterType.NORMAL; // default
         for (CommuniqueFilterType type : CommuniqueFilterType.values())
@@ -138,6 +139,14 @@ public class CommuniqueRecipient {
         // this is to correctly parse input like `imperium_anglorum` without tags
         if (fType == CommuniqueFilterType.NORMAL && rType == CommuniqueRecipientType.NONE)
             rType = CommuniqueRecipientType.NATION;
+
+        if (rawInput.contains(":")) { // ie is an prefix to be looking at!
+            String expectedPrefix = fType.toString() + rType.toString();
+            String actualPrefix = rawInput.substring(0, rawInput.indexOf(":"));
+            if (!expectedPrefix.equalsIgnoreCase(actualPrefix))
+                throw new IllegalArgumentException(String.format("Expected prefix %s, got prefix %s; parse failed!",
+                        expectedPrefix, actualPrefix));
+        }
 
         // 2017-03-30 use lastIndexOf to deal with strange name changes, can cause error in name `+region:euro:pe`
         return new CommuniqueRecipient(fType, rType, s.substring(s.lastIndexOf(":") + 1));

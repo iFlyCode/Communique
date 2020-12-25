@@ -62,10 +62,14 @@ public class Communique3ConfigHandler {
                 .orElse(""));
 
         // telegram delay; round to seconds. always display, it's not changeable unless in custom mode
-        double seconds = config.getTelegramDelay().toMillis() / (double) 1000;
-        comm.fieldTelegramDelay.setText(String.format("%.2f", seconds));
+        comm.fieldTelegramDelay.setText(durationAsSeconds(config.getTelegramDelay()));
 
         comm.config = config;
         LOGGER.info("Imported configuration data");
+    }
+
+    public static String durationAsSeconds(Duration d) {
+        double seconds = d.toMillis() / (double) 1000;
+        return String.format("%.2f", seconds);
     }
 }

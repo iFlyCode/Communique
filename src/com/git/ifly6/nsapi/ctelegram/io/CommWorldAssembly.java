@@ -209,60 +209,45 @@ public class CommWorldAssembly {
 
     /** Enumerates voting positions. */
     public enum Vote {
-        FOR {
-            @Override
-            public String getNationXMLTag() {
-                return "VOTES_FOR";
-            }
+        FOR("VOTES_FOR"),
+        AGAINST("VOTES_AGAINST") ;
 
-            @Override
-            public String getDelegateXMLTag() {
-                return "DELVOTES_FOR";
-            }
-        }, AGAINST {
-            @Override
-            public String getNationXMLTag() {
-                return "VOTES_AGAINST";
-            }
+        private String nationXMLTag;
 
-            @Override
-            public String getDelegateXMLTag() {
-                return "DELVOTES_AGAINST";
-            }
-        };
+        Vote(String nationXMLTag) {
+            this.nationXMLTag = nationXMLTag;
+        }
 
-        public abstract String getNationXMLTag();
+        public String getNationXMLTag() {
+            return this.nationXMLTag;
+        }
 
-        public abstract String getDelegateXMLTag();
+        public String getDelegateXMLTag() {
+            return "DEL" + getNationXMLTag();
+        }
     }
 
     /** Enumerates World Assembly chambers. */
     public enum Chamber {
-        GA {
-            @Override
-            public int getCouncilCode() {
-                return 1;
-            }
+        UN(0, "NS United Nations"),
+        GA(1, "General Assembly"),
+        SC(2, "Security Council");
 
-            @Override
-            public String properName() {
-                return "General Assembly";
-            }
-        }, SC {
-            @Override
-            public int getCouncilCode() {
-                return 2;
-            }
+        private final int councilCode;
+        private final String properName;
 
-            @Override
-            public String properName() {
-                return "Security Council";
-            }
-        };
+        Chamber(int council_code, String properName) {
+            councilCode = council_code;
+            this.properName = properName;
+        }
 
-        public abstract int getCouncilCode();
+        public int getCouncilCode() {
+            return this.councilCode;
+        }
 
-        public abstract String properName();
+        public String properName() {
+            return this.properName;
+        }
     }
 
     /** Thrown if the proposal queried does not exist */

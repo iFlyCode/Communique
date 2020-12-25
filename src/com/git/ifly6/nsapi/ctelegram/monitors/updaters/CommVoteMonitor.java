@@ -66,7 +66,7 @@ public class CommVoteMonitor extends CommAssemblyMonitor implements CommMonitor 
     public static CommVoteMonitor getOrCreate(String chamber, String voting) {
         Pair<Chamber, Vote> values = CommAssemblyMonitor.parseStrings(chamber, voting);
         return cache.getOrCreate(
-                createKey(values.getValue0(), values.getValue1()),
+                createKey(chamber, voting),
                 () -> new CommVoteMonitor(values.getValue0(), values.getValue1()));
     }
 

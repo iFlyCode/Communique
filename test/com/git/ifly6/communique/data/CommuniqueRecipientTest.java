@@ -17,45 +17,64 @@
 
 package com.git.ifly6.communique.data;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.git.ifly6.communique.data.CommuniqueFilterType.EXCLUDE;
+import static com.git.ifly6.communique.data.CommuniqueFilterType.INCLUDE;
+import static com.git.ifly6.communique.data.CommuniqueFilterType.NORMAL;
+import static com.git.ifly6.communique.data.CommuniqueFilterType.REQUIRE_REGEX;
+import static com.git.ifly6.communique.data.CommuniqueRecipientType.NATION;
+import static com.git.ifly6.communique.data.CommuniqueRecipientType.NONE;
+import static com.git.ifly6.communique.data.CommuniqueRecipientType.REGION;
+import static com.git.ifly6.communique.data.CommuniqueRecipientType._VOTING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommuniqueRecipientTest {
 
     // DO NOT RE-ORDER! testToString requires order!
-    static Map<String, CommuniqueRecipient> values = ImmutableMap.of(
-            "+nation:imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.INCLUDE, CommuniqueRecipientType.NATION, "imperium_anglorum"),
-            "-nation:imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.EXCLUDE, CommuniqueRecipientType.NATION, "imperium_anglorum"),
-            "+region:europe", new CommuniqueRecipient(CommuniqueFilterType.INCLUDE, CommuniqueRecipientType.REGION, "europe"),
-            "+regex:[A-Z].*", new CommuniqueRecipient(CommuniqueFilterType.REQUIRE_REGEX, CommuniqueRecipientType.NONE, "[A-Z].*"),
-            "imperium_anglorum", new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "imperium_anglorum")
-    );
+    static Map<String, CommuniqueRecipient> reversible = new HashMap<>();
+    static List<String> parseFails = new ArrayList<>();
+
+    static {
+        reversible.put("+nation:panem", new CommuniqueRecipient(INCLUDE, NATION, "panem"));
+        reversible.put("-nation:et", new CommuniqueRecipient(EXCLUDE, NATION, "et"));
+        reversible.put("+region:circenses", new CommuniqueRecipient(INCLUDE, REGION, "circenses"));
+        reversible.put("+regex:[A-Z].*", new CommuniqueRecipient(REQUIRE_REGEX, NONE, "[A-Z].*"));
+        reversible.put("imperium_anglorum", new CommuniqueRecipient(NORMAL, NATION, "imperium_anglorum"));
+        reversible.put("_voting:ga; for", new CommuniqueRecipient(NORMAL, _VOTING, "ga; for"));
+
+        parseFails.add("PEN:15");
+        parseFails.add("hari:seldon_has");
+        parseFails.add("a_great:foundational");
+        parseFails.add("plan:for_the");
+        parseFails.add("long_long:ages");
+    }
 
     @Test
     void parseRecipient() {
-        for (Map.Entry<String, CommuniqueRecipient> entry : values.entrySet())
+        for (Map.Entry<String, CommuniqueRecipient> entry : reversible.entrySet())
             assertEquals(
                     entry.getValue(),
                     CommuniqueRecipient.parseRecipient(entry.getKey()));
-        for (Map.Entry<String, CommuniqueRecipient> entry : values.entrySet()) // test if upper case
+        for (Map.Entry<String, CommuniqueRecipient> entry : reversible.entrySet()) // test if upper case
             assertEquals(
                     entry.getValue(),
                     CommuniqueRecipient.parseRecipient(entry.getKey().toUpperCase()));
 
         assertEquals(
                 CommuniqueRecipient.parseRecipient("nation:nation:Imperium Anglorum"),
-                new CommuniqueRecipient(CommuniqueFilterType.NORMAL, CommuniqueRecipientType.NATION, "imperium_anglorum")
+                new CommuniqueRecipient(NORMAL, NATION, "imperium anglorum")
         );
 
-        String value = CommuniqueRecipient.parseRecipient("ALPHABET:15").toString();
-        System.out.println(value);
+        for (String s : parseFails)
+            assertThrows(IllegalArgumentException.class, () -> CommuniqueRecipient.parseRecipient(s));
     }
 
     @Test
@@ -80,7 +99,7 @@ class CommuniqueRecipientTest {
 
     @Test
     void testToString() {
-        List<Map.Entry<String, CommuniqueRecipient>> entries = new ArrayList<>(values.entrySet());
+        List<Map.Entry<String, CommuniqueRecipient>> entries = new ArrayList<>(reversible.entrySet());
         for (int i = 0; i < entries.size(); i++) {
             Map.Entry<String, CommuniqueRecipient> entry = entries.get(i);
             if (!entry.getKey().contains(":"))

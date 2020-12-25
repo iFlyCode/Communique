@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -45,12 +46,18 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     public static final Logger LOGGER = Logger.getLogger(CommUpdatingMonitor.class.getName());
     public static final Duration DEFAULT_UPDATE_INTERVAL = Duration.ofSeconds(120);
 
-    private Duration updateInterval = null;
+    private Duration updateInterval;
 
     /** {@link Instant} of last update start. */
     private Instant lastUpdate;
 
-    private ScheduledExecutorService ex;
+    /**
+     * Latch. If {@link CountDownLatch} is 0, monitor has fully initialised.
+     * @see CommWaitingMonitor
+     */
+    private CountDownLatch latch = new CountDownLatch(1);
+
+    private ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> job;
 
     /**
@@ -72,7 +79,6 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
                     String.format("Cannot construct monitor with update interval less than %d ms",
                             minimumWaitMillis));
 
-        ex = Executors.newSingleThreadScheduledExecutor();
         this.updateInterval = updateInterval;
         this.start();
     }
@@ -103,15 +109,18 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
 
     /** Things to do before calling {@link #updateAction()}. */
     private void preUpdateAction() {
-        if (recipientsExhausted()) {
+        if (this.recipientsExhausted()) {
             LOGGER.info("Recipients are exhausted; cannot update. Stopping monitor");
             this.stop();
 
         } else
             try {
-                lastUpdate = Instant.now();
-                LOGGER.info("Update triggered");
+                LOGGER.info("Triggering update");
                 updateAction();
+
+                // trigger notifications about our update
+                lastUpdate = Instant.now();
+                latch.countDown();
 
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Encountered error in update! Shutting down monitor!", e);
@@ -137,7 +146,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      */
     private void start(Duration initialDelay) {
         if (ex.isShutdown()) { // if it is shut down, make a new thread and restart
-            LOGGER.info("update action executor service was shut down somehow; allocating new...");
+            LOGGER.warning("Updater action executor was shut down somehow; creating new one...");
             ex = Executors.newSingleThreadScheduledExecutor();
         }
         if (job == null || job.isDone()) {
@@ -201,6 +210,10 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
      */
     public Duration getUpdateInterval() {
         return updateInterval;
+    }
+
+    public CountDownLatch getLatch() {
+        return latch;
     }
 
     /** Thrown on exception in update thread. */

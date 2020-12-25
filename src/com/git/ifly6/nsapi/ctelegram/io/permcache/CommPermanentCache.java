@@ -19,6 +19,7 @@ package com.git.ifly6.nsapi.ctelegram.io.permcache;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -29,9 +30,9 @@ import java.util.function.Supplier;
  */
 public class CommPermanentCache<T> {
 
-    Map<Object[], T> cache = new HashMap<>();
+    Map<Integer, T> cache = new HashMap<>();
 
-    private void add(Object[] key, T instance) {
+    private void add(int key, T instance) {
         cache.put(key, instance);
     }
 
@@ -42,11 +43,12 @@ public class CommPermanentCache<T> {
      * @return instance if present; supplied object otherwise
      */
     public T getOrCreate(Object[] key, Supplier<T> supplier) {
-        if (cache.containsKey(key))
-            return cache.get(key);
+        int hashCode = Objects.hash(key);
+        if (cache.containsKey(hashCode))
+            return cache.get(hashCode);
 
-        this.add(key, supplier.get());
-        return cache.get(key);
+        this.add(hashCode, supplier.get());
+        return cache.get(hashCode);
     }
 
     /**
