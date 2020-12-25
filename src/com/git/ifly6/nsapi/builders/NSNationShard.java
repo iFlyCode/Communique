@@ -19,60 +19,23 @@ package com.git.ifly6.nsapi.builders;
 
 public enum NSNationShard {
 
-    NATION {
-        @Override
-        public String toString() {
-            return "nation=";
-        }
-    },
+    NATION("nation="),
+    PROPER_NAME("name"),
+    REGION("region"),
+    CATEGORY("category"),
+    ENDORSEMENT_LIST("endorsements"),
+    CAN_RECRUIT("tgcanrecruit"),
+    CAN_CAMPAIGN("tgcancampaign"),
+    CENSUS("census");
 
-    PROPER_NAME {
-        @Override
-        public String toString() {
-            return "name";
-        }
-    },
+    private final String apiString;
 
-    REGION {
-        @Override
-        public String toString() {
-            return "region";
-        }
-    },
-
-    CATEGORY {
-        @Override
-        public String toString() {
-            return "category";
-        }
-    },
-
-    ENDORSEMENT_LIST {
-        @Override
-        public String toString() {
-            return "endorsements";
-        }
-    },
-
-    CAN_RECRUIT {
-        @Override
-        public String toString() {
-            return "tgcanrecruit";
-        }
-    },
-
-    CAN_CAMPAIGN {
-        @Override
-        public String toString() {
-            return "tgcancampaign";
-        }
-    },
-
-    CENSUS {
-        @Override
-        public String toString() {
-            return "census";
-        }
+    NSNationShard(String string) {
+        apiString = string;
     }
 
+    @Override
+    public String toString() {
+        return apiString;
+    }
 }
