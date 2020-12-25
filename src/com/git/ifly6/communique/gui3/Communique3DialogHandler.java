@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 ifly6
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this class file and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
  * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -47,7 +48,7 @@ public class Communique3DialogHandler {
 
     private static final Logger LOGGER = Logger.getLogger(Communique3DialogHandler.class.getName());
     private static int MAX_DIALOG_WIDTH = (int) Math.round(
-            Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2.5);
+            Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 4);
 
     private Frame frame;
 
@@ -79,7 +80,15 @@ public class Communique3DialogHandler {
      * @param causal  exception
      */
     public void showErrorDialog(String message, Throwable causal) {
-        showMessageDialog(formatMessage(message), CommuniqueConstants.ERROR);
+//        JLabel label = new JLabel(
+//                String.format("<html>Regex pattern syntax error. <br /><pre>%s</pre></html>",
+//                        StringEscapeUtils.escapeHtml4(causal.getMessage()).replace("\n", "<br />"))
+//        );
+        JLabel messageLabel = formatMessage(message + "\n\n"
+                + "<pre>" + causal.getClass().getSimpleName() + "\n\n"
+                + causal.getMessage() + "</pre>");
+        JOptionPane.showMessageDialog(frame, messageLabel, CommuniqueConstants.ERROR,
+                JOptionPane.PLAIN_MESSAGE, null);
         frameLogger.log(Level.SEVERE, message, causal);
     }
 
@@ -189,12 +198,21 @@ public class Communique3DialogHandler {
      * @param message to format
      * @return formatted message
      */
-    private static String formatMessage(String message) {
+    private static JLabel formatMessage(String message) {
+        message = message.replaceAll("\n", "<br/>");
+
         JLabel label = new JLabel(message);
+        String newMessage;
         if (label.getPreferredSize().width > MAX_DIALOG_WIDTH)
-            return MessageFormat.format("<html><body><p style='width:{0} px;'>{1}</p></body></html>",
+            newMessage = MessageFormat.format("<html><div style=\"width:{0} px;\">{1}</div></html>",
                     MAX_DIALOG_WIDTH, message);
-        else return MessageFormat.format("<html><body><p>{0}</p></body></html>", message);
+
+        else newMessage = MessageFormat.format("<html><div>{0}</div></html>",
+                message);
+
+        JLabel resLabel = new JLabel(newMessage);
+        resLabel.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        return resLabel;
     }
 
     /** Enumerates file modes for {@link JFileChooser}. */

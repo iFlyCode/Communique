@@ -36,6 +36,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.time.Duration;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class CommuniqueSendDialog extends JDialog {
 
     private JButton sendButton;
 
-    public CommuniqueSendDialog(JFrame parent, List<String> parsedRecipients, int delay) {
+    public CommuniqueSendDialog(JFrame parent, List<String> parsedRecipients, Duration delay) {
         super(parent, true);
         Communique3Utils.setupDimensions(this,
                 new Dimension(500, 500),
@@ -89,8 +90,10 @@ public class CommuniqueSendDialog extends JDialog {
         gbl_buttonPane.columnWeights = new double[] {1.0, 0.0, 0.0, Double.MIN_VALUE};
         gbl_buttonPane.rowWeights = new double[] {0.0, Double.MIN_VALUE};
         buttonPane.setLayout(gbl_buttonPane);
-        JLabel lblThisWillTake = new JLabel(String.format("Estimated sending time: %s",
-                estimateTime(parsedRecipients.size(), delay)));
+        JLabel lblThisWillTake = new JLabel(
+                String.format("Estimated sending time: %s",
+                estimateTime(parsedRecipients.size(), delay.toMillis()))
+        );
         lblThisWillTake.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         GridBagConstraints gbc_lblThisWillTake = new GridBagConstraints();
         gbc_lblThisWillTake.fill = GridBagConstraints.HORIZONTAL;
@@ -154,8 +157,8 @@ public class CommuniqueSendDialog extends JDialog {
         return returnValue;
     }
 
-    private String estimateTime(int count, int delay) {
-        int seconds = Math.round(count * (int) (delay / 1000));
+    private String estimateTime(int count, long delayMillis) {
+        int seconds = Math.round(count * (int) (delayMillis / 1000));
         return CommuniqueUtilities.time(seconds);
     }
 

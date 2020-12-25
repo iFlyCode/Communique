@@ -226,6 +226,6 @@ public enum CommuniqueRecipientType {
 
     /** Creates illegal argument exception with preformatted string. */
     private static IllegalArgumentException createIllegalArgumentException(CommuniqueRecipient s) {
-        return new IllegalArgumentException(String.format("Invalid tag string in <%s>!", s));
+        return new IllegalArgumentException(String.format("Invalid tag string \"%s\"", s));
     }
 }

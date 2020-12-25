@@ -22,15 +22,16 @@ import com.git.ifly6.commons.CommuniqueApplication;
 import com.git.ifly6.commons.CommuniqueUtilities;
 import com.git.ifly6.communique.data.Communique7Monitor;
 import com.git.ifly6.communique.data.Communique7Parser;
+import com.git.ifly6.communique.data.CommuniqueFilterType;
 import com.git.ifly6.communique.data.CommuniqueRecipient;
 import com.git.ifly6.communique.data.CommuniqueRecipients;
-import com.git.ifly6.communique.data.CommuniqueFilterType;
 import com.git.ifly6.communique.io.CommuniqueConfig;
 import com.git.ifly6.communique.io.CommuniqueLoader;
 import com.git.ifly6.communique.io.CommuniqueProcessingAction;
 import com.git.ifly6.communique.io.CommuniqueScraper;
 import com.git.ifly6.communique.ngui.CommuniqueConstants;
 import com.git.ifly6.communique.ngui.CommuniqueDocumentListener;
+import com.git.ifly6.communique.ngui.CommuniqueSendDialog;
 import com.git.ifly6.communique.ngui.CommuniqueTextDialog;
 import com.git.ifly6.nsapi.ApiUtils;
 import com.git.ifly6.nsapi.NSIOException;
@@ -232,8 +233,10 @@ public class Communique3 implements CommSenderInterface {
         stopButton.setEnabled(false);
         sendButton.addActionListener(e -> initialiseClient());
         stopButton.addActionListener(e -> {
-            if (client != null)
+            if (client != null) {
+                LOGGER.info("Stopping client");
                 client.stopSend();
+            }
 
             sendButton.setEnabled(true);
             stopButton.setEnabled(false);
@@ -241,28 +244,38 @@ public class Communique3 implements CommSenderInterface {
     }
 
     private void initialiseClient() {
-        List<String> recipients = new Communique7Parser()
-                .apply(config.getcRecipients())
-                .listRecipients();
-        recipients = config.getProcessingAction().apply(recipients);
+        try {
+            // Parser and expand recipients
+            Communique7Monitor communique7Monitor = new Communique7Monitor(config);
+            List<String> parsedRecipients = communique7Monitor.peek();
 
-        client = new CommSender(config.keys, new Communique7Monitor(config),
-                config.getTelegramType(), this);
-        client.startSend();
+            CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients, config.getTelegramDelay());
+            LOGGER.info("CommuniqueSendDialog " + (sendDialog.getValue() == 0
+                    ? "cancelled"
+                    : "accepted with " + sendDialog.getValue()));
 
-        final Optional<Duration> autoStop = config.getAutoStop();
-        autoStop.ifPresent(
-                duration -> Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-                    client.stopSend();
-                    dialogHandler.showMessageDialog(
-                            String.format("Communiqué stopped automatically after %s.",
-                                    CommuniqueUtilities.time(duration.getSeconds())), // time auto-formats
-                            CommuniqueConstants.TITLE);
+            if (sendDialog.getValue() == CommuniqueSendDialog.SEND) {
+                client = new CommSender(config.keys, communique7Monitor, config.getTelegramType(), this);
+                client.startSend();
 
-                }, duration.toMillis(), TimeUnit.MILLISECONDS));
+                final Optional<Duration> autoStop = config.getAutoStop();
+                autoStop.ifPresent(
+                        duration -> Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                            client.stopSend();
+                            dialogHandler.showMessageDialog(
+                                    String.format("Communiqué stopped automatically after %s.",
+                                            CommuniqueUtilities.time(duration.getSeconds())), // time auto-formats
+                                    CommuniqueConstants.TITLE);
 
-        stopButton.setEnabled(true);
-        sendButton.setEnabled(false);
+                        }, duration.toMillis(), TimeUnit.MILLISECONDS));
+
+                stopButton.setEnabled(true);
+                sendButton.setEnabled(false);
+            }
+
+        } catch (Throwable e) {
+            dialogHandler.showErrorDialog("Encountered error during initialisation!", e);
+        }
     }
 
     /**
@@ -621,6 +634,7 @@ public class Communique3 implements CommSenderInterface {
     public void onError(String m, Throwable e) {
         // do not call onTerminate; onTerminate already called by the sending thread!
         dialogHandler.showErrorDialog(m, e);
+        stopButton.doClick();
     }
 
     @Override
@@ -644,6 +658,7 @@ public class Communique3 implements CommSenderInterface {
 
         CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
                 String.join("\n", messages), true);
+        stopButton.doClick();
 
         // todo determine if UI needs resetting
     }
