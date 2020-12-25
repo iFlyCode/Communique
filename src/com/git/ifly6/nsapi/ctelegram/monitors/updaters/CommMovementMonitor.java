@@ -42,8 +42,8 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
     private static final CommPermanentCache<CommMovementMonitor> cache = new CommPermanentCache<>();
     private static final int EVICT_QUEUE_SIZE = 100;
 
-    private List<String> regions;
-    private Direction direction;
+    private final List<String> regions;
+    private final Direction direction;
 
     private EvictingQueue<String> latestMovedRecipients = EvictingQueue.create(EVICT_QUEUE_SIZE);
     private Set<String> inhabitantsBefore;

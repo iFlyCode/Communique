@@ -37,12 +37,12 @@ import static com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache.crea
  */
 public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMonitor {
 
-    private static CommPermanentCache<CommApprovalMonitor> cache = new CommPermanentCache<>();
+    private static final CommPermanentCache<CommApprovalMonitor> cache = new CommPermanentCache<>();
 
     private boolean exhausted;
 
-    private String proposalID;
-    private Action action;
+    private final String proposalID;
+    private final Action action;
 
     private Set<String> allApproversEver = new HashSet<>();
     private Set<String> currentApprovers = new HashSet<>();

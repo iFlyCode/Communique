@@ -30,7 +30,7 @@ import javax.swing.text.DocumentFilter;
  */
 public class Communique3NumericDocumentFilter extends DocumentFilter {
 
-    private JTextField textField;
+    private final JTextField textField;
 
     public Communique3NumericDocumentFilter(JTextField textField) {
         super();

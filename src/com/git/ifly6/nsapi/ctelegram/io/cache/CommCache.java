@@ -36,8 +36,8 @@ public abstract class CommCache<T extends NSTimeStamped> {
     private static final Logger LOGGER = Logger.getLogger(CommCache.class.getName());
     public static final Duration DEFAULT_EXPIRATION_DURATION = Duration.ofMinutes(10);
 
-    private Map<String, T> cache = new ConcurrentHashMap<>();
-    private Duration expirationIn;
+    private final Map<String, T> cache = new ConcurrentHashMap<>();
+    private final Duration expirationIn;
 
     /** Creates empty cache with cache expiration in 10 minutes. */
     public CommCache() {

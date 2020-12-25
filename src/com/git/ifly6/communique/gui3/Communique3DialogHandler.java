@@ -47,10 +47,10 @@ import java.util.logging.Logger;
 public class Communique3DialogHandler {
 
     private static final Logger LOGGER = Logger.getLogger(Communique3DialogHandler.class.getName());
-    private static int MAX_DIALOG_WIDTH = (int) Math.round(
+    private static final int MAX_DIALOG_WIDTH = (int) Math.round(
             Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 4);
 
-    private Frame frame;
+    private final Frame frame;
 
     @SuppressWarnings("NonConstantLogger")
     private final Logger frameLogger;

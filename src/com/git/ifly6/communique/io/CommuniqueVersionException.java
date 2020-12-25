@@ -17,13 +17,11 @@
 
 package com.git.ifly6.communique.io;
 
-@Deprecated
+/**
+ * Thrown if version is not compatible.
+ * @see com.git.ifly6.communique.CommuniqueFileReader
+ * @since version 3.0 (build 13)
+ */
 public class CommuniqueVersionException extends RuntimeException {
-    public CommuniqueVersionException(String message) {
-        super(message);
-    }
-
-    public CommuniqueVersionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public CommuniqueVersionException(String message) { super(message); }
 }

@@ -91,6 +91,7 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="bbce1"/>
                   <text value="Client key"/>
                 </properties>
               </component>
@@ -99,6 +100,7 @@
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="736ad"/>
                   <text value="Secret key"/>
                 </properties>
               </component>
@@ -107,6 +109,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="917c"/>
                   <text value="Telegram ID"/>
                 </properties>
               </component>
@@ -154,6 +157,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="a8c67"/>
                   <text value="Telegram delay"/>
                 </properties>
               </component>
@@ -178,6 +182,7 @@
                   <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="4838"/>
                   <text value="Telegram type"/>
                 </properties>
               </component>
@@ -208,6 +213,7 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="3d0a2"/>
                   <text value="Auto-stop after"/>
                 </properties>
               </component>
@@ -216,6 +222,7 @@
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="55b64"/>
                   <text value="Processing action"/>
                 </properties>
               </component>

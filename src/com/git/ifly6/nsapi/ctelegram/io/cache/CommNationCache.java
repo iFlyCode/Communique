@@ -18,12 +18,8 @@ package com.git.ifly6.nsapi.ctelegram.io.cache;
 
 import com.git.ifly6.nsapi.NSNation;
 
-import java.util.function.Function;
-
 /**
- * Monitors and functions as input to {@link com.git.ifly6.nsapi.ctelegram.CommSender#setProcessingAction(Function)} may
- * encounter the same nation over and over again. This is especially the case if applying complex filters that require
- * lots of information. Expiration duration is {@link CommCache#DEFAULT_EXPIRATION_DURATION}.
+ * Caches information about nations. Expiration duration is {@link CommCache#DEFAULT_EXPIRATION_DURATION}.
  * @since version 3.0 (build 13)
  */
 public class CommNationCache extends CommCache<NSNation> {

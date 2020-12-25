@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  * <code>synchronized</code> block to force that only one connection exists at one time.
  * </p>
  */
+@SuppressWarnings("UnstableApiUsage")
 public class NSConnection {
 
     private static final Logger LOGGER = Logger.getLogger(NSConnection.class.getName());

@@ -35,8 +35,8 @@ public class Communique7Monitor implements CommMonitor {
     private static final int TRUNCATION_LIMIT = 10;
 
     private State state;
-    private CommuniqueConfig theConfig;
-    private boolean repeats;
+    final private CommuniqueConfig theConfig;
+    final private boolean repeats;
 
     private Set<String> alreadyPassed = new HashSet<>();
     private List<String> lastPassed;
@@ -120,6 +120,6 @@ public class Communique7Monitor implements CommMonitor {
 
     /** Expresses the state – {@link #INIT} or {@link #RUNNING} – of the monitor. */
     private enum State {
-        INIT, RUNNING;
+        INIT, RUNNING
     }
 }
