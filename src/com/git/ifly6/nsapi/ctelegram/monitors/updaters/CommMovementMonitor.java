@@ -22,6 +22,7 @@ import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
+import com.google.common.collect.EvictingQueue;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -35,13 +36,16 @@ import java.util.stream.Collectors;
  * Monitors movement in or out, see {@link Direction}, of a specified region.
  * @since version 3.0 (build 13)
  */
+@SuppressWarnings("UnstableApiUsage")
 public class CommMovementMonitor extends CommUpdatingMonitor implements CommMonitor {
 
-    private static CommPermanentCache<CommMovementMonitor> cache = new CommPermanentCache<>();
+    private static final CommPermanentCache<CommMovementMonitor> cache = new CommPermanentCache<>();
+    private static final int EVICT_QUEUE_SIZE = 100;
 
     private List<String> regions;
     private Direction direction;
 
+    private EvictingQueue<String> latestMovedRecipients = EvictingQueue.create(EVICT_QUEUE_SIZE);
     private Set<String> inhabitantsBefore;
     private Set<String> inhabitantsNow;
 
@@ -101,6 +105,7 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
      * <p>Note that recipients returned for multiple regions are movements in and out of those regions taken together.
      * If monitoring Europe and the North Pacific, someone who moves from the North Pacific <b>to</b> Europe will not be
      * marked.</p>
+     * @returns list of last {@value EVICT_QUEUE_SIZE} moved recipients
      */
     @Override
     public List<String> getRecipients() {
@@ -109,7 +114,9 @@ public class CommMovementMonitor extends CommUpdatingMonitor implements CommMoni
             return new ArrayList<>();
         }
 
-        return direction.apply(inhabitantsBefore, inhabitantsNow);
+        List<String> movedRecipients = direction.apply(inhabitantsBefore, inhabitantsNow);
+        latestMovedRecipients.addAll(movedRecipients);
+        return new ArrayList<>(latestMovedRecipients);
     }
 
     /** @return regions at which the movement monitor is pointed. */

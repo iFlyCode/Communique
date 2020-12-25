@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
+
+import static com.git.ifly6.nsapi.ApiUtils.RANDOM;
+import static com.git.ifly6.nsapi.ApiUtils.shuffled;
 
 /**
  * This implements post-processing actions on the recipient list as a whole for Communique and Marconi clients. It has
@@ -37,8 +39,7 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
     RANDOMISE {
         @Override
         public List<String> apply(List<String> input) {
-            Collections.shuffle(input, random);
-            return input;
+            return shuffled(input);
         }
 
         @Override
@@ -77,8 +78,8 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
                 if (delegates.contains(s)) listDelegates.add(s); // see docs on this algorithm
                 else nonDelegate.add(s);
 
-            Collections.shuffle(listDelegates, random);
-            Collections.shuffle(nonDelegate, random);
+            Collections.shuffle(listDelegates, RANDOM);
+            Collections.shuffle(nonDelegate, RANDOM);
 
             listDelegates.addAll(nonDelegate);
             return listDelegates;
@@ -101,9 +102,6 @@ public enum CommuniqueProcessingAction implements Function<List<String>, List<St
             return "None";
         }
     };
-
-    /** Static randomisation seed. */
-    public static final Random random = new Random(81141418);
 
     /** Applies the processing action to the provided list, which should be of raw NationStates reference names */
     public abstract List<String> apply(List<String> input);

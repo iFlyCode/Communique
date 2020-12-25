@@ -23,9 +23,7 @@ import com.git.ifly6.nsapi.ctelegram.io.cache.CommDelegatesCache;
 import com.git.ifly6.nsapi.ctelegram.io.permcache.CommPermanentCache;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
-import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,8 +43,9 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
 
     private String proposalID;
     private Action action;
-    private List<String> previousApprovers = new ArrayList<>();
-    private List<String> currentApprovers = new ArrayList<>();
+
+    private Set<String> allApproversEver = new HashSet<>();
+    private Set<String> currentApprovers = new HashSet<>();
 
     /** Creates monitor to monitor provided proposal ID for specified action. */
     private CommApprovalMonitor(String proposalID, Action action) {
@@ -71,8 +70,8 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
     }
 
     /**
-     * {@inheritDoc} Only returns approvers which undertook the specified {@link Action} and which are (according to
-     * cached data, see {@link CommDelegatesCache},) currently delegates.
+     * {@inheritDoc} Only returns approvers which undertook the specified {@link Action} at any time and which are
+     * (according to cached data, see {@link CommDelegatesCache},) currently delegates.
      * @return list of delegates that took specified action.
      */
     @Override
@@ -81,7 +80,7 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
             throw new ExhaustedException("Proposal no longer exists; approval change stream exhausted.");
 
         Set<String> delegateSet = new HashSet<>(CommDelegatesCache.getInstance().getDelegates());
-        List<String> changedApprovers = action.find(previousApprovers, currentApprovers);
+        Set<String> changedApprovers = action.find(currentApprovers, allApproversEver);
         return changedApprovers.stream()
                 .filter(delegateSet::contains)
                 .collect(Collectors.toList());
@@ -94,30 +93,35 @@ public class CommApprovalMonitor extends CommUpdatingMonitor implements CommMoni
 
     @Override
     protected void updateAction() {
-        previousApprovers = currentApprovers;
         try {
-            currentApprovers = CommWorldAssembly.getApprovers(proposalID);
-        } catch (CommWorldAssembly.NoSuchProposalException e) {
-            exhausted = true;
-        }
+            currentApprovers = new HashSet<>(CommWorldAssembly.getApprovers(proposalID));
+            allApproversEver.addAll(currentApprovers); // set deals with duplicates automatically
+        } catch (CommWorldAssembly.NoSuchProposalException e) { exhausted = true; }
     }
 
-    /** Enumerates actions undertaken by delegates. */
+    /**
+     * Enumerates actions undertaken by delegates.
+     * @since version 3.0 (build 13)
+     */
     public enum Action {
         GIVEN_TO {
             @Override
-            public List<String> find(List<String> before, List<String> after) {
-                // elements in after that are were not in before
-                return new ArrayList<>(Sets.difference(new HashSet<>(after), new HashSet<>(before)));
+            public Set<String> find(Set<String> current, Set<String> allApproversEver) {
+                return current;
+                // // elements in after that are were not in before
+                // return new ArrayList<>(Sets.difference(new HashSet<>(after), new HashSet<>(before)));
             }
         }, REMOVED_FROM {
             @Override
-            public List<String> find(List<String> before, List<String> after) {
-                // elements in before that are not in afterSet
-                return new ArrayList<>(Sets.difference(new HashSet<>(before), new HashSet<>(after)));
+            public Set<String> find(Set<String> current, Set<String> allApproversEver) {
+                return allApproversEver.stream()
+                        .filter(s -> !current.contains(s)) // every approver ever who is not in current are removed
+                        .collect(Collectors.toSet());
+                // // elements in before that are not in afterSet
+                // return new ArrayList<>(Sets.difference(new HashSet<>(before), new HashSet<>(after)));
             }
         };
 
-        public abstract List<String> find(List<String> before, List<String> after);
+        public abstract Set<String> find(Set<String> current, Set<String> allApproversEver);
     }
 }

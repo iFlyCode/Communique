@@ -18,14 +18,22 @@ package com.git.ifly6.nsapi;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * Utility functions for handling or parsing information from the NationStates API. See also <a
  * href="https://www.nationstates.net/pages/api.html">API documentation</a>.
  */
 public class ApiUtils {
+
+    /**
+     * Stable randomisation seed.
+     * @since version 3.0 (build 13)
+     */
+    public static final Random RANDOM = new Random(81141418);
 
     private ApiUtils() {
     }
@@ -108,6 +116,15 @@ public class ApiUtils {
                 return true;
 
         return false;
+    }
+
+    /**
+     * Shuffles array and returns it.
+     * @since version 3.0 (build 13)
+     */
+    public static <T> List<T> shuffled(List<T> list) {
+        Collections.shuffle(list, RANDOM);
+        return list;
     }
 
 }

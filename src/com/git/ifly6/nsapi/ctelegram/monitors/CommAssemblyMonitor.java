@@ -21,14 +21,20 @@ import com.git.ifly6.nsapi.ctelegram.io.CommParseException;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Chamber;
 import com.git.ifly6.nsapi.ctelegram.io.CommWorldAssembly.Vote;
-import com.google.common.collect.Sets;
 import org.javatuples.Pair;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static com.git.ifly6.nsapi.ApiUtils.shuffled;
 
 /**
  * Framework for monitoring World Assembly actions.
@@ -37,34 +43,47 @@ import java.util.logging.Logger;
 public abstract class CommAssemblyMonitor extends CommUpdatingMonitor implements CommMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(CommAssemblyMonitor.class.getName());
+    private static final Comparator<Entry<String, Instant>> entryComparator =
+            Entry.<String, Instant>comparingByValue()
+                    .reversed().thenComparing(Entry::getKey);
+
     private boolean exhausted = false;
 
     protected Chamber chamber;
     protected Vote voting;
     private String resolutionID;
 
-    // todo fix bug that something might be missed due to comm7parse'mnt'r's low send rate
-    protected Set<String> previousVoters = new HashSet<>();
-    protected Set<String> currentVoters = new HashSet<>();
+    protected Map<String, Instant> voters = new HashMap<>();
 
     /**
-     * {@inheritDoc} Recipients are current voters were not previously voting for the position specified.
-     * @return recipients
+     * {@inheritDoc} Recipients are <b>ALL</b> current voters.
+     * @return recipients, ordered with the most recently added voters first
      */
     @Override
     public List<String> getRecipients() {
         if (exhausted)
             throw new ExhaustedException("Assembly monitor exhausted; check logs for cause");
 
-        return new ArrayList<>(Sets.difference(currentVoters, previousVoters));
+        return voters.entrySet().stream()
+                .sorted(entryComparator)
+                .map(Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     @Override
     protected void updateAction() {
         exhausted = determineIfExhausted();
         if (!exhausted) {
-            previousVoters = currentVoters;
-            currentVoters = getMonitoredRecipients();
+            Set<String> currentVoters = getMonitoredRecipients();
+            List<String> currentVoterList = shuffled(new ArrayList<>(currentVoters));
+
+            // update old voters by adding new voters
+            currentVoterList.stream()
+                    .filter(newVoter -> !voters.containsKey(newVoter))
+                    .forEach(newVoter -> voters.put(newVoter, Instant.now()));
+
+            // update old voters by removing people no longer voting
+            voters.keySet().removeIf(oldVoter -> !currentVoters.contains(oldVoter));
         }
     }
 
