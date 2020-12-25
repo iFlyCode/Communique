@@ -27,7 +27,6 @@ import java.util.logging.Logger;
  * see {@link CommUpdatingMonitor#getLatch()}, before allowing any {@link CommMonitor} calls.
  * @since version 3.0 (build 13)
  */
-@SuppressWarnings("ResultOfMethodCallIgnored") // timing-out await calls everywhere; all results ignored
 public class CommWaitingMonitor implements CommMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(CommWaitingMonitor.class.getName());

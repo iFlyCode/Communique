@@ -41,7 +41,6 @@ public class CommApprovalRaidMonitor extends CommUpdatingMonitor {
 
     private static CommApprovalRaidMonitor instance;
     private List<RemovedApproval> removedApprovals = new ArrayList<>();
-    private List<Proposal> previousProposals;
     private List<Proposal> currentProposals;
 
     private CommApprovalRaidMonitor() {
@@ -74,7 +73,7 @@ public class CommApprovalRaidMonitor extends CommUpdatingMonitor {
         for (RemovedApproval removedApproval : removedApprovals)
             removedApproval.checkDelegateStatus();
 
-        previousProposals = currentProposals;
+        List<Proposal> previousProposals = currentProposals;
         currentProposals = CommProposalCache.getInstance().getProposals();
 
         for (Proposal p : currentProposals) {
