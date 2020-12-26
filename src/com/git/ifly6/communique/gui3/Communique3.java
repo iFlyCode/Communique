@@ -249,7 +249,7 @@ public class Communique3 implements CommSenderInterface {
         try {
             // Parser and expand recipients
             Communique7Monitor communique7Monitor = new Communique7Monitor(config);
-            List<String> parsedRecipients = communique7Monitor.peek();
+            List<String> parsedRecipients = communique7Monitor.preview();
 
             CommuniqueSendDialog sendDialog = new CommuniqueSendDialog(frame, parsedRecipients, config.getTelegramDelay());
             LOGGER.info("CommuniqueSendDialog " + (sendDialog.getValue() == 0
@@ -614,11 +614,14 @@ public class Communique3 implements CommSenderInterface {
     public void processed(String recipient, int numberProcessed, CommSender.SendingAction action) {
         EventQueue.invokeLater(() -> {
             // update text interfaces
-            finishCondition = client.getMonitor().remainingIfKnown();
+            finishCondition = client.getMonitor().recipientsCountIfKnown();
             appendLine(textArea, CommuniqueRecipients.createExcludedNation(recipient));
-            progressLabel.setText(finishCondition.isPresent()
-                    ? String.format("%d of %d", numberProcessed, finishCondition.getAsLong())
-                    : String.format("%d sent", numberProcessed));
+            if (finishCondition.isPresent()) {
+                final String text = String.format("%d of %d", numberProcessed, finishCondition.getAsLong())
+                                + (config.repeats ? " (est)" : "");
+                progressLabel.setText(text);
+            } else
+                progressLabel.setText(String.format("%d sent", numberProcessed));
 
             // draw timer changes
             Duration duration = Duration.between(Instant.now(), client.nextAt());
@@ -661,8 +664,6 @@ public class Communique3 implements CommSenderInterface {
         CommuniqueTextDialog.createMonospacedDialog(frame, "Results",
                 String.join("\n", messages), true);
         stopButton.doClick();
-
-        // todo determine if UI needs resetting
     }
 
 }

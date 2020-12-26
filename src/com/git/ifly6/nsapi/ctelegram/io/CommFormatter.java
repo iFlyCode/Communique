@@ -15,43 +15,32 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.git.ifly6.nsapi.ctelegram.monitors;
+package com.git.ifly6.nsapi.ctelegram.io;
 
-import com.git.ifly6.nsapi.NSException;
-
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalLong;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Monitors generate a stream of recipients provided by {@link #getRecipients()} until exhausted {@link
- * #recipientsExhausted()}. If implemented correctly, if a monitor is exhausted, calling {@link #getRecipients()} should
- * throw {@link ExhaustedException}.
- * @since version 3.0 (build 13)
- */
-public interface CommMonitor {
+public class CommFormatter {
 
-    /**
-     * Gets a new list of recipients.
-     * @return list of recipients
-     */
-    List<String> getRecipients();
+    private final List<Map.Entry<Boolean, String>> variablesWithMessages;
 
-    /**
-     * Returns boolean indicating whether monitor is exhausted of recipients.
-     * @return true if exhausted
-     */
-    boolean recipientsExhausted();
-
-    /**
-     * Counts remaining recipients, if known.
-     * @return count of remaining recipients if known
-     */
-    OptionalLong recipientsCountIfKnown();
-
-    /** Thrown if calling an exhausted monitor. */
-    class ExhaustedException extends NSException {
-        public ExhaustedException(String message) {
-            super(message);
-        }
+    @SafeVarargs
+    public CommFormatter(Map.Entry<Boolean, String>... messages) {
+        variablesWithMessages = Arrays.asList(messages);
     }
+
+    public String format() {
+        return variablesWithMessages.stream()
+                .filter(Map.Entry::getKey) // if key is true, keep
+                .map(Map.Entry::getValue)  // chain together messages
+                .collect(Collectors.joining(","));
+    }
+
+    public static <K, V> Map.Entry<K, V> entry(K k, V v) {
+        return new AbstractMap.SimpleEntry<>(k, v);
+    }
+
 }

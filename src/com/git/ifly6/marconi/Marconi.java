@@ -142,7 +142,7 @@ public class Marconi implements CommSenderInterface {
     private void send() {
         // Parser and expand recipients
         Communique7Monitor communique7Monitor = new Communique7Monitor(config);
-        List<String> expandedRecipients = communique7Monitor.peek();
+        List<String> expandedRecipients = communique7Monitor.preview();
 
         // Show the recipients in the order we are to send the telegrams.
         System.out.println();

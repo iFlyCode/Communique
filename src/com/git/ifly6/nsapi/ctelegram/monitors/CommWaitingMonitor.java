@@ -54,8 +54,8 @@ public class CommWaitingMonitor implements CommMonitor {
 
     /** {@inheritDoc} */
     @Override
-    public OptionalLong remainingIfKnown() {
-        return wait(monitor::remainingIfKnown);
+    public OptionalLong recipientsCountIfKnown() {
+        return wait(monitor::recipientsCountIfKnown);
     }
 
     /**

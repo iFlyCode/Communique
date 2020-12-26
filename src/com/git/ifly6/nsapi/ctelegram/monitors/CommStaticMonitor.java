@@ -85,7 +85,7 @@ public class CommStaticMonitor implements CommMonitor {
     }
 
     @Override
-    public OptionalLong remainingIfKnown() {
+    public OptionalLong recipientsCountIfKnown() {
         return OptionalLong.of(recipients.size());
     }
 }

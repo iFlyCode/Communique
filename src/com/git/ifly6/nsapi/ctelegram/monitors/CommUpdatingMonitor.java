@@ -100,7 +100,7 @@ public abstract class CommUpdatingMonitor implements CommMonitor {
     }
 
     @Override
-    public OptionalLong remainingIfKnown() {
+    public OptionalLong recipientsCountIfKnown() {
         return OptionalLong.empty();
     }
 

@@ -18,6 +18,7 @@
 package com.git.ifly6.nsapi.ctelegram;
 
 import com.git.ifly6.nsapi.NSIOException;
+import com.git.ifly6.nsapi.ctelegram.io.CommFormatter;
 import com.git.ifly6.nsapi.ctelegram.io.NSTGSettingsException;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommMonitor;
 import com.git.ifly6.nsapi.ctelegram.monitors.CommUpdatingMonitor;
@@ -43,6 +44,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.git.ifly6.nsapi.ctelegram.io.CommFormatter.entry;
 
 /**
  * Sends telegrams on the NationStates API. Instantiation is not restricted; regardless, there should never be more than
@@ -152,10 +155,16 @@ public class CommSender {
             throw new EmptyQueueException();
 
         // if we have a recipient...
-        LOGGER.info(String.format("Got recipient <%s> from queue", recipient));
-        if (!CommRecipientChecker.doesRecipientAccept(recipient, telegramType))
+        LOGGER.info(String.format("Got recipient '%s' from queue", recipient));
+        boolean acceptsType = CommRecipientChecker.doesRecipientAccept(recipient, telegramType);
+        boolean alreadyProcessed = processListsContain(recipient);
+        if (!acceptsType || alreadyProcessed)
             try {
-                LOGGER.info(String.format("Recipient <%s> invalid; trying next in queue", recipient));
+                LOGGER.info(String.format("Recipient '%s' invalid (%s); trying next in queue",
+                        new CommFormatter(
+                                entry(!acceptsType, String.format("%s_refused", telegramType.toString())),
+                                entry(alreadyProcessed, "duplicate")).format(),
+                        recipient));
                 this.reportProcessed(recipient, SendingAction.SKIPPED);
                 executeSend(); // try again
                 return; // do not execute further!
@@ -246,6 +255,14 @@ public class CommSender {
     /** Returns list of skipped recipients. */
     public Set<String> getSkipList() {
         return skipList;
+    }
+
+    /**
+     * @param s is string name to check
+     * @return true if the recipient appears in one of the processing lists
+     */
+    public boolean processListsContain(String s) {
+        return sentList.contains(s) || skipList.contains(s);
     }
 
     /** @returns {@link CommSender} initialisation time */
